@@ -18,7 +18,7 @@
         android:textAllCaps="true"
         android:letterSpacing="-0.05"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="56dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -29,22 +29,10 @@
         android:layout_width="8dp"
         android:layout_height="8dp"
         android:background="@drawable/shape_circle_red"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintEnd_toStartOf="@+id/btn_settings"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_settings"
-        app:layout_constraintTop_toTopOf="@+id/btn_settings" />
-
-    <ImageButton
-        android:id="@+id/btn_settings"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@drawable/bg_settings_button"
-        android:src="@drawable/ic_settings"
         android:layout_marginEnd="24dp"
-        android:padding="8dp"
-        app:tint="@color/white"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/tv_greeting" />
+        app:layout_constraintTop_toTopOf="@+id/tv_greeting"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_greeting"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
         android:id="@+id/ll_grid_container"

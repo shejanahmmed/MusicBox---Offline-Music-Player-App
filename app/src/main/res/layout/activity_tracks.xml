@@ -11,7 +11,7 @@
         android:id="@+id/cl_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="32dp"
+        android:paddingTop="56dp"
         android:paddingBottom="16dp"
         android:paddingHorizontal="24dp"
         android:background="@color/background_dark"
@@ -68,12 +68,7 @@
                 android:src="@drawable/ic_shuffle"
                 app:tint="@color/text_white_opacity_40"
                 android:layout_marginEnd="16dp" />
-            <ImageButton
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_more_vert"
-                app:tint="@color/text_white_opacity_40" />
+
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -104,7 +99,7 @@
         android:paddingStart="8dp"
         android:paddingEnd="16dp"
         android:elevation="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/ll_bottom_nav"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_nav"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -167,215 +162,13 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Bottom Navigation (Floating) -->
-    <LinearLayout
-        android:id="@+id/ll_bottom_nav"
+    <!-- Bottom Navigation -->
+    <include
+        android:id="@+id/bottom_nav"
+        layout="@layout/layout_bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@drawable/bg_floating_nav"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"
         android:layout_margin="16dp"
-        android:elevation="8dp"
-        android:weightSum="8"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <!-- Home -->
-        <LinearLayout
-            android:id="@+id/nav_home"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_home"
-                app:tint="@color/nav_text_unselected"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_home"
-                android:textSize="8sp"
-                android:textColor="@color/nav_text_unselected"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
-
-        <!-- Tracks (Active) -->
-        <LinearLayout
-            android:id="@+id/nav_tracks"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_library_music"
-                app:tint="@color/white"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_tracks"
-                android:textSize="8sp"
-                android:textColor="@color/white"
-                android:textStyle="bold"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
-
-        <!-- Albums -->
-        <LinearLayout
-            android:id="@+id/nav_albums"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_album"
-                app:tint="@color/nav_text_unselected"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_albums"
-                android:textSize="8sp"
-                android:textColor="@color/nav_text_unselected"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
-
-        <!-- Folders -->
-        <LinearLayout
-            android:id="@+id/nav_folders"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_folder"
-                app:tint="@color/nav_text_unselected"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_folders"
-                android:textSize="8sp"
-                android:textColor="@color/nav_text_unselected"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
-
-        <!-- Artists -->
-        <LinearLayout
-            android:id="@+id/nav_artists"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_person"
-                app:tint="@color/nav_text_unselected"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_artists"
-                android:textSize="8sp"
-                android:textColor="@color/nav_text_unselected"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
-
-        <!-- Playlist -->
-        <LinearLayout
-            android:id="@+id/nav_playlist"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_queue_music"
-                app:tint="@color/nav_text_unselected"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_playlist"
-                android:textSize="8sp"
-                android:textColor="@color/nav_text_unselected"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
-
-        <!-- Search -->
-        <LinearLayout
-            android:id="@+id/nav_search"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_search"
-                app:tint="@color/nav_text_unselected"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_search"
-                android:textSize="8sp"
-                android:textColor="@color/nav_text_unselected"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
-
-        <!-- Settings -->
-        <LinearLayout
-            android:id="@+id/nav_settings"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_settings"
-                app:tint="@color/nav_text_unselected"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_settings"
-                android:textSize="8sp"
-                android:textColor="@color/nav_text_unselected"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
-
-    </LinearLayout>
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

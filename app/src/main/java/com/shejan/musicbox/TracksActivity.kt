@@ -400,33 +400,59 @@ class TracksActivity : AppCompatActivity() {
         val view = layoutInflater.inflate(R.layout.dialog_sort, null)
         dialog.setContentView(view)
         
-        (view.parent as? android.view.View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        view.post {
+            (view.parent as? android.view.View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        }
         
         val switchAsc = view.findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switch_ascending)
-        val rgOptions = view.findViewById<android.widget.RadioGroup>(R.id.rg_sort_options)
         
+        val containerTitle = view.findViewById<android.view.View>(R.id.container_title)
+        val containerDateAdded = view.findViewById<android.view.View>(R.id.container_date_added)
+        val containerDateModified = view.findViewById<android.view.View>(R.id.container_date_modified)
+        
+        val rbTitle = view.findViewById<android.widget.RadioButton>(R.id.rb_title)
+        val rbDateAdded = view.findViewById<android.widget.RadioButton>(R.id.rb_date_added)
+        val rbDateModified = view.findViewById<android.widget.RadioButton>(R.id.rb_date_modified)
+        
+        // Helper to update UI
+        fun updateSelection(selectedRb: android.widget.RadioButton) {
+            rbTitle.isChecked = false
+            rbDateAdded.isChecked = false
+            rbDateModified.isChecked = false
+            selectedRb.isChecked = true
+        }
+
         // Set current state
         switchAsc.isChecked = isAscending
         when (sortColumn) {
-            android.provider.MediaStore.Audio.Media.TITLE -> rgOptions.check(R.id.rb_title)
-            android.provider.MediaStore.Audio.Media.DATE_ADDED -> rgOptions.check(R.id.rb_date_added)
-            android.provider.MediaStore.Audio.Media.DATE_MODIFIED -> rgOptions.check(R.id.rb_date_modified)
+            android.provider.MediaStore.Audio.Media.TITLE -> updateSelection(rbTitle)
+            android.provider.MediaStore.Audio.Media.DATE_ADDED -> updateSelection(rbDateAdded)
+            android.provider.MediaStore.Audio.Media.DATE_MODIFIED -> updateSelection(rbDateModified)
         }
         
-        // Listeners - apply immediately or on dismiss? Usually immediate or "Apply" button.
-        // Let's apply on change for immediate feedback.
-        
+        // Listeners
         switchAsc.setOnCheckedChangeListener { _, isChecked ->
             isAscending = isChecked
             loadTracks()
         }
         
-        rgOptions.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.rb_title -> sortColumn = android.provider.MediaStore.Audio.Media.TITLE
-                R.id.rb_date_added -> sortColumn = android.provider.MediaStore.Audio.Media.DATE_ADDED
-                R.id.rb_date_modified -> sortColumn = android.provider.MediaStore.Audio.Media.DATE_MODIFIED
-            }
+        containerTitle.setOnClickListener {
+            updateSelection(rbTitle)
+            sortColumn = android.provider.MediaStore.Audio.Media.TITLE
+            loadTracks()
+            dialog.dismiss()
+        }
+        
+        containerDateAdded.setOnClickListener {
+            updateSelection(rbDateAdded)
+            sortColumn = android.provider.MediaStore.Audio.Media.DATE_ADDED
+            loadTracks()
+            dialog.dismiss()
+        }
+        
+        containerDateModified.setOnClickListener {
+            updateSelection(rbDateModified)
+            sortColumn = android.provider.MediaStore.Audio.Media.DATE_MODIFIED
             loadTracks()
             dialog.dismiss()
         }

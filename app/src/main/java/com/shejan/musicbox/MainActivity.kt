@@ -75,10 +75,77 @@ class MainActivity : AppCompatActivity() {
             overridePendingTransition(0, 0)
         }
         
-        // Settings Click
-        findViewById<android.view.View>(R.id.btn_settings).setOnClickListener {
-             android.widget.Toast.makeText(this, "Settings", android.widget.Toast.LENGTH_SHORT).show()
+
+    }
+
+    private val updateReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action == "MUSIC_BOX_UPDATE") {
+                val isPlaying = intent.getBooleanExtra("IS_PLAYING", false)
+                updateDot(isPlaying)
+            }
         }
     }
 
+    private var musicService: MusicService? = null
+    private var isBound = false
+
+    private val connection = object : android.content.ServiceConnection {
+        override fun onServiceConnected(name: android.content.ComponentName?, service: android.os.IBinder?) {
+            val binder = service as MusicService.MusicBinder
+            musicService = binder.getService()
+            isBound = true
+            // Sync state immediately
+            updateDot(musicService?.isPlaying() == true)
+        }
+
+        override fun onServiceDisconnected(name: android.content.ComponentName?) {
+            musicService = null
+            isBound = false
+        }
+    }
+
+    private fun updateDot(isPlaying: Boolean) {
+        val dot = findViewById<android.view.View>(R.id.v_red_dot)
+        if (isPlaying) {
+             dot.setBackgroundResource(R.drawable.shape_circle_green)
+        } else {
+             dot.setBackgroundResource(R.drawable.shape_circle_red)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Bind to service
+        val intent = Intent(this, MusicService::class.java)
+        bindService(intent, connection, BIND_AUTO_CREATE)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (isBound) {
+            unbindService(connection)
+            isBound = false
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val filter = android.content.IntentFilter("MUSIC_BOX_UPDATE")
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(updateReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(updateReceiver, filter)
+        }
+        
+        // Also check if already bound (unlikely to change between start and resume, but good for sync)
+        if (isBound && musicService != null) {
+            updateDot(musicService?.isPlaying() == true)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(updateReceiver)
+    }
 }

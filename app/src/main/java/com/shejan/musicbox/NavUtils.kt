@@ -57,6 +57,9 @@ object NavUtils {
                 params.width = itemWidth
                 child.layoutParams = params
             }
+            
+            // 3. NOW restore scroll position because widths are set
+            restoreScrollPosition(activity, root)
         }
     }
 
@@ -75,6 +78,13 @@ object NavUtils {
         root.findViewById<View>(id)?.setOnClickListener {
             if (activity.javaClass != targetClass) {
                 val intent = Intent(activity, targetClass)
+                
+                // NEW: Capture current scroll position
+                val scrollView = root.findViewById<HorizontalScrollView>(R.id.hsv_nav_scroll)
+                if (scrollView != null) {
+                    intent.putExtra("NAV_SCROLL_X", scrollView.scrollX)
+                }
+                
                 // Add flags if needed to clear stack or reorder
                 activity.startActivity(intent)
                 activity.overridePendingTransition(0, 0)
@@ -89,26 +99,21 @@ object NavUtils {
     private fun highlightActiveItem(activity: Activity, root: View, activeId: Int) {
         val activeItem = root.findViewById<LinearLayout>(activeId) ?: return
         
-        // Reset all first? (Currently layouts start unselected, but good practice if recycling)
-        // Since we reload activity, they start fresh from XML layout (unselected).
-        
         val icon = activeItem.getChildAt(0) as? ImageView
         val text = activeItem.getChildAt(1) as? TextView
         
         icon?.setColorFilter(activity.getColor(R.color.white))
         text?.setTextColor(activity.getColor(R.color.white))
-        
-        // Ensure active item is visible in scroll view
-        val scrollView = root.findViewById<HorizontalScrollView>(R.id.hsv_nav_scroll)
-        if (scrollView != null) {
-            scrollView.post {
-                val scrollBounds = android.graphics.Rect()
-                scrollView.getHitRect(scrollBounds)
-                if (!activeItem.getLocalVisibleRect(scrollBounds)) {
-                     // Simple scroll to active item
-                     scrollView.smoothScrollTo(activeItem.left, 0)
-                }
-            }
-        }
+    }
+    
+    private fun restoreScrollPosition(activity: Activity, root: View) {
+         val scrollView = root.findViewById<HorizontalScrollView>(R.id.hsv_nav_scroll) ?: return
+         val scrollX = activity.intent.getIntExtra("NAV_SCROLL_X", -1)
+         
+         if (scrollX != -1) {
+             scrollView.post {
+                 scrollView.scrollTo(scrollX, 0)
+             }
+         }
     }
 }
