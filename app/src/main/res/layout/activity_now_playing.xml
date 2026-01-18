@@ -12,11 +12,11 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_expand_more"
+        android:src="@drawable/ic_chevron_left"
         app:tint="@color/white"
         android:scaleType="centerInside"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -29,7 +29,6 @@
         android:textStyle="bold"
         android:textAllCaps="true"
         android:letterSpacing="0.4"
-        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/btn_back"
@@ -137,21 +136,7 @@
                 android:scaleType="centerCrop"
                 android:src="@color/background_dark" />
                 
-            <!-- Center Hole -->
-             <FrameLayout
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center"
-                 android:background="@drawable/shape_circle_red"
-                android:backgroundTint="#000000">
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/shape_circle_red"
-                    android:backgroundTint="#33FFFFFF"/>
-            </FrameLayout>
-            
+                
         </androidx.cardview.widget.CardView>
         
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -185,8 +170,12 @@
                 android:textStyle="bold"
                 android:letterSpacing="0.15"
                 android:textAllCaps="true"
-                android:maxLines="1"
-                android:ellipsize="end"/>
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:scrollHorizontally="true"/>
 
             <TextView
                 android:id="@+id/tv_now_playing_artist"

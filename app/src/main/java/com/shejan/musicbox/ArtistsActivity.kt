@@ -69,45 +69,6 @@ class ArtistsActivity : AppCompatActivity() {
     }
 
     private fun setupNav() {
-        // IDs: nav_home, nav_search, nav_profile(center), nav_library(tracks?), nav_settings
-        // Wait, the user layout has: "home", "search", "person", "library_music", "settings".
-        // My app uses: Home, Tracks, Albums, Folders, Artists, Playlist, Search.
-        // I need to stick to the ID convention I used in layouts: layout_bottom_nav.xml
-        
-        // Let's highlight "Artists"
-        val currentNav = findViewById<android.widget.LinearLayout>(R.id.nav_artists)
-        if (currentNav != null) {
-            val icon = currentNav.getChildAt(0) as ImageView
-            val text = currentNav.getChildAt(1) as TextView
-            icon.setColorFilter(getColor(R.color.primary_red))
-            text.setTextColor(getColor(R.color.primary_red))
-        }
-
-        // Listeners for others
-        findViewById<android.view.View>(R.id.nav_home).setOnClickListener {
-             startActivity(Intent(this, MainActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        
-        findViewById<android.view.View>(R.id.nav_folders).setOnClickListener {
-             startActivity(Intent(this, FoldersActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_tracks).setOnClickListener {
-             startActivity(Intent(this, TracksActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_albums).setOnClickListener {
-             startActivity(Intent(this, AlbumsActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_playlist).setOnClickListener {
-             startActivity(Intent(this, PlaylistActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_search).setOnClickListener {
-             startActivity(Intent(this, SearchActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
+        NavUtils.setupNavigation(this, R.id.nav_artists)
     }
 }

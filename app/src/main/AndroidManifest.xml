@@ -78,6 +78,17 @@
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.MusicBox" />
+        <activity
+            android:name=".EditTrackActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MusicBox"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MusicBox" />
     </application>
 
 </manifest>

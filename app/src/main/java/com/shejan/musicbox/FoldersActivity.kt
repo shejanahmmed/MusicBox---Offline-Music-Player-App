@@ -58,26 +58,8 @@ class FoldersActivity : AppCompatActivity() {
         }
         
         // Navigation Bar Listeners
-        findViewById<android.view.View>(R.id.nav_home).setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
-            overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_tracks).setOnClickListener {
-            startActivity(Intent(this, TracksActivity::class.java))
-            overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_albums).setOnClickListener {
-            startActivity(Intent(this, AlbumsActivity::class.java))
-            overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_artists).setOnClickListener {
-            startActivity(Intent(this, ArtistsActivity::class.java))
-            overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_playlist).setOnClickListener {
-            startActivity(Intent(this, PlaylistActivity::class.java))
-            overridePendingTransition(0, 0)
-        }
+        // Navigation
+        NavUtils.setupNavigation(this, R.id.nav_folders)
         
         // Check Permissions
         checkPermissionsAndLoad()

@@ -9,65 +9,100 @@ import java.io.FileNotFoundException
 object MusicUtils {
     
     fun loadAlbumArt(context: Context, albumId: Long, imageView: ImageView) {
+        if (albumId <= 0) {
+            setDefaultArt(imageView)
+            return
+        }
+        
         val sArtworkUri = Uri.parse("content://media/external/audio/albumart")
         val uri = ContentUris.withAppendedId(sArtworkUri, albumId)
         
-        // Simple scaling/loading logic since we don't have Glide/Picasso here.
-        // For production, use Glide.load(uri).
-        // Here we'll try to set URI directly. ImageView handles content:// URIs if simple.
-        // But for Album Art, it might need stream opening.
-        
         try {
-            // This is the quickest way for valid URIs
-            // imageView.setImageURI(uri) 
-            // BUT setImageURI is synchronous mostly or checks cache.
-            // Better to try/catch.
-            
-            // Check if file exists roughly or just let ImageView fail? 
-            // ImageView doesn't handle "content://media/external/audio/albumart" reliably on all androids directly via setImageURI without a generic loader.
-            // On newer Android (Q+), ALBUM_ART column is deprecated, we should use loadThumbnail.
-            
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                  try {
                      val size = android.util.Size(300, 300)
                      val thumb = context.contentResolver.loadThumbnail(uri, size, null)
                      imageView.setImageBitmap(thumb)
-                     imageView.clearColorFilter() // Remove tint if set
+                     imageView.clearColorFilter()
+                     return
                  } catch (e: Exception) {
-                     // Fallback
-                     setDefaultArt(imageView)
+                     // Try legacy approach
+                     try {
+                         imageView.clearColorFilter()
+                         imageView.setImageURI(uri)
+                         if (imageView.drawable != null) {
+                             return
+                         }
+                     } catch (e2: Exception) {
+                         // Fall through to default
+                     }
                  }
             } else {
-                 // Reset color filter before setting
+                 // Pre-Q: Use setImageURI
                  imageView.clearColorFilter()
                  imageView.setImageURI(uri)
-                 if (imageView.drawable == null) {
-                     setDefaultArt(imageView)
+                 if (imageView.drawable != null) {
+                     return
                  }
             }
-            
         } catch (e: Exception) {
-            setDefaultArt(imageView)
+            e.printStackTrace()
         }
+        
+        // If all else fails, show default
+        setDefaultArt(imageView)
     }
     
-    // For when we only have track ID (API 29+ prefers loadThumbnail on specific URI)
-    fun loadTrackArt(context: Context, trackId: Long, imageView: ImageView) {
+    fun loadTrackArt(context: Context, trackId: Long, albumId: Long, imageView: ImageView) {
+         if (trackId <= 0L) {
+             setDefaultArt(imageView)
+             return
+         }
+         
+         // Check for custom artwork
+         if (TrackArtworkManager.hasCustomArtwork(context, trackId)) {
+             val customUri = TrackArtworkManager.getArtworkUri(context, trackId)
+             if (customUri == "REMOVED") {
+                 setDefaultArt(imageView)
+                 return
+             } else if (customUri != null) {
+                 try {
+                     val uri = Uri.parse(customUri)
+                     imageView.setImageURI(uri)
+                     imageView.clearColorFilter()
+                     if (imageView.drawable != null) return
+                 } catch (e: Exception) {
+                     e.printStackTrace()
+                 }
+             }
+         }
+         
          if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
              val uri = ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackId)
               try {
-                 val size = android.util.Size(300, 300)
-                 val thumb = context.contentResolver.loadThumbnail(uri, size, null)
-                 imageView.setImageBitmap(thumb)
-                 imageView.clearColorFilter()
-             } catch (e: Exception) {
-                 setDefaultArt(imageView)
-             }
-         } else {
-             // Fallback to finding Album ID yourself? 
-             // Or hope the caller passed Album ID.
-             setDefaultArt(imageView)
-         }
+                  val size = android.util.Size(300, 300)
+                  val thumb = context.contentResolver.loadThumbnail(uri, size, null)
+                  imageView.setImageBitmap(thumb)
+                  imageView.clearColorFilter()
+                  return
+              } catch (e: Exception) {
+                  // e.printStackTrace()
+              }
+          }
+          
+          // Fallback to Album Art if available
+          if (albumId != -1L) {
+              loadAlbumArt(context, albumId, imageView)
+              return
+          }
+          
+          // Fallback to default
+          setDefaultArt(imageView)
+    }
+
+    // Overload for backward compatibility
+    fun loadTrackArt(context: Context, trackId: Long, imageView: ImageView) {
+        loadTrackArt(context, trackId, -1L, imageView)
     }
 
     private fun setDefaultArt(imageView: ImageView) {

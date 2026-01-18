@@ -7,6 +7,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
+import android.view.View
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import androidx.activity.result.contract.ActivityResultContracts
+
 class TracksActivity : AppCompatActivity() {
 
     private val REQUEST_CODE_READ_STORAGE = 1001
@@ -16,6 +25,31 @@ class TracksActivity : AppCompatActivity() {
     // Sort State
     private var sortColumn = android.provider.MediaStore.Audio.Media.TITLE
     private var isAscending = true
+    
+    // Artwork Picker
+    private val pickArtworkLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: android.net.Uri? ->
+        if (uri != null) {
+            // We need to know which track was being edited. 
+            // Since launcher is async, we need a standard way to track the 'pending' track ID.
+            // Or, we can use a simpler approach: The Dialog holds the track. 
+            // But the dialog dismisses.
+            // Actually, we can store 'trackIdForArtwork' in a var.
+            if (currentEditingTrackId != -1L) {
+                TrackArtworkManager.saveArtwork(this, currentEditingTrackId, uri.toString())
+                // Refresh specific item or whole list? 
+                // loadTracks() might be heavy. Adapter notifyItemChanged would be better if we had position.
+                // For now, loadTracks() or finding ViewHolder.
+                
+                // Also update Mini Player if it matches
+                updateMiniPlayer() 
+                
+                // Refresh list to show new art
+                loadTracks()
+            }
+        }
+    }
+    
+    private var currentEditingTrackId: Long = -1L
 
     private val receiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
@@ -92,39 +126,7 @@ class TracksActivity : AppCompatActivity() {
         }
 
         // Navigation Logic
-        setupNavClick(R.id.nav_home, "Home", true)
-        // setupNavClick(R.id.nav_albums, "Albums")
-        setupNavClick(R.id.nav_folders, "Folders")
-        setupNavClick(R.id.nav_artists, "Artists")
-        setupNavClick(R.id.nav_playlist, "Playlist")
-        setupNavClick(R.id.nav_artists, "Artists")
-        
-        setupNavClick(R.id.nav_artists, "Artists")
-        
-        findViewById<android.view.View>(R.id.nav_home).setOnClickListener {
-             startActivity(Intent(this, MainActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        
-        findViewById<android.view.View>(R.id.nav_folders).setOnClickListener {
-             startActivity(Intent(this, FoldersActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        
-        findViewById<android.view.View>(R.id.nav_albums).setOnClickListener {
-             startActivity(Intent(this, AlbumsActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        
-        findViewById<android.view.View>(R.id.nav_playlist).setOnClickListener {
-             startActivity(Intent(this, PlaylistActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-       
-        findViewById<android.view.View>(R.id.nav_search).setOnClickListener {
-             startActivity(Intent(this, SearchActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
+        NavUtils.setupNavigation(this, R.id.nav_tracks)
 
         // Register Receiver
         val filter = android.content.IntentFilter("MUSIC_BOX_UPDATE")
@@ -206,6 +208,12 @@ class TracksActivity : AppCompatActivity() {
             titleView.text = track.title
             artistView.text = track.artist
             playButton.setImageResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play_arrow)
+
+            // Load Mini Player Artwork
+            val ivMiniArt = findViewById<android.widget.ImageView>(R.id.iv_mini_art)
+            if (ivMiniArt != null) {
+                MusicUtils.loadTrackArt(this, track.id, track.albumId, ivMiniArt)
+            }
             
             // Re-setup Click Listener with correct data
             findViewById<android.view.View>(R.id.cl_mini_player).setOnClickListener {
@@ -298,7 +306,9 @@ class TracksActivity : AppCompatActivity() {
         }
         
         val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
-        rvTracks.adapter = TrackAdapter(trackList)
+        rvTracks.adapter = TrackAdapter(trackList) { track ->
+            showTrackOptionsDialog(track)
+        }
     }
 
     private fun getAllTracks(): List<Track> {
@@ -341,7 +351,8 @@ class TracksActivity : AppCompatActivity() {
                      val album = it.getString(albumColumn)
                      val albumId = it.getLong(albumIdColumn)
                      
-                     if (!path.lowercase().contains("ringtone") && !path.lowercase().contains("notification")) {
+                     val hidden = HiddenTracksManager.isHidden(this, path)
+                     if (!hidden && !path.lowercase().contains("ringtone") && !path.lowercase().contains("notification")) {
                         list.add(Track(id, title, artist, path, album, albumId))
                      }
                  }
@@ -382,19 +393,7 @@ class TracksActivity : AppCompatActivity() {
 
     // private fun loadDummyData() { removed }
 
-    private fun setupNavClick(id: Int, name: String, isHome: Boolean = false) {
-        findViewById<android.view.View>(id).setOnClickListener {
-            if (isHome) {
-                // Navigate back to Main
-                val intent = Intent(this, MainActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                startActivity(intent)
-                overridePendingTransition(0, 0) // No animation for "Tab" switch feel
-            } else {
-                Toast.makeText(this, "Navigate to $name", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+    // private fun setupNavClick(id: Int, name: String, isHome: Boolean = false) { }
     
     private fun showSortDialog() {
         val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
@@ -433,5 +432,28 @@ class TracksActivity : AppCompatActivity() {
         }
         
         dialog.show()
+    }
+
+    private fun formatTime(millis: Int): String {
+        val seconds = (millis / 1000) % 60
+        val minutes = (millis / (1000 * 60)) % 60
+        return String.format("%02d:%02d", minutes, seconds)
+    }
+
+    private fun showTrackOptionsDialog(track: Track) {
+        currentEditingTrackId = track.id // Helper for result launcher
+        
+        TrackMenuManager.showTrackOptionsDialog(this, track, pickArtworkLauncher, object : TrackMenuManager.Callback {
+            override fun onArtworkChanged() {
+                loadTracks()
+                updateMiniPlayer()
+            }
+            override fun onTrackUpdated() {
+               loadTracks() // Refresh for favorites
+            }
+            override fun onTrackDeleted() {
+                loadTracks()
+            }
+        })
     }
 }

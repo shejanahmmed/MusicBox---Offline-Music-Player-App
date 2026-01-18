@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.shejan.musicbox.TrackArtworkManager
 
 class NowPlayingActivity : AppCompatActivity() {
 
@@ -56,6 +57,28 @@ class NowPlayingActivity : AppCompatActivity() {
             handler.postDelayed(this, 1000)
         }
     }
+    
+    // Artwork Picker Launcher
+    private val pickArtworkLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null && musicService != null) {
+            val track = musicService?.getCurrentTrack() ?: return@registerForActivityResult
+            
+            // Persist permission (needed for future access)
+            try {
+                contentResolver.takePersistableUriPermission(
+                    uri, 
+                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (e: Exception) { e.printStackTrace() }
+            
+            // Save custom artwork
+            TrackArtworkManager.saveArtwork(this, track.id, uri.toString())
+            
+            // Refresh UI
+            updateUI()
+            android.widget.Toast.makeText(this, "Artwork updated", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +93,13 @@ class NowPlayingActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.btn_back).setOnClickListener {
             finish()
         }
+        
+        findViewById<ImageButton>(R.id.btn_more).setOnClickListener {
+            showTrackOptionsDialog()
+        }
+        
+        // Enable marquee scrolling for title
+        findViewById<TextView>(R.id.tv_now_playing_title).isSelected = true
         
         setupControls()
     }
@@ -212,8 +242,15 @@ class NowPlayingActivity : AppCompatActivity() {
         
         val track = musicService?.getCurrentTrack() ?: return
         
-        findViewById<TextView>(R.id.tv_now_playing_title).text = track.title
-        findViewById<TextView>(R.id.tv_now_playing_artist).text = track.artist
+        // Check for custom metadata
+        val customMetadata = TrackMetadataManager.getMetadata(this, track.id)
+        
+        findViewById<TextView>(R.id.tv_now_playing_title).text = customMetadata?.title ?: track.title
+        findViewById<TextView>(R.id.tv_now_playing_artist).text = customMetadata?.artist ?: track.artist
+        
+        // Load Album Art
+        val ivAlbumArt = findViewById<android.widget.ImageView>(R.id.iv_album_art_large)
+        MusicUtils.loadTrackArt(this, track.id, track.albumId, ivAlbumArt)
         
         // Update Favorite Icon
         val btnFav = findViewById<ImageButton>(R.id.btn_fav_large)
@@ -322,5 +359,41 @@ class NowPlayingActivity : AppCompatActivity() {
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
         val currentVolume = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
         findViewById<android.widget.SeekBar>(R.id.sb_volume)?.progress = currentVolume
+    }
+    
+    private fun showTrackOptionsDialog() {
+        val track = musicService?.getCurrentTrack() ?: return
+        
+        TrackMenuManager.showTrackOptionsDialog(this, track, pickArtworkLauncher, object : TrackMenuManager.Callback {
+            override fun onArtworkChanged() {
+                updateUI()
+            }
+            override fun onTrackUpdated() {
+                updateUI()
+            }
+            override fun onTrackDeleted() {
+                 // Remove from Memory Playlist
+                 if (MusicService.playlist.isNotEmpty()) {
+                     // If deletion happened, we should check if it was the playing one.
+                     // The passed 'track' is what we hid.
+                     val currentId = musicService?.getCurrentTrack()?.id
+                     
+                     // If we are playing the one we just hid (likely yes in NowPlaying)
+                     if (currentId == track.id) {
+                         musicService?.playNext()
+                     }
+                     
+                     MusicService.playlist = MusicService.playlist.filter { !HiddenTracksManager.isHidden(this@NowPlayingActivity, it.uri) }
+                     
+                     if (MusicService.playlist.isEmpty()) {
+                         finish()
+                     } else {
+                         updateUI()
+                     }
+                 } else {
+                     finish()
+                 }
+            }
+        })
     }
 }

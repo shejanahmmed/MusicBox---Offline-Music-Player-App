@@ -82,7 +82,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_more_horiz"
+        android:src="@drawable/ic_more_vert"
         app:tint="@color/text_white_opacity_40"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

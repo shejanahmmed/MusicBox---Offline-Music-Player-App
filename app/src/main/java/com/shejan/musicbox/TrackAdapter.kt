@@ -11,7 +11,7 @@ import android.content.Intent
 
 data class Track(val id: Long, val title: String, val artist: String, val uri: String, val album: String? = null, val albumId: Long = -1L, val isActive: Boolean = false)
 
-class TrackAdapter(private var tracks: List<Track>) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
+class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (Track) -> Unit) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
 
     class TrackViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView = view.findViewById(R.id.tv_track_title)
@@ -32,12 +32,8 @@ class TrackAdapter(private var tracks: List<Track>) : RecyclerView.Adapter<Track
 
         val ivArt = holder.root.findViewById<ImageView>(R.id.iv_album_art)
         if (ivArt != null) {
-            if (track.albumId != -1L) {
-                 MusicUtils.loadAlbumArt(holder.root.context, track.albumId, ivArt)
-            } else {
-                 // Try loading by Track ID for newer Androids if Album ID missing
-                 MusicUtils.loadTrackArt(holder.root.context, track.id, ivArt)
-            }
+            // Always use loadTrackArt which now handles custom artwork, track thumbnails, and album art fallback
+            MusicUtils.loadTrackArt(holder.root.context, track.id, track.albumId, ivArt)
         }
 
         // Click listener to open Now Playing and Start Service
@@ -61,6 +57,11 @@ class TrackAdapter(private var tracks: List<Track>) : RecyclerView.Adapter<Track
             androidx.core.content.ContextCompat.startForegroundService(holder.root.context, intent)
             
             NowPlayingActivity.start(holder.root.context, track.title, track.artist)
+        }
+        
+        // Options Button Click
+        holder.root.findViewById<android.widget.ImageButton>(R.id.btn_options).setOnClickListener {
+            onMoreClicked(track)
         }
 
         if (track.isActive) {

@@ -47,41 +47,7 @@ class MainActivity : AppCompatActivity() {
         greetingText.text = getString(R.string.good_morning) + "\n" + userName
 
         // Helper to setup Nav clicks
-        setupNavClick(R.id.nav_home, "Home")
-        setupNavClick(R.id.nav_tracks, "Tracks")
-        // setupNavClick(R.id.nav_albums, "Albums") // Removed helper, manual listener below
-        setupNavClick(R.id.nav_home, "Home")
-        setupNavClick(R.id.nav_tracks, "Tracks")
-        
-        findViewById<android.view.View>(R.id.nav_folders).setOnClickListener {
-             startActivity(Intent(this, FoldersActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        
-        setupNavClick(R.id.nav_artists, "Artists")
-        setupNavClick(R.id.nav_artists, "Artists")
-        setupNavClick(R.id.nav_playlist, "Playlist")
-        // setupNavClick(R.id.nav_artists, "Artists") // Removed redundant helper call
-        
-        findViewById<android.view.View>(R.id.nav_playlist).setOnClickListener {
-             startActivity(Intent(this, PlaylistActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-
-        findViewById<android.view.View>(R.id.nav_artists).setOnClickListener {
-             startActivity(Intent(this, ArtistsActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        
-        findViewById<android.view.View>(R.id.nav_albums).setOnClickListener {
-             startActivity(Intent(this, AlbumsActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        
-        findViewById<android.view.View>(R.id.nav_search).setOnClickListener {
-             startActivity(Intent(this, SearchActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
+        NavUtils.setupNavigation(this, R.id.nav_home)
 
         // Favorite Box Click
         findViewById<android.view.View>(R.id.cl_favorite_box).setOnClickListener {
@@ -115,15 +81,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupNavClick(id: Int, name: String) {
-        findViewById<android.view.View>(id).setOnClickListener {
-            if (name == "Tracks") {
-                val intent = Intent(this, TracksActivity::class.java)
-                startActivity(intent)
-                overridePendingTransition(0, 0) // No animation
-            } else {
-                android.widget.Toast.makeText(this, "Navigate to $name", android.widget.Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 }

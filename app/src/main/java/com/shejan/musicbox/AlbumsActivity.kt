@@ -71,38 +71,6 @@ class AlbumsActivity : AppCompatActivity() {
     }
 
     private fun setupNav() {
-        val currentNav = findViewById<android.widget.LinearLayout>(R.id.nav_albums)
-        if (currentNav != null) {
-            val icon = currentNav.getChildAt(0) as ImageView
-            val text = currentNav.getChildAt(1) as TextView
-            icon.setColorFilter(getColor(R.color.primary_red))
-            text.setTextColor(getColor(R.color.primary_red))
-        }
-
-        findViewById<android.view.View>(R.id.nav_home).setOnClickListener {
-             startActivity(Intent(this, MainActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        
-        findViewById<android.view.View>(R.id.nav_folders).setOnClickListener {
-             startActivity(Intent(this, FoldersActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_tracks).setOnClickListener {
-             startActivity(Intent(this, TracksActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_playlist).setOnClickListener {
-             startActivity(Intent(this, PlaylistActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_search).setOnClickListener {
-             startActivity(Intent(this, SearchActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
-        findViewById<android.view.View>(R.id.nav_artists).setOnClickListener {
-             startActivity(Intent(this, ArtistsActivity::class.java))
-             overridePendingTransition(0, 0)
-        }
+        NavUtils.setupNavigation(this, R.id.nav_albums)
     }
 }
