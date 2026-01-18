@@ -4,11 +4,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import android.content.Intent
 
-data class Track(val id: Long, val title: String, val artist: String, val uri: String, val isActive: Boolean = false)
+data class Track(val id: Long, val title: String, val artist: String, val uri: String, val album: String? = null, val albumId: Long = -1L, val isActive: Boolean = false)
 
 class TrackAdapter(private var tracks: List<Track>) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
 
@@ -28,6 +29,16 @@ class TrackAdapter(private var tracks: List<Track>) : RecyclerView.Adapter<Track
         val track = tracks[position]
         holder.title.text = track.title
         holder.artist.text = track.artist
+
+        val ivArt = holder.root.findViewById<ImageView>(R.id.iv_album_art)
+        if (ivArt != null) {
+            if (track.albumId != -1L) {
+                 MusicUtils.loadAlbumArt(holder.root.context, track.albumId, ivArt)
+            } else {
+                 // Try loading by Track ID for newer Androids if Album ID missing
+                 MusicUtils.loadTrackArt(holder.root.context, track.id, ivArt)
+            }
+        }
 
         // Click listener to open Now Playing and Start Service
         holder.root.setOnClickListener {

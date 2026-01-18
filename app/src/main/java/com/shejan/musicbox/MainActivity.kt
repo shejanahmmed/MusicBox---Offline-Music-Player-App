@@ -49,11 +49,34 @@ class MainActivity : AppCompatActivity() {
         // Helper to setup Nav clicks
         setupNavClick(R.id.nav_home, "Home")
         setupNavClick(R.id.nav_tracks, "Tracks")
-        setupNavClick(R.id.nav_albums, "Albums")
-        setupNavClick(R.id.nav_folders, "Folders")
+        // setupNavClick(R.id.nav_albums, "Albums") // Removed helper, manual listener below
+        setupNavClick(R.id.nav_home, "Home")
+        setupNavClick(R.id.nav_tracks, "Tracks")
+        
+        findViewById<android.view.View>(R.id.nav_folders).setOnClickListener {
+             startActivity(Intent(this, FoldersActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
+        
+        setupNavClick(R.id.nav_artists, "Artists")
         setupNavClick(R.id.nav_artists, "Artists")
         setupNavClick(R.id.nav_playlist, "Playlist")
-        setupNavClick(R.id.nav_playlist, "Playlist")
+        // setupNavClick(R.id.nav_artists, "Artists") // Removed redundant helper call
+        
+        findViewById<android.view.View>(R.id.nav_playlist).setOnClickListener {
+             startActivity(Intent(this, PlaylistActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
+
+        findViewById<android.view.View>(R.id.nav_artists).setOnClickListener {
+             startActivity(Intent(this, ArtistsActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
+        
+        findViewById<android.view.View>(R.id.nav_albums).setOnClickListener {
+             startActivity(Intent(this, AlbumsActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
         
         findViewById<android.view.View>(R.id.nav_search).setOnClickListener {
              startActivity(Intent(this, SearchActivity::class.java))
@@ -65,6 +88,24 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, TracksActivity::class.java)
             intent.putExtra("SHOW_FAVORITES", true)
             startActivity(intent)
+            overridePendingTransition(0, 0)
+        }
+        
+        // Playlist Box Click
+        findViewById<android.view.View>(R.id.cl_playlist_box).setOnClickListener {
+            startActivity(Intent(this, PlaylistActivity::class.java))
+            overridePendingTransition(0, 0)
+        }
+        
+        // Albums Box Click
+        findViewById<android.view.View>(R.id.cl_albums_box).setOnClickListener {
+            startActivity(Intent(this, AlbumsActivity::class.java))
+            overridePendingTransition(0, 0)
+        }
+        
+        // Artists Box Click
+        findViewById<android.view.View>(R.id.cl_artists_box).setOnClickListener {
+            startActivity(Intent(this, ArtistsActivity::class.java))
             overridePendingTransition(0, 0)
         }
         

@@ -93,11 +93,33 @@ class TracksActivity : AppCompatActivity() {
 
         // Navigation Logic
         setupNavClick(R.id.nav_home, "Home", true)
-        setupNavClick(R.id.nav_albums, "Albums")
+        // setupNavClick(R.id.nav_albums, "Albums")
         setupNavClick(R.id.nav_folders, "Folders")
         setupNavClick(R.id.nav_artists, "Artists")
         setupNavClick(R.id.nav_playlist, "Playlist")
-        setupNavClick(R.id.nav_playlist, "Playlist")
+        setupNavClick(R.id.nav_artists, "Artists")
+        
+        setupNavClick(R.id.nav_artists, "Artists")
+        
+        findViewById<android.view.View>(R.id.nav_home).setOnClickListener {
+             startActivity(Intent(this, MainActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
+        
+        findViewById<android.view.View>(R.id.nav_folders).setOnClickListener {
+             startActivity(Intent(this, FoldersActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
+        
+        findViewById<android.view.View>(R.id.nav_albums).setOnClickListener {
+             startActivity(Intent(this, AlbumsActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
+        
+        findViewById<android.view.View>(R.id.nav_playlist).setOnClickListener {
+             startActivity(Intent(this, PlaylistActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
        
         findViewById<android.view.View>(R.id.nav_search).setOnClickListener {
              startActivity(Intent(this, SearchActivity::class.java))
@@ -232,25 +254,66 @@ class TracksActivity : AppCompatActivity() {
 
     private fun loadTracks() {
         val showFavoritesOnly = intent.getBooleanExtra("SHOW_FAVORITES", false)
-        if (showFavoritesOnly) {
-             findViewById<android.widget.TextView>(R.id.tv_header_title)?.text = "FAVORITES"
-        }
+        val playlistId = intent.getLongExtra("PLAYLIST_ID", -1L)
+        val playlistName = intent.getStringExtra("PLAYLIST_NAME")
+        val artistName = intent.getStringExtra("ARTIST_NAME")
+        val albumName = intent.getStringExtra("ALBUM_NAME")
 
         val trackList = mutableListOf<Track>()
-        val favoriteUris = FavoritesManager.getFavorites(this)
+
+        if (showFavoritesOnly) {
+             findViewById<android.widget.TextView>(R.id.tv_header_title)?.text = "FAVORITES"
+             val favs = FavoritesManager.getFavorites(this)
+             trackList.addAll(getAllTracks().filter { favs.contains(it.uri) })
+        } else if (playlistId != -1L) {
+             findViewById<android.widget.TextView>(R.id.tv_header_title)?.text = playlistName?.uppercase() ?: "PLAYLIST"
+             trackList.addAll(getPlaylistTracks(playlistId))
+        } else if (artistName != null) {
+             findViewById<android.widget.TextView>(R.id.tv_header_title)?.text = artistName.uppercase()
+             trackList.addAll(getAllTracks().filter { it.artist.equals(artistName, ignoreCase = true) })
+        } else if (albumName != null) {
+             findViewById<android.widget.TextView>(R.id.tv_header_title)?.text = albumName.uppercase()
+             // Use regex or contains for looser matching if needed, but exact is safet from MediaStore
+             trackList.addAll(getAllTracks().filter { it.album?.equals(albumName, ignoreCase = true) == true }) // Need album logic in Track or query
+             // Wait, Track model doesn't have album field yet? Let's check.
+             // If not, we need to add it or load it.
+             // Optimization: We load AllTracks then filter. Check getAllTracks() to see if it fetches Album.
+             // It fetches: ID, TITLE, ARTIST, DATA. No Album.
+             // We need to update getAllTracks to fetch Album too.
+        } else {
+             // Load All
+             trackList.addAll(getAllTracks())
+        }
+
+        if (trackList.isEmpty()) {
+            if (showFavoritesOnly) {
+                 Toast.makeText(this, "No favorites added yet", Toast.LENGTH_LONG).show()
+            } else if (playlistId != -1L) {
+                 Toast.makeText(this, "Playlist is empty", Toast.LENGTH_LONG).show()
+            } else if (artistName != null) {
+                 Toast.makeText(this, "No tracks found for this artist", Toast.LENGTH_LONG).show()
+            } else {
+                 Toast.makeText(this, "No music found on device", Toast.LENGTH_LONG).show()
+            }
+        }
         
+        val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
+        rvTracks.adapter = TrackAdapter(trackList)
+    }
+
+    private fun getAllTracks(): List<Track> {
+        val list = mutableListOf<Track>()
         try {
              val projection = arrayOf(
                 android.provider.MediaStore.Audio.Media._ID,
                 android.provider.MediaStore.Audio.Media.TITLE,
                 android.provider.MediaStore.Audio.Media.ARTIST,
                 android.provider.MediaStore.Audio.Media.DATA,
-                android.provider.MediaStore.Audio.Media.DURATION
+                android.provider.MediaStore.Audio.Media.DURATION,
+                android.provider.MediaStore.Audio.Media.ALBUM,
+                android.provider.MediaStore.Audio.Media.ALBUM_ID
              )
-             
-             // Relaxed filter: just min duration
              val selection = "${android.provider.MediaStore.Audio.Media.DURATION} >= 10000"
-             
              val order = if (isAscending) "ASC" else "DESC"
              val sortOrder = "$sortColumn $order"
 
@@ -267,44 +330,54 @@ class TracksActivity : AppCompatActivity() {
                  val titleColumn = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Media.TITLE)
                  val artistColumn = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Media.ARTIST)
                  val dataColumn = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Media.DATA)
+                 val albumColumn = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Media.ALBUM)
+                 val albumIdColumn = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Media.ALBUM_ID)
 
                  while (it.moveToNext()) {
                      val id = it.getLong(idColumn)
                      val title = it.getString(titleColumn)
                      val artist = it.getString(artistColumn) ?: "Unknown Artist"
                      val path = it.getString(dataColumn)
+                     val album = it.getString(albumColumn)
+                     val albumId = it.getLong(albumIdColumn)
                      
-                     // Filter Logic
-                     val isFav = favoriteUris.contains(path) // Using path/uri as key
-                     
-                     if (showFavoritesOnly && !isFav) {
-                         continue
-                     }
-
                      if (!path.lowercase().contains("ringtone") && !path.lowercase().contains("notification")) {
-                        trackList.add(Track(id, title, artist, path))
+                        list.add(Track(id, title, artist, path, album, albumId))
                      }
                  }
              }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(this, "Error loading tracks: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
+        } catch (e: Exception) { e.printStackTrace() }
+        return list
+    }
 
-        if (trackList.isEmpty()) {
-            if (showFavoritesOnly) {
-                 Toast.makeText(this, "No favorites added yet", Toast.LENGTH_LONG).show()
-            } else {
-                 Toast.makeText(this, "No music found on device", Toast.LENGTH_LONG).show()
+    private fun getPlaylistTracks(playlistId: Long): List<Track> {
+        val list = mutableListOf<Track>()
+        try {
+            val uri = android.provider.MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId)
+            val projection = arrayOf(
+                android.provider.MediaStore.Audio.Playlists.Members.AUDIO_ID,
+                android.provider.MediaStore.Audio.Playlists.Members.TITLE,
+                android.provider.MediaStore.Audio.Playlists.Members.ARTIST,
+                android.provider.MediaStore.Audio.Playlists.Members.DATA
+            )
+            val cursor = contentResolver.query(uri, projection, null, null, android.provider.MediaStore.Audio.Playlists.Members.PLAY_ORDER)
+            cursor?.use {
+                val idCol = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Playlists.Members.AUDIO_ID)
+                val titleCol = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Playlists.Members.TITLE)
+                val artistCol = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Playlists.Members.ARTIST)
+                val pathCol = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Playlists.Members.DATA)
+                while (it.moveToNext()) {
+                    val id = it.getLong(idCol)
+                    val title = it.getString(titleCol)
+                    val artist = it.getString(artistCol)
+                    val path = it.getString(pathCol)
+                    // Playlist members query is limited. For full details we often query Media table by ID. 
+                    // For now, pass -1L which triggers fallback to loadTrackArt (by id) which works fine.
+                    list.add(Track(id, title, artist, path, null, -1L))
+                }
             }
-            // loadDummyData() // Disable dummy data for real usage or keep if preferred.
-            // Let's keep empty state handling simple.
-             val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
-             rvTracks.adapter = TrackAdapter(trackList)
-        } else {
-            val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
-            rvTracks.adapter = TrackAdapter(trackList)
-        }
+        } catch (e: Exception) { e.printStackTrace() }
+        return list
     }
 
     // private fun loadDummyData() { removed }

@@ -61,11 +61,13 @@ class SearchActivity : AppCompatActivity() {
         
         // Set Active State for Search Nav Item (Visually)
         val searchNav = findViewById<android.widget.LinearLayout>(R.id.nav_search)
-        val icon = searchNav.getChildAt(0) as android.widget.ImageView
-        val text = searchNav.getChildAt(1) as android.widget.TextView
-        
-        icon.setColorFilter(getColor(R.color.primary_red))
-        text.setTextColor(getColor(R.color.primary_red))
+        if (searchNav != null) {
+            val icon = searchNav.getChildAt(0) as android.widget.ImageView
+            val text = searchNav.getChildAt(1) as android.widget.TextView
+            
+            icon.setColorFilter(getColor(R.color.primary_red))
+            text.setTextColor(getColor(R.color.primary_red))
+        }
     }
     
     private fun filter(query: String) {
@@ -104,7 +106,7 @@ class SearchActivity : AppCompatActivity() {
                  while (it.moveToNext()) {
                      val path = it.getString(dataCol)
                      if (!path.lowercase().contains("ringtone") && !path.lowercase().contains("notification")) {
-                        trackList.add(Track(it.getLong(idCol), it.getString(titleCol), it.getString(artistCol) ?: "Unknown", path))
+                        trackList.add(Track(it.getLong(idCol), it.getString(titleCol), it.getString(artistCol) ?: "Unknown", path, null, -1L))
                      }
                  }
              }
@@ -118,8 +120,29 @@ class SearchActivity : AppCompatActivity() {
              startActivity(Intent(this, MainActivity::class.java))
              overridePendingTransition(0, 0)
         }
+        
+        findViewById<android.view.View>(R.id.nav_folders).setOnClickListener {
+             startActivity(Intent(this, FoldersActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
         findViewById<android.view.View>(R.id.nav_tracks).setOnClickListener {
              startActivity(Intent(this, TracksActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
+        findViewById<android.view.View>(R.id.nav_albums).setOnClickListener {
+             startActivity(Intent(this, AlbumsActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
+        findViewById<android.view.View>(R.id.nav_tracks).setOnClickListener {
+             startActivity(Intent(this, TracksActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
+        findViewById<android.view.View>(R.id.nav_playlist).setOnClickListener {
+             startActivity(Intent(this, PlaylistActivity::class.java))
+             overridePendingTransition(0, 0)
+        }
+        findViewById<android.view.View>(R.id.nav_artists).setOnClickListener {
+             startActivity(Intent(this, ArtistsActivity::class.java))
              overridePendingTransition(0, 0)
         }
         // ... others just toast for now or duplicate logic if needed
