@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_dark">
+
+    <!-- Header -->
+    <TextView
+        android:id="@+id/tv_greeting"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/good_morning"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        android:letterSpacing="-0.05"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/v_red_dot" />
+
+    <View
+        android:id="@+id/v_red_dot"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:background="@drawable/shape_circle_red"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toStartOf="@+id/btn_settings"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_settings"
+        app:layout_constraintTop_toTopOf="@+id/btn_settings" />
+
+    <ImageButton
+        android:id="@+id/btn_settings"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_settings_button"
+        android:src="@drawable/ic_settings"
+        android:layout_marginEnd="24dp"
+        android:padding="8dp"
+        app:tint="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tv_greeting" />
+
+    <!-- Main Content (Favorite Music Box) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_favorite_box"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="24dp"
+        android:background="@drawable/bg_wireframe"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintBottom_toTopOf="@+id/ll_bottom_nav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_greeting"
+        app:layout_constraintVertical_bias="0.4">
+
+        <ImageView
+            android:id="@+id/iv_heart"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_favorite"
+            app:tint="@color/primary_red"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.45" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/collection_01"
+            android:textColor="@color/nav_text_unselected"
+            android:textSize="10sp"
+            android:letterSpacing="0.2"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toTopOf="@+id/iv_heart"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_fav_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/favourite_music"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:letterSpacing="-0.05"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@+id/iv_heart"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tap_to_shuffle"
+            android:textColor="@color/nav_text_unselected"
+            android:textSize="10sp"
+            android:textAllCaps="true"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/tv_fav_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Corner Accents (Manual Views) -->
+        <!-- Top Left -->
+        <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+        <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+        
+        <!-- Top Right -->
+        <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+        <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+
+        <!-- Bottom Left -->
+        <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+        <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+        
+        <!-- Bottom Right -->
+        <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+        <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Bottom Navigation -->
+    <LinearLayout
+        android:id="@+id/ll_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/bg_floating_nav"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:layout_margin="16dp"
+        android:elevation="8dp"
+        android:weightSum="7"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Home -->
+        <LinearLayout
+            android:id="@+id/nav_home"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_home"
+                app:tint="@color/nav_text_selected"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_home"
+                android:textSize="8sp"
+                android:textColor="@color/nav_text_selected"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- Tracks -->
+        <LinearLayout
+            android:id="@+id/nav_tracks"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_audiotrack"
+                app:tint="@color/nav_text_unselected"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_tracks"
+                android:textSize="8sp"
+                android:textColor="@color/nav_text_unselected"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- Albums -->
+        <LinearLayout
+            android:id="@+id/nav_albums"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_album"
+                app:tint="@color/nav_text_unselected"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_albums"
+                android:textSize="8sp"
+                android:textColor="@color/nav_text_unselected"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- Folders -->
+        <LinearLayout
+            android:id="@+id/nav_folders"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_folder"
+                app:tint="@color/nav_text_unselected"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_folders"
+                android:textSize="8sp"
+                android:textColor="@color/nav_text_unselected"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- Artists -->
+        <LinearLayout
+            android:id="@+id/nav_artists"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_person"
+                app:tint="@color/nav_text_unselected"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_artists"
+                android:textSize="8sp"
+                android:textColor="@color/nav_text_unselected"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- Playlist -->
+        <LinearLayout
+            android:id="@+id/nav_playlist"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_queue_music"
+                app:tint="@color/nav_text_unselected"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_playlist"
+                android:textSize="8sp"
+                android:textColor="@color/nav_text_unselected"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- Search -->
+        <LinearLayout
+            android:id="@+id/nav_search"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_search"
+                app:tint="@color/nav_text_unselected"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_search"
+                android:textSize="8sp"
+                android:textColor="@color/nav_text_unselected"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
