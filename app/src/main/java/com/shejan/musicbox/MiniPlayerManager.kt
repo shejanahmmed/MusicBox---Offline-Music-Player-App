@@ -89,17 +89,7 @@ object MiniPlayerManager {
             
             activity.findViewById<View>(R.id.cl_mini_player)?.visibility = View.VISIBLE
         } else {
-             // Hide or show default?
-             // Usually hide if nothing playing. 
-             // But for consistent UI we might want to keep it or hide. 
-             // Existing code kept it but empty.
-             // Let's assume visibility stays VISIBLE but default text.
-             
-             // If completely nothing, maybe hide?
-             if (MusicService.playlist.isEmpty()) {
-                 // activity.findViewById<View>(R.id.cl_mini_player)?.visibility = View.GONE
-                 // User might prefer it hidden.
-             }
+             activity.findViewById<View>(R.id.cl_mini_player)?.visibility = View.GONE
         }
     }
 }

@@ -151,7 +151,7 @@ class SettingsActivity : AppCompatActivity() {
         
         // Version
          findViewById<android.view.View>(R.id.card_version).setOnClickListener {
-            Toast.makeText(this, "Version 1.0.24-BETA", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Version 1.0.0-BETA", Toast.LENGTH_SHORT).show()
         }
     }
 

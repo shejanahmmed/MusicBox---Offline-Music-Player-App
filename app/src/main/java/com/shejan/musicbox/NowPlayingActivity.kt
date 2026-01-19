@@ -300,6 +300,14 @@ class NowPlayingActivity : AppCompatActivity() {
             showQueueDialog()
         }
 
+        // Share Button Logic
+        findViewById<View>(R.id.btn_share).setOnClickListener {
+             val track = musicService?.getCurrentTrack()
+             if (track != null) {
+                 shareTrack(track)
+             }
+        }
+
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
@@ -479,5 +487,22 @@ class NowPlayingActivity : AppCompatActivity() {
                  }
             }
         })
+    }
+    private fun shareTrack(track: Track) {
+        try {
+            val file = java.io.File(track.uri)
+            if (file.exists()) {
+                val uri = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.provider", file)
+                val intent = Intent(Intent.ACTION_SEND)
+                intent.type = "audio/*"
+                intent.putExtra(Intent.EXTRA_STREAM, uri)
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                startActivity(Intent.createChooser(intent, "Share Track"))
+            } else {
+                 android.widget.Toast.makeText(this, "File not found", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+             android.widget.Toast.makeText(this, "Could not share file: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+        }
     }
 }

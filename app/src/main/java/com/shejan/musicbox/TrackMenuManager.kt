@@ -104,6 +104,12 @@ object TrackMenuManager {
             dialog.dismiss()
         }
         
+        // Share
+        view.findViewById<ImageButton>(R.id.btn_share).setOnClickListener {
+            shareTrack(activity, track)
+            dialog.dismiss()
+        }
+
         // Set As (Artwork)
         view.findViewById<ImageButton>(R.id.btn_set_as).setOnClickListener {
             showArtworkEditorDialog(activity, track, pickArtworkLauncher, callback)
@@ -138,6 +144,20 @@ object TrackMenuManager {
         dialog.setContentView(view)
         
         view.post { (view.parent as? View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT) }
+        
+        // Force 85% Height
+        dialog.setOnShowListener {
+            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            if (bottomSheet != null) {
+                val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
+                val displayMetrics = activity.resources.displayMetrics
+                val height = displayMetrics.heightPixels
+                val maxHeight = (height * 0.85).toInt()
+                
+                behavior.peekHeight = maxHeight
+                behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+            }
+        }
         
         val ivPreview = view.findViewById<ImageView>(R.id.iv_artwork_preview)
         MusicUtils.loadTrackArt(activity, track.id, track.albumId, ivPreview)
@@ -312,5 +332,22 @@ object TrackMenuManager {
         }
 
         dialog.show()
+    }
+    private fun shareTrack(context: Context, track: Track) {
+        try {
+            val file = java.io.File(track.uri)
+            if (file.exists()) {
+                val uri = androidx.core.content.FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                val intent = Intent(Intent.ACTION_SEND)
+                intent.type = "audio/*"
+                intent.putExtra(Intent.EXTRA_STREAM, uri)
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                context.startActivity(Intent.createChooser(intent, "Share Track"))
+            } else {
+                 Toast.makeText(context, "File not found", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+             Toast.makeText(context, "Could not share file: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 }

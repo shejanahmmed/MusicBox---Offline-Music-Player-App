@@ -10,6 +10,7 @@
     android:background="@drawable/bg_mini_player"
     android:paddingStart="8dp"
     android:paddingEnd="16dp"
+    android:visibility="gone"
     android:elevation="8dp">
 
     <ImageView
