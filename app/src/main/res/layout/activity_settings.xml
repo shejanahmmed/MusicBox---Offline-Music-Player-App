@@ -129,7 +129,7 @@
                     android:id="@+id/tv_album_length_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Album Length Filter"
+                    android:text="Track Length Filter"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -139,7 +139,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Filter music by duration"
+                    android:text="Filter tracks by duration"
                     android:textColor="@color/nav_text_unselected"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"

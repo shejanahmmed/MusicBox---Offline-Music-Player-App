@@ -32,7 +32,35 @@ class SettingsActivity : AppCompatActivity() {
 
         // Album Length
         findViewById<android.view.View>(R.id.card_album_length).setOnClickListener {
-            Toast.makeText(this, "Album Length Filter coming soon", Toast.LENGTH_SHORT).show()
+            val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+            val view = layoutInflater.inflate(R.layout.dialog_album_length, null)
+            dialog.setContentView(view)
+            
+            // Fix corners
+            view.post {
+                (view.parent as? android.view.View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            }
+
+            val etDuration = view.findViewById<android.widget.EditText>(R.id.et_duration)
+            val btnSave = view.findViewById<android.widget.Button>(R.id.btn_save)
+            
+            // Load current
+            val prefs = getSharedPreferences("MusicBoxPrefs", android.content.Context.MODE_PRIVATE)
+            val current = prefs.getInt("min_track_duration_sec", 10)
+            etDuration.setText(current.toString())
+            
+            btnSave.setOnClickListener {
+                val input = etDuration.text.toString().toIntOrNull()
+                if (input != null && input >= 0) {
+                    prefs.edit().putInt("min_track_duration_sec", input).apply()
+                    Toast.makeText(this, "Filter updated: tracks shorter than ${input}s will be hidden", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                } else {
+                    Toast.makeText(this, "Please enter a valid number", Toast.LENGTH_SHORT).show()
+                }
+            }
+            
+            dialog.show()
         }
 
 

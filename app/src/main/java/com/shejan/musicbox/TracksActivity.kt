@@ -323,7 +323,11 @@ class TracksActivity : AppCompatActivity() {
                 android.provider.MediaStore.Audio.Media.ALBUM,
                 android.provider.MediaStore.Audio.Media.ALBUM_ID
              )
-             val selection = "${android.provider.MediaStore.Audio.Media.DURATION} >= 10000"
+             val prefs = getSharedPreferences("MusicBoxPrefs", android.content.Context.MODE_PRIVATE)
+             val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
+             val minDurationMillis = minDurationSec * 1000
+             
+             val selection = "${android.provider.MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
              val order = if (isAscending) "ASC" else "DESC"
              val sortOrder = "$sortColumn $order"
 
@@ -331,7 +335,7 @@ class TracksActivity : AppCompatActivity() {
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 projection,
                 selection,
-                null,
+                null, // selectionArgs not needed for simple integer comparison in string
                 sortOrder
              )
 
@@ -371,7 +375,14 @@ class TracksActivity : AppCompatActivity() {
                 android.provider.MediaStore.Audio.Playlists.Members.ARTIST,
                 android.provider.MediaStore.Audio.Playlists.Members.DATA
             )
-            val cursor = contentResolver.query(uri, projection, null, null, android.provider.MediaStore.Audio.Playlists.Members.PLAY_ORDER)
+            
+            // Apply Duration Filter
+            val prefs = getSharedPreferences("MusicBoxPrefs", android.content.Context.MODE_PRIVATE)
+            val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
+            val minDurationMillis = minDurationSec * 1000
+            val selection = "${android.provider.MediaStore.Audio.Playlists.Members.DURATION} >= $minDurationMillis"
+
+            val cursor = contentResolver.query(uri, projection, selection, null, android.provider.MediaStore.Audio.Playlists.Members.PLAY_ORDER)
             cursor?.use {
                 val idCol = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Playlists.Members.AUDIO_ID)
                 val titleCol = it.getColumnIndexOrThrow(android.provider.MediaStore.Audio.Playlists.Members.TITLE)

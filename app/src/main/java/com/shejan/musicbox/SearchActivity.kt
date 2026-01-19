@@ -104,7 +104,11 @@ class SearchActivity : AppCompatActivity() {
                 android.provider.MediaStore.Audio.Media.ARTIST,
                 android.provider.MediaStore.Audio.Media.DATA
              )
-             val selection = "${android.provider.MediaStore.Audio.Media.DURATION} >= 10000"
+             val prefs = getSharedPreferences("MusicBoxPrefs", android.content.Context.MODE_PRIVATE)
+             val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
+             val minDurationMillis = minDurationSec * 1000
+             
+             val selection = "${android.provider.MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
              val cursor = contentResolver.query(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 projection, selection, null, null

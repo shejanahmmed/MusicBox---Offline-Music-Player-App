@@ -17,4 +17,5 @@
     <color name="nav_text_selected">#FFFFFF</color>
     <color name="nav_text_unselected">#71717a</color> <!-- Zinc 500 -->
     <color name="wireframe_border">#26FFFFFF</color> <!-- 15% White -->
+    <color name="bg_card_section">#0D0D0D</color>
 </resources>
