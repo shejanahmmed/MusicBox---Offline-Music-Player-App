@@ -10,7 +10,71 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
+import android.content.ServiceConnection
+import android.content.BroadcastReceiver
+
+import android.content.ComponentName
+import android.os.IBinder
+import android.content.Context
+import android.content.IntentFilter
+import android.os.Build
+
 class ArtistsActivity : AppCompatActivity() {
+
+    private var musicService: MusicService? = null
+    private var isBound = false
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MusicService.MusicBinder
+            musicService = binder.getService()
+            isBound = true
+            MiniPlayerManager.update(this@ArtistsActivity, musicService)
+            MiniPlayerManager.setup(this@ArtistsActivity, musicService)
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            musicService = null
+            isBound = false
+        }
+    }
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "MUSIC_BOX_UPDATE") {
+                MiniPlayerManager.update(this@ArtistsActivity, musicService)
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val intent = Intent(this, MusicService::class.java)
+        bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        
+        val filter = IntentFilter("MUSIC_BOX_UPDATE")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(receiver, filter)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (isBound) {
+            unbindService(connection)
+            isBound = false
+        }
+        unregisterReceiver(receiver)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        MiniPlayerManager.update(this, musicService)
+        MiniPlayerManager.setup(this, musicService)
+        NavUtils.setupNavigation(this, R.id.nav_artists)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,7 +83,6 @@ class ArtistsActivity : AppCompatActivity() {
         setupNav()
         loadArtists()
         
-
     }
 
     private fun loadArtists() {

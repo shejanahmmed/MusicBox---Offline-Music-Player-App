@@ -123,7 +123,7 @@ class TracksActivity : AppCompatActivity() {
                  }
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
              }
-        }
+    }
         
         findViewById<android.view.View>(R.id.btn_mini_play).setOnClickListener {
             val intent = android.content.Intent(this, MusicService::class.java)
@@ -205,10 +205,6 @@ class TracksActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
-        val titleView = findViewById<android.widget.TextView>(R.id.tv_mini_title)
-        val artistView = findViewById<android.widget.TextView>(R.id.tv_mini_artist)
-        val playButton = findViewById<android.widget.ImageButton>(R.id.btn_mini_play)
-        
         // Update Header Controls
         val shuffleBtn = findViewById<android.widget.ImageButton>(R.id.btn_header_shuffle)
         val repeatBtn = findViewById<android.widget.ImageButton>(R.id.btn_header_repeat)
@@ -229,47 +225,18 @@ class TracksActivity : AppCompatActivity() {
             repeatBtn.alpha = 1.0f
         }
         
-        // Attempt to get from service if bound, else fallback to static
-        var track: Track? = null
-        var isPlaying = false
+        // Update Mini Player
+        MiniPlayerManager.update(this, musicService)
+        MiniPlayerManager.setup(this, musicService)
 
+        // Update List Active State
+        var track: Track? = null
         if (isBound && musicService != null) {
             track = musicService?.getCurrentTrack()
-            isPlaying = musicService?.isPlaying() == true
-        } else {
-            // Fallback to static if service not bound yet (though onResume should help)
-            if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
-                track = MusicService.playlist[MusicService.currentIndex]
-            }
+        } else if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
+            track = MusicService.playlist[MusicService.currentIndex]
         }
-
-        if (track != null) {
-            titleView.text = track.title
-            artistView.text = track.artist
-            playButton.setImageResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play_arrow)
-
-            // Load Mini Player Artwork
-            val ivMiniArt = findViewById<android.widget.ImageView>(R.id.iv_mini_art)
-            if (ivMiniArt != null) {
-                MusicUtils.loadTrackArt(this, track.id, track.albumId, ivMiniArt)
-            }
-            
-            // Re-setup Click Listener with correct data
-            findViewById<android.view.View>(R.id.cl_mini_player).setOnClickListener {
-                NowPlayingActivity.start(this, track.title, track.artist)
-            }
-            
-            playButton.setOnClickListener {
-                if (isBound && musicService != null) {
-                    if (isPlaying) musicService?.pause() else musicService?.play()
-                }
-            }
-        } else {
-             // Handle empty state or hide mini player logic if desired vs keeping dummy default
-        }
-
         
-        // Update List Active State
         val adapter = findViewById<RecyclerView>(R.id.rv_tracks).adapter as? TrackAdapter
         if (adapter != null && track != null) {
              adapter.updateActiveTrack(track.id)
@@ -405,7 +372,7 @@ class TracksActivity : AppCompatActivity() {
                      
                      val hidden = HiddenTracksManager.isHidden(this, path)
                      if (!hidden && !path.lowercase().contains("ringtone") && !path.lowercase().contains("notification")) {
-                        list.add(Track(id, title, artist, path, album, albumId))
+                        list.add(TrackMetadataManager.applyMetadata(this, Track(id, title, artist, path, album, albumId)))
                      }
                  }
              }
@@ -443,7 +410,7 @@ class TracksActivity : AppCompatActivity() {
                     val path = it.getString(pathCol)
                     // Playlist members query is limited. For full details we often query Media table by ID. 
                     // For now, pass -1L which triggers fallback to loadTrackArt (by id) which works fine.
-                    list.add(Track(id, title, artist, path, null, -1L))
+                    list.add(TrackMetadataManager.applyMetadata(this, Track(id, title, artist, path, null, -1L)))
                 }
             }
         } catch (e: Exception) { e.printStackTrace() }

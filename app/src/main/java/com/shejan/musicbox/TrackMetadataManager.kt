@@ -71,6 +71,17 @@ object TrackMetadataManager {
             emptyMap()
         }
     }
+    fun applyMetadata(context: Context, track: Track): Track {
+        val metadata = getMetadata(context, track.id) ?: return track
+        
+        return track.copy(
+            title = metadata.title ?: track.title,
+            artist = metadata.artist ?: track.artist,
+            album = metadata.album ?: track.album,
+            // Track object doesn't have year field yet, but if we add it later or use it in adapters, it's ready.
+            // For now, only copying what Track has.
+        )
+    }
 }
 
 data class CustomTrackMetadata(

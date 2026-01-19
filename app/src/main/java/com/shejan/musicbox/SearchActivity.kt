@@ -51,11 +51,9 @@ class SearchActivity : AppCompatActivity() {
         rvResults.adapter = adapter
 
         // Load all tracks initially
-        if (MusicService.playlist.isNotEmpty()) {
-            allTracks = MusicService.playlist
-        } else {
-             loadTracks() 
-        }
+        // Load all tracks initially. 
+        // Always load full library to ensure search covers everything, not just current queue.
+        loadTracks()
 
         // Search Input Logic
         val etSearch = findViewById<EditText>(R.id.et_search)
@@ -122,7 +120,7 @@ class SearchActivity : AppCompatActivity() {
                      val path = it.getString(dataCol)
                      // Filter hidden tracks
                      if (!HiddenTracksManager.isHidden(this, path) && !path.lowercase().contains("ringtone") && !path.lowercase().contains("notification")) {
-                        trackList.add(Track(it.getLong(idCol), it.getString(titleCol), it.getString(artistCol) ?: "Unknown", path, null, -1L))
+                        trackList.add(TrackMetadataManager.applyMetadata(this, Track(it.getLong(idCol), it.getString(titleCol), it.getString(artistCol) ?: "Unknown", path, null, -1L)))
                      }
                  }
              }

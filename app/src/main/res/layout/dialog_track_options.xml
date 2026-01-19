@@ -12,6 +12,16 @@
     android:layout_marginTop="8dp"
     android:padding="24dp">
 
+    <!-- Drag Handle -->
+    <ImageView
+        android:layout_width="32dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="16dp"
+        android:background="#33FFFFFF"
+        android:src="@drawable/thumb_null" />
+
     <!-- Header with Album Art and Track Info -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -178,6 +188,8 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_image"
             app:tint="@color/white" />
+
+
 
         <ImageButton
             android:id="@+id/btn_delete"

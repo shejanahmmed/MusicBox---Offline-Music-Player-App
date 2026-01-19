@@ -30,6 +30,62 @@ class FoldersActivity : AppCompatActivity() {
     // Initial Path - start at external storage root
     private var currentPath: File = Environment.getExternalStorageDirectory()
 
+    private var musicService: MusicService? = null
+    private var isBound = false
+
+    private val connection = object : android.content.ServiceConnection {
+        override fun onServiceConnected(name: android.content.ComponentName?, service: android.os.IBinder?) {
+            val binder = service as MusicService.MusicBinder
+            musicService = binder.getService()
+            isBound = true
+            MiniPlayerManager.update(this@FoldersActivity, musicService)
+            MiniPlayerManager.setup(this@FoldersActivity, musicService)
+        }
+
+        override fun onServiceDisconnected(name: android.content.ComponentName?) {
+            musicService = null
+            isBound = false
+        }
+    }
+
+    private val receiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action == "MUSIC_BOX_UPDATE") {
+                MiniPlayerManager.update(this@FoldersActivity, musicService)
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val intent = Intent(this, MusicService::class.java)
+        bindService(intent, connection, android.content.Context.BIND_AUTO_CREATE)
+        
+        val filter = android.content.IntentFilter("MUSIC_BOX_UPDATE")
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(receiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(receiver, filter)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (isBound) {
+            unbindService(connection)
+            isBound = false
+        }
+        unregisterReceiver(receiver)
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        MiniPlayerManager.update(this, musicService)
+        MiniPlayerManager.setup(this, musicService)
+        // Refresh Navigation in case Settings changed
+        NavUtils.setupNavigation(this, R.id.nav_folders)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_folders)
@@ -63,6 +119,7 @@ class FoldersActivity : AppCompatActivity() {
         
         // Check Permissions
         checkPermissionsAndLoad()
+        
     }
 
     private fun checkPermissionsAndLoad() {

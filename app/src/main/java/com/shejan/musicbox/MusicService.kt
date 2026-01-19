@@ -40,6 +40,8 @@ class MusicService : Service() {
         const val REPEAT_ALL = 1
         const val REPEAT_ONE = 2
         var repeatMode = REPEAT_OFF
+        
+        var currentTrackUri: String? = null
     }
 
     private val binder = MusicBinder()
@@ -114,11 +116,19 @@ class MusicService : Service() {
              // If launched with a specific song (from Adapter), assume the playlist is already set correctly by the Adapter/Activity
              // and the current index is handled there, OR find the track in our static list.
              if (uri != null && title != null) {
-                 // Find index in playlist
-                 val index = playlist.indexOfFirst { it.uri == uri }
-                 if (index != -1) {
-                     currentIndex = index
-                     playTrack(index)
+                 if (uri == currentTrackUri) {
+                      // Already the current track. Update index just in case playlist context changed (e.g. All -> Fav)
+                      val index = playlist.indexOfFirst { it.uri == uri }
+                      if (index != -1) currentIndex = index
+                      
+                      if (!isPlaying()) play()
+                 } else {
+                      // Find index in playlist
+                      val index = playlist.indexOfFirst { it.uri == uri }
+                      if (index != -1) {
+                          currentIndex = index
+                          playTrack(index)
+                      }
                  }
              }
         }
@@ -129,11 +139,17 @@ class MusicService : Service() {
         return START_NOT_STICKY
     }
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        stopSelf()
+    }
+
     fun playTrack(index: Int) {
         if (index < 0 || index >= playlist.size) return
         
         val track = playlist[index]
         currentIndex = index
+        currentTrackUri = track.uri
         
         try {
             mediaPlayer?.reset()

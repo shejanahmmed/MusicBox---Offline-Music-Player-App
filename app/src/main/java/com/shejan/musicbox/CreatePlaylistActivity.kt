@@ -63,7 +63,7 @@ class CreatePlaylistActivity : AppCompatActivity() {
                     val artist = it.getString(artistCol)
                     val path = it.getString(pathCol)
                     // Track(id, title, artist, uri, isActive)
-                    allTracks.add(Track(id, title, artist, path))
+                    allTracks.add(TrackMetadataManager.applyMetadata(this, Track(id, title, artist, path)))
                 }
             }
         } catch (e: Exception) {

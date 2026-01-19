@@ -34,6 +34,19 @@
         app:layout_constraintTop_toBottomOf="@+id/tv_header_title"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
+    <!-- Mini Player -->
+    <include
+        android:id="@+id/cl_mini_player"
+        layout="@layout/include_mini_player"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_nav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- Bottom Navigation -->
     <include
         android:id="@+id/bottom_nav"

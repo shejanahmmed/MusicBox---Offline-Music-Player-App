@@ -100,16 +100,7 @@ object TrackMenuManager {
         
         // Edit
         view.findViewById<ImageButton>(R.id.btn_edit).setOnClickListener {
-            val intent = Intent(activity, EditTrackActivity::class.java)
-            intent.putExtra(EditTrackActivity.EXTRA_TRACK_ID, track.id)
-            intent.putExtra(EditTrackActivity.EXTRA_TRACK_TITLE, displayTitle)
-            intent.putExtra(EditTrackActivity.EXTRA_TRACK_ARTIST, displayArtist)
-            intent.putExtra(EditTrackActivity.EXTRA_TRACK_ALBUM, displayAlbum)
-            intent.putExtra(EditTrackActivity.EXTRA_ALBUM_ID, track.albumId)
-            intent.putExtra(EditTrackActivity.EXTRA_FILE_TITLE, track.title)
-            intent.putExtra(EditTrackActivity.EXTRA_FILE_ARTIST, track.artist)
-            intent.putExtra(EditTrackActivity.EXTRA_FILE_ALBUM, track.album)
-            activity.startActivity(intent)
+            showEditTrackDialog(activity, track, callback)
             dialog.dismiss()
         }
         
@@ -252,5 +243,74 @@ object TrackMenuManager {
         } catch (e: Exception) {
             Toast.makeText(context, "Failed to add to playlist", Toast.LENGTH_SHORT).show() 
         }
+    }
+
+    private fun showEditTrackDialog(activity: AppCompatActivity, track: Track, callback: Callback?) {
+        val dialog = BottomSheetDialog(activity)
+        val view = activity.layoutInflater.inflate(R.layout.dialog_edit_track, null)
+        dialog.setContentView(view)
+
+        view.post {
+            (view.parent as? View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        }
+
+        // Get current metadata
+        val customMetadata = TrackMetadataManager.getMetadata(activity, track.id)
+        val currentTitle = customMetadata?.title ?: track.title
+        val currentArtist = customMetadata?.artist ?: track.artist
+        val currentAlbum = customMetadata?.album ?: track.album ?: ""
+        val currentYear = customMetadata?.year ?: ""
+
+        val etTrackName = view.findViewById<EditText>(R.id.et_track_name)
+        val etArtistName = view.findViewById<EditText>(R.id.et_artist_name)
+        val etAlbumName = view.findViewById<EditText>(R.id.et_album_name)
+        val etYear = view.findViewById<EditText>(R.id.et_year)
+
+        etTrackName.setText(currentTitle)
+        etArtistName.setText(currentArtist)
+        etAlbumName.setText(currentAlbum)
+        etYear.setText(currentYear)
+
+        // Reset
+        view.findViewById<ImageButton>(R.id.btn_reset).setOnClickListener {
+            etTrackName.setText(track.title)
+            etArtistName.setText(track.artist)
+            etAlbumName.setText(track.album ?: "")
+            etYear.setText("")
+            Toast.makeText(activity, "Reset to original values", Toast.LENGTH_SHORT).show()
+        }
+
+        // Cancel
+        view.findViewById<ImageButton>(R.id.btn_cancel).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        // Save
+        view.findViewById<ImageButton>(R.id.btn_save).setOnClickListener {
+            val newTitle = etTrackName.text.toString().trim()
+            val newArtist = etArtistName.text.toString().trim()
+            val newAlbum = etAlbumName.text.toString().trim()
+            val newYear = etYear.text.toString().trim()
+
+            if (newTitle.isEmpty()) {
+                Toast.makeText(activity, "Track name cannot be empty", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            TrackMetadataManager.saveMetadata(
+                activity,
+                track.id,
+                newTitle,
+                newArtist.takeIf { it.isNotEmpty() },
+                newAlbum.takeIf { it.isNotEmpty() },
+                newYear.takeIf { it.isNotEmpty() }
+            )
+
+            Toast.makeText(activity, "Metadata saved", Toast.LENGTH_SHORT).show()
+            callback?.onTrackUpdated()
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 }

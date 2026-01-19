@@ -55,7 +55,7 @@ class NowPlayingActivity : AppCompatActivity() {
         override fun run() {
             updateProgress()
             handler.postDelayed(this, 1000)
-        }
+    }
     }
     
     // Artwork Picker Launcher
@@ -102,6 +102,7 @@ class NowPlayingActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tv_now_playing_title).isSelected = true
         
         setupControls()
+        
     }
     
     private fun showQueueDialog() {
@@ -157,6 +158,21 @@ class NowPlayingActivity : AppCompatActivity() {
             override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
         })
+
+        findViewById<ImageButton>(R.id.btn_volume_down).setOnClickListener {
+             val currentVol = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+             val newVol = Math.max(0, currentVol - 1)
+             audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, newVol, 0)
+             volumeSeekBar.progress = newVol
+        }
+
+        findViewById<ImageButton>(R.id.btn_volume_up).setOnClickListener {
+             val currentVol = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+             val maxVol = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
+             val newVol = Math.min(maxVol, currentVol + 1)
+             audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, newVol, 0)
+             volumeSeekBar.progress = newVol
+        }
 
         btnPlayPause.setOnClickListener {
              if (musicService?.isPlaying() == true) {
@@ -252,6 +268,11 @@ class NowPlayingActivity : AppCompatActivity() {
         val ivAlbumArt = findViewById<android.widget.ImageView>(R.id.iv_album_art_large)
         MusicUtils.loadTrackArt(this, track.id, track.albumId, ivAlbumArt)
         
+        // Update Duration FIRST to avoid progress clamping
+        val duration = musicService!!.getDuration()
+        findViewById<android.widget.SeekBar>(R.id.sb_progress).max = duration
+        findViewById<TextView>(R.id.tv_time_end).text = formatTime(duration)
+        
         // Update Favorite Icon
         val btnFav = findViewById<ImageButton>(R.id.btn_fav_large)
         if (FavoritesManager.isFavorite(this, track.uri)) {
@@ -294,10 +315,6 @@ class NowPlayingActivity : AppCompatActivity() {
             btnRepeat.setColorFilter(android.graphics.Color.parseColor("#888888"))
             btnRepeat.alpha = 1.0f
         }
-        
-        val duration = musicService!!.getDuration()
-        findViewById<android.widget.SeekBar>(R.id.sb_progress).max = duration
-        findViewById<TextView>(R.id.tv_time_end).text = formatTime(duration)
     }
 
     private fun updateProgress() {
