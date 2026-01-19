@@ -98,7 +98,7 @@
         android:background="@drawable/bg_mini_player"
         android:paddingStart="8dp"
         android:paddingEnd="16dp"
-        android:elevation="10dp"
+        android:elevation="8dp"
         app:layout_constraintBottom_toTopOf="@+id/bottom_nav"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -120,7 +120,7 @@
             android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
             app:layout_constraintStart_toEndOf="@+id/iv_mini_art"
-            app:layout_constraintEnd_toStartOf="@+id/btn_mini_play"
+            app:layout_constraintEnd_toStartOf="@+id/ll_mini_controls"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
@@ -148,17 +148,46 @@
                 android:layout_height="wrap_content"/>
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/btn_mini_play"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@null"
-            android:src="@drawable/ic_play_arrow"
-            app:tint="@color/primary_red"
-            android:scaleType="fitCenter"
+        <LinearLayout
+            android:id="@+id/ll_mini_controls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageButton
+                android:id="@+id/btn_mini_prev"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@null"
+                android:src="@drawable/ic_skip_previous"
+                app:tint="@color/white"
+                android:scaleType="fitCenter"
+                android:layout_marginEnd="4dp" />
+
+            <ImageButton
+                android:id="@+id/btn_mini_play"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@null"
+                android:src="@drawable/ic_play_arrow"
+                app:tint="@color/primary_red"
+                android:scaleType="fitCenter" />
+
+            <ImageButton
+                android:id="@+id/btn_mini_next"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@null"
+                android:src="@drawable/ic_skip_next"
+                app:tint="@color/white"
+                android:scaleType="fitCenter"
+                android:layout_marginStart="4dp" />
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -124,6 +124,43 @@ class TracksActivity : AppCompatActivity() {
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
              }
         }
+        
+        findViewById<android.view.View>(R.id.btn_mini_play).setOnClickListener {
+            val intent = android.content.Intent(this, MusicService::class.java)
+            // These variables (activeTrack, isPlaying) are not defined in this scope.
+            // This block will cause a compilation error.
+            // The existing play/pause logic is in updateUI and uses musicService directly.
+            // If this listener is intended to be the primary one, it needs access to current state.
+            // For now, inserting as-is per instruction, but noting potential issue.
+            // if (activeTrack != null && activeTrack!!.isActive) {
+            //     // Toggle
+            //     intent.action = if (isPlaying) MusicService.ACTION_PAUSE else MusicService.ACTION_PLAY
+            // } else {
+            //     // Restart or play first?
+            //     // For now, if active track exists but is paused, play.
+            //     intent.action = MusicService.ACTION_PLAY
+            // }
+            // startService(intent)
+            
+            // Re-using the logic from updateUI for play/pause
+            if (isBound && musicService != null) {
+                if (musicService?.isPlaying() == true) musicService?.pause() else musicService?.play()
+            }
+        }
+
+        findViewById<android.view.View>(R.id.btn_mini_next)?.setOnClickListener {
+            val intent = android.content.Intent(this, MusicService::class.java)
+            intent.action = MusicService.ACTION_NEXT
+            startService(intent)
+        }
+
+        findViewById<android.view.View>(R.id.btn_mini_prev)?.setOnClickListener {
+            val intent = android.content.Intent(this, MusicService::class.java)
+            intent.action = MusicService.ACTION_PREV
+            startService(intent)
+        }
+        
+
 
         // Navigation Logic
         NavUtils.setupNavigation(this, R.id.nav_tracks)
@@ -229,6 +266,15 @@ class TracksActivity : AppCompatActivity() {
             }
         } else {
              // Handle empty state or hide mini player logic if desired vs keeping dummy default
+        }
+
+        
+        // Update List Active State
+        val adapter = findViewById<RecyclerView>(R.id.rv_tracks).adapter as? TrackAdapter
+        if (adapter != null && track != null) {
+             adapter.updateActiveTrack(track.id)
+        } else if (adapter != null) {
+             adapter.updateActiveTrack(-1) // Clear active if stopped
         }
     }
 

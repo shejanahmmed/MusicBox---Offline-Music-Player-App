@@ -65,7 +65,7 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         }
 
         if (track.isActive) {
-            holder.activeIndicator.visibility = View.VISIBLE
+            holder.activeIndicator.visibility = View.GONE
             holder.title.setTextColor(holder.root.context.getColor(R.color.primary_red))
             holder.root.setBackgroundResource(R.drawable.bg_track_card_active)
         } else {
@@ -80,5 +80,26 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
     fun updateData(newTracks: List<Track>) {
         this.tracks = newTracks
         notifyDataSetChanged()
+    }
+
+    fun updateActiveTrack(activeId: Long) {
+        var changed = false
+        // Create new list to trigger recomposition/state change if needed, 
+        // but for RecyclerView we can just modify items if they are mutable. 
+        // Since Track is a data class (val), we need to copy.
+        // Actually, let's map it.
+        this.tracks = this.tracks.map { track ->
+             val shouldBeActive = (track.id == activeId)
+             if (track.isActive != shouldBeActive) {
+                 changed = true
+                 track.copy(isActive = shouldBeActive)
+             } else {
+                 track
+             }
+        }
+        
+        if (changed) {
+            notifyDataSetChanged()
+        }
     }
 }
