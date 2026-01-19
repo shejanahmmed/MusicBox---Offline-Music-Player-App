@@ -39,7 +39,7 @@ class PlaylistActivity : AppCompatActivity() {
             musicService = binder.getService()
             isBound = true
             MiniPlayerManager.update(this@PlaylistActivity, musicService)
-            MiniPlayerManager.setup(this@PlaylistActivity, musicService)
+            MiniPlayerManager.setup(this@PlaylistActivity) { musicService }
         }
 
         override fun onServiceDisconnected(name: android.content.ComponentName?) {
@@ -83,7 +83,7 @@ class PlaylistActivity : AppCompatActivity() {
         loadPlaylists()
         updateTopCards()
         MiniPlayerManager.update(this, musicService)
-        MiniPlayerManager.setup(this, musicService)
+        MiniPlayerManager.setup(this) { musicService }
         // Refresh Navigation in case Settings changed
         NavUtils.setupNavigation(this, R.id.nav_playlist)
     }

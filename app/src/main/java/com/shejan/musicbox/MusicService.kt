@@ -160,7 +160,7 @@ class MusicService : Service() {
             updateNotification()
             
             // Broadcast Change
-            sendBroadcast(Intent("MUSIC_BOX_UPDATE").apply {
+            sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
                 putExtra("IS_PLAYING", true)
                 putExtra("TITLE", track.title)
                 putExtra("ARTIST", track.artist)
@@ -180,7 +180,7 @@ class MusicService : Service() {
                 it.start()
                 updateNotification()
                 updateMediaSessionState() // State changed to Playing
-                sendBroadcast(Intent("MUSIC_BOX_UPDATE").apply { putExtra("IS_PLAYING", true) })
+                sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
             }
         }
     }
@@ -191,7 +191,7 @@ class MusicService : Service() {
                 it.pause()
                 updateNotification()
                 updateMediaSessionState() // State changed to Paused
-                sendBroadcast(Intent("MUSIC_BOX_UPDATE").apply { putExtra("IS_PLAYING", false) })
+                sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
             }
         }
     }
@@ -224,12 +224,12 @@ class MusicService : Service() {
     
     fun toggleRepeat() {
         repeatMode = (repeatMode + 1) % 3
-        sendBroadcast(Intent("MUSIC_BOX_UPDATE").apply { putExtra("REPEAT_MODE", repeatMode) })
+        sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("REPEAT_MODE", repeatMode) })
     }
 
     fun toggleShuffle() {
         isShuffleEnabled = !isShuffleEnabled
-        sendBroadcast(Intent("MUSIC_BOX_UPDATE").apply { putExtra("SHUFFLE_STATE", isShuffleEnabled) })
+        sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("SHUFFLE_STATE", isShuffleEnabled) })
     }
     
     fun isPlaying(): Boolean {

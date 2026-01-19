@@ -16,7 +16,7 @@
         app:tint="@color/white"
         android:scaleType="centerInside"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="32dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -240,7 +240,7 @@
         android:textSize="10sp"
         android:textStyle="bold"
         android:layout_marginStart="32dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/btn_play_large" />
 
@@ -286,7 +286,7 @@
         android:id="@+id/btn_play_large"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_marginBottom="64dp"
+        android:layout_marginBottom="72dp"
         android:background="@drawable/shape_circle_red"
         android:backgroundTint="@color/white"
         android:src="@drawable/ic_pause"
@@ -334,14 +334,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
     
-    <!-- Bottom Indicator -->
-     <View
-        android:layout_width="128dp"
-        android:layout_height="4dp"
-        android:background="#33FFFFFF"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

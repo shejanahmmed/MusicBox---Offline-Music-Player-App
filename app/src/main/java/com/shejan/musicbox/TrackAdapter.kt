@@ -16,7 +16,6 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
     class TrackViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView = view.findViewById(R.id.tv_track_title)
         val artist: TextView = view.findViewById(R.id.tv_track_artist)
-        val activeIndicator: FrameLayout = view.findViewById(R.id.fl_active_indicator)
         val root: View = view
     }
 
@@ -65,11 +64,9 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         }
 
         if (track.isActive) {
-            holder.activeIndicator.visibility = View.GONE
             holder.title.setTextColor(holder.root.context.getColor(R.color.primary_red))
             holder.root.setBackgroundResource(R.drawable.bg_track_card_active)
         } else {
-            holder.activeIndicator.visibility = View.GONE
             holder.title.setTextColor(holder.root.context.getColor(R.color.white))
             holder.root.setBackgroundResource(R.drawable.bg_track_card)
         }

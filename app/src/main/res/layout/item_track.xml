@@ -24,21 +24,6 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:src="@color/background_dark" />
-        
-        <!-- Active indicator overlay (visible only for active track) -->
-        <FrameLayout
-            android:id="@+id/fl_active_indicator"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#1Aec1313"
-            android:visibility="gone">
-            <ImageView
-                 android:layout_width="24dp"
-                 android:layout_height="24dp"
-                 android:src="@drawable/ic_equalizer"
-                 android:layout_gravity="center"
-                 app:tint="@color/primary_red"/>
-        </FrameLayout>
 
     </androidx.cardview.widget.CardView>
 

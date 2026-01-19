@@ -21,7 +21,7 @@ class AlbumsActivity : AppCompatActivity() {
             musicService = binder.getService()
             isBound = true
             MiniPlayerManager.update(this@AlbumsActivity, musicService)
-            MiniPlayerManager.setup(this@AlbumsActivity, musicService)
+            MiniPlayerManager.setup(this@AlbumsActivity) { musicService }
         }
 
         override fun onServiceDisconnected(name: android.content.ComponentName?) {
@@ -63,7 +63,7 @@ class AlbumsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         MiniPlayerManager.update(this, musicService)
-        MiniPlayerManager.setup(this, musicService)
+        MiniPlayerManager.setup(this) { musicService }
         NavUtils.setupNavigation(this, R.id.nav_albums)
     }
 

@@ -16,7 +16,7 @@ class QueueAdapter(
     class QueueViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView = view.findViewById(R.id.tv_track_title)
         val artist: TextView = view.findViewById(R.id.tv_track_artist)
-        val activeIndicator: View = view.findViewById(R.id.fl_active_indicator)
+        val albumArt: ImageView = view.findViewById(R.id.iv_album_art)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QueueViewHolder {
@@ -29,12 +29,14 @@ class QueueAdapter(
         holder.title.text = track.title
         holder.artist.text = track.artist
         
+        MusicUtils.loadTrackArt(holder.itemView.context, track.id, track.albumId, holder.albumArt)
+        
         if (track.id == currentTrackId) {
             holder.title.setTextColor(holder.itemView.context.getColor(R.color.primary_red))
-            holder.activeIndicator.visibility = View.VISIBLE
+            holder.itemView.setBackgroundResource(R.drawable.bg_track_card_active)
         } else {
             holder.title.setTextColor(holder.itemView.context.getColor(R.color.white))
-            holder.activeIndicator.visibility = View.GONE
+            holder.itemView.setBackgroundResource(R.drawable.bg_track_card)
         }
         
         holder.itemView.setOnClickListener {

@@ -7,6 +7,14 @@
     android:padding="24dp"
     android:background="@drawable/bg_bottom_sheet">
 
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:background="@drawable/shape_drag_handle"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:alpha="0.5"/>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

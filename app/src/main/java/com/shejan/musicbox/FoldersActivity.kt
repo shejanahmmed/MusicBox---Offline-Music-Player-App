@@ -39,7 +39,7 @@ class FoldersActivity : AppCompatActivity() {
             musicService = binder.getService()
             isBound = true
             MiniPlayerManager.update(this@FoldersActivity, musicService)
-            MiniPlayerManager.setup(this@FoldersActivity, musicService)
+            MiniPlayerManager.setup(this@FoldersActivity) { musicService }
         }
 
         override fun onServiceDisconnected(name: android.content.ComponentName?) {
@@ -81,7 +81,7 @@ class FoldersActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         MiniPlayerManager.update(this, musicService)
-        MiniPlayerManager.setup(this, musicService)
+        MiniPlayerManager.setup(this) { musicService }
         // Refresh Navigation in case Settings changed
         NavUtils.setupNavigation(this, R.id.nav_folders)
     }

@@ -5,8 +5,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
+import android.content.BroadcastReceiver
+import android.graphics.Color
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.shejan.musicbox.TrackArtworkManager
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import java.util.Locale
+import android.content.IntentFilter
+import android.media.AudioManager
+import android.widget.SeekBar
+import androidx.core.graphics.toColorInt
 
 class NowPlayingActivity : AppCompatActivity() {
 
@@ -26,8 +38,9 @@ class NowPlayingActivity : AppCompatActivity() {
     private var musicService: MusicService? = null
     private var isBound = false
     
+
     // BroadcastReceiver for updates
-    private val receiver = object : android.content.BroadcastReceiver() {
+    private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "MUSIC_BOX_UPDATE") {
                 updateUI()
@@ -67,16 +80,16 @@ class NowPlayingActivity : AppCompatActivity() {
             try {
                 contentResolver.takePersistableUriPermission(
                     uri, 
-                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
             } catch (e: Exception) { e.printStackTrace() }
             
             // Save custom artwork
-            TrackArtworkManager.saveArtwork(this, track.id, uri.toString())
-            
+             com.shejan.musicbox.TrackArtworkManager.saveArtwork(this, track.id, uri.toString())
+
             // Refresh UI
             updateUI()
-            android.widget.Toast.makeText(this, "Artwork updated", android.widget.Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Artwork updated", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -102,24 +115,19 @@ class NowPlayingActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tv_now_playing_title).isSelected = true
         
         setupControls()
-        
     }
     
     private fun showQueueDialog() {
         if (MusicService.playlist.isEmpty()) return
 
-        val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        val dialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.dialog_queue, null)
         dialog.setContentView(view)
         
-        // Make the background transparent to show rounded corners if root view has them, 
-        // but dialog_queue.xml doesn't have a CardView or ShapeDrawable root yet.
-        // Let's just rely on default BottomSheet styling or user preference.
-        // Actually, let's fix the background to be dark.
-        (view.parent as? android.view.View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        (view.parent as? View)?.setBackgroundColor(Color.TRANSPARENT)
 
-        val rvQueue = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_queue)
-        rvQueue.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        val rvQueue = view.findViewById<RecyclerView>(R.id.rv_queue)
+        rvQueue.layoutManager = LinearLayoutManager(this)
         
         val adapter = QueueAdapter(MusicService.playlist, MusicService.playlist[MusicService.currentIndex].id) { index ->
              musicService?.playTrack(index)
@@ -131,6 +139,19 @@ class NowPlayingActivity : AppCompatActivity() {
         // Scroll to current
         rvQueue.scrollToPosition(MusicService.currentIndex)
 
+        dialog.setOnShowListener { dialogInterface ->
+            val bottomSheetDialog = dialogInterface as BottomSheetDialog
+            val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            bottomSheet?.let { sheet ->
+                val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(sheet)
+                val displayMetrics = resources.displayMetrics
+                val height = (displayMetrics.heightPixels * 0.75).toInt()
+                sheet.layoutParams.height = height
+                behavior.peekHeight = height
+                behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+            }
+        }
+
         dialog.show()
     }
 
@@ -138,40 +159,49 @@ class NowPlayingActivity : AppCompatActivity() {
         val btnPlayPause = findViewById<ImageButton>(R.id.btn_play_large) 
         val btnNext = findViewById<ImageButton>(R.id.btn_next_large)
         val btnPrev = findViewById<ImageButton>(R.id.btn_prev_large)
-        val seekBar = findViewById<android.widget.SeekBar>(R.id.sb_progress)
-        val volumeSeekBar = findViewById<android.widget.SeekBar>(R.id.sb_volume)
+        val seekBar = findViewById<SeekBar>(R.id.sb_progress)
+        val volumeSeekBar = findViewById<SeekBar>(R.id.sb_volume)
         
         // Volume Control
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
-        val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
-        val currentVolume = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         
         volumeSeekBar.max = maxVolume
         volumeSeekBar.progress = currentVolume
         
-        volumeSeekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+        volumeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, progress, 0)
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0)
                 }
             }
-            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
         findViewById<ImageButton>(R.id.btn_volume_down).setOnClickListener {
-             val currentVol = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
-             val newVol = Math.max(0, currentVol - 1)
-             audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, newVol, 0)
+             val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+             val newVol = (currentVol - 1).coerceAtLeast(0)
+             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
              volumeSeekBar.progress = newVol
         }
 
         findViewById<ImageButton>(R.id.btn_volume_up).setOnClickListener {
-             val currentVol = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
-             val maxVol = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
-             val newVol = Math.min(maxVol, currentVol + 1)
-             audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, newVol, 0)
+             val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+             val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+             val newVol = (currentVol + 1).coerceAtMost(maxVol)
+             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
              volumeSeekBar.progress = newVol
+        }
+
+        findViewById<android.widget.ImageView>(R.id.iv_album_art_large).setOnClickListener {
+             if (musicService?.isPlaying() == true) {
+                 musicService?.pause()
+             } else {
+                 musicService?.play()
+             }
+             updateUI()
         }
 
         btnPlayPause.setOnClickListener {
@@ -210,7 +240,7 @@ class NowPlayingActivity : AppCompatActivity() {
                 MusicService.REPEAT_ONE -> "Repeat One"
                 else -> "Repeat Off"
             }
-            android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         }
         
         // Favorite Button Logic
@@ -219,32 +249,32 @@ class NowPlayingActivity : AppCompatActivity() {
             val track = musicService?.getCurrentTrack() ?: return@setOnClickListener
             if (FavoritesManager.isFavorite(this, track.uri)) {
                 FavoritesManager.removeFavorite(this, track.uri)
-                android.widget.Toast.makeText(this, "Removed from Favorites", android.widget.Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Removed from Favorites", Toast.LENGTH_SHORT).show()
             } else {
                 FavoritesManager.addFavorite(this, track.uri)
-                android.widget.Toast.makeText(this, "Added to Favorites", android.widget.Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Added to Favorites", Toast.LENGTH_SHORT).show()
             }
             updateUI()
             updateUI()
         }
         
         // Queue Button Logic
-        findViewById<android.view.View>(R.id.btn_queue).setOnClickListener {
+        findViewById<View>(R.id.btn_queue).setOnClickListener {
             showQueueDialog()
         }
 
-        seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     findViewById<TextView>(R.id.tv_time_start).text = formatTime(progress)
                 }
             }
 
-            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
                 handler.removeCallbacks(updateProgressAction)
             }
 
-            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
                 seekBar?.let {
                     musicService?.seekTo(it.progress)
                     handler.post(updateProgressAction)
@@ -270,7 +300,7 @@ class NowPlayingActivity : AppCompatActivity() {
         
         // Update Duration FIRST to avoid progress clamping
         val duration = musicService!!.getDuration()
-        findViewById<android.widget.SeekBar>(R.id.sb_progress).max = duration
+        findViewById<SeekBar>(R.id.sb_progress).max = duration
         findViewById<TextView>(R.id.tv_time_end).text = formatTime(duration)
         
         // Update Favorite Icon
@@ -300,7 +330,7 @@ class NowPlayingActivity : AppCompatActivity() {
             btnShuffle.setColorFilter(getColor(R.color.primary_red))
             btnShuffle.alpha = 1.0f
         } else {
-             btnShuffle.setColorFilter(android.graphics.Color.parseColor("#888888"))
+             btnShuffle.setColorFilter("#888888".toColorInt())
              btnShuffle.alpha = 1.0f
         }
         
@@ -312,7 +342,7 @@ class NowPlayingActivity : AppCompatActivity() {
             // If we had a specific icon for Repeat One, we'd set it here.
             // For now, Red indicates active.
         } else {
-            btnRepeat.setColorFilter(android.graphics.Color.parseColor("#888888"))
+            btnRepeat.setColorFilter("#888888".toColorInt())
             btnRepeat.alpha = 1.0f
         }
     }
@@ -320,18 +350,18 @@ class NowPlayingActivity : AppCompatActivity() {
     private fun updateProgress() {
         if (musicService == null) return
         val currentPosition = musicService!!.getCurrentPosition()
-        findViewById<android.widget.SeekBar>(R.id.sb_progress).progress = currentPosition
+        findViewById<SeekBar>(R.id.sb_progress).progress = currentPosition
         findViewById<TextView>(R.id.tv_time_start).text = formatTime(currentPosition)
     }
 
     private fun formatTime(millis: Int): String {
         val seconds = (millis / 1000) % 60
         val minutes = (millis / (1000 * 60)) % 60
-        return String.format("%02d:%02d", minutes, seconds)
+        return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
 
     // Volume Change Receiver
-    private val volumeReceiver = object : android.content.BroadcastReceiver() {
+    private val volumeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "android.media.VOLUME_CHANGED_ACTION") {
                 updateVolumeBar()
@@ -346,16 +376,17 @@ class NowPlayingActivity : AppCompatActivity() {
         bindService(intent, connection, Context.BIND_AUTO_CREATE)
         
         // Register Music Update Receiver
-        val filter = android.content.IntentFilter("MUSIC_BOX_UPDATE")
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(receiver, filter)
-        }
+        val filter = IntentFilter("MUSIC_BOX_UPDATE")
+        ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
         
         // Register Volume Receiver
-        val volumeFilter = android.content.IntentFilter("android.media.VOLUME_CHANGED_ACTION")
-        registerReceiver(volumeReceiver, volumeFilter)
+        val volumeFilter = IntentFilter("android.media.VOLUME_CHANGED_ACTION")
+        // Volume change is a system broadcast, so we can use default registration or exported? 
+        // Actually, Volume change is broadcast by AudioManager. 
+        // For system broadcasts, ContextCompat handles flags correctly if we just pass RECEIVER_EXPORTED.
+        // Or if we don't care about external apps sending it (spoofing), NOT_EXPORTED works? 
+        // No, if it's from system, it IS external. So we need RECEIVER_EXPORTED.
+        ContextCompat.registerReceiver(this, volumeReceiver, volumeFilter, ContextCompat.RECEIVER_EXPORTED)
         
         // Sync Volume on Start
         updateVolumeBar()
@@ -373,9 +404,9 @@ class NowPlayingActivity : AppCompatActivity() {
     }
     
     private fun updateVolumeBar() {
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
-        val currentVolume = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
-        findViewById<android.widget.SeekBar>(R.id.sb_volume)?.progress = currentVolume
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        findViewById<SeekBar>(R.id.sb_volume)?.progress = currentVolume
     }
     
     private fun showTrackOptionsDialog() {
@@ -389,13 +420,12 @@ class NowPlayingActivity : AppCompatActivity() {
                 updateUI()
             }
             override fun onTrackDeleted() {
-                 // Remove from Memory Playlist
+                 
                  if (MusicService.playlist.isNotEmpty()) {
-                     // If deletion happened, we should check if it was the playing one.
-                     // The passed 'track' is what we hid.
+                     
                      val currentId = musicService?.getCurrentTrack()?.id
                      
-                     // If we are playing the one we just hid (likely yes in NowPlaying)
+                     
                      if (currentId == track.id) {
                          musicService?.playNext()
                      }

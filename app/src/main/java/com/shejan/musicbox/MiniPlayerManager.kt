@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 
 object MiniPlayerManager {
 
-    fun setup(activity: AppCompatActivity, musicService: MusicService?) {
+    fun setup(activity: AppCompatActivity, getMusicService: () -> MusicService?) {
         val miniPlayer = activity.findViewById<View>(R.id.cl_mini_player) ?: return
         
         // Setup Clicks (mostly specific service calls which need intents if service is not bound, but here we expect binding)
@@ -19,7 +19,8 @@ object MiniPlayerManager {
         
         // Open Now Playing
         miniPlayer.setOnClickListener {
-            val track = musicService?.getCurrentTrack()
+            val service = getMusicService()
+            val track = service?.getCurrentTrack()
             if (track != null) {
                 NowPlayingActivity.start(activity, track.title, track.artist)
             } else if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
@@ -29,8 +30,9 @@ object MiniPlayerManager {
         }
 
         activity.findViewById<ImageButton>(R.id.btn_mini_play)?.setOnClickListener {
-            if (musicService != null) { // Check if valid
-                 if (musicService.isPlaying()) musicService.pause() else musicService.play()
+            val service = getMusicService()
+            if (service != null) { // Check if valid
+                 if (service.isPlaying()) service.pause() else service.play()
             } else {
                 // If service null (rare if bound), try start intent
                 val intent = Intent(activity, MusicService::class.java)

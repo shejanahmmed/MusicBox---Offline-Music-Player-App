@@ -125,28 +125,7 @@ class TracksActivity : AppCompatActivity() {
              }
     }
         
-        findViewById<android.view.View>(R.id.btn_mini_play).setOnClickListener {
-            val intent = android.content.Intent(this, MusicService::class.java)
-            // These variables (activeTrack, isPlaying) are not defined in this scope.
-            // This block will cause a compilation error.
-            // The existing play/pause logic is in updateUI and uses musicService directly.
-            // If this listener is intended to be the primary one, it needs access to current state.
-            // For now, inserting as-is per instruction, but noting potential issue.
-            // if (activeTrack != null && activeTrack!!.isActive) {
-            //     // Toggle
-            //     intent.action = if (isPlaying) MusicService.ACTION_PAUSE else MusicService.ACTION_PLAY
-            // } else {
-            //     // Restart or play first?
-            //     // For now, if active track exists but is paused, play.
-            //     intent.action = MusicService.ACTION_PLAY
-            // }
-            // startService(intent)
-            
-            // Re-using the logic from updateUI for play/pause
-            if (isBound && musicService != null) {
-                if (musicService?.isPlaying() == true) musicService?.pause() else musicService?.play()
-            }
-        }
+
 
         findViewById<android.view.View>(R.id.btn_mini_next)?.setOnClickListener {
             val intent = android.content.Intent(this, MusicService::class.java)
@@ -227,7 +206,7 @@ class TracksActivity : AppCompatActivity() {
         
         // Update Mini Player
         MiniPlayerManager.update(this, musicService)
-        MiniPlayerManager.setup(this, musicService)
+        MiniPlayerManager.setup(this) { musicService }
 
         // Update List Active State
         var track: Track? = null
