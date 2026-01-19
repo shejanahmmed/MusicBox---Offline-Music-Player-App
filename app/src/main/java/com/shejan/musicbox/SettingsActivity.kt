@@ -27,7 +27,63 @@ class SettingsActivity : AppCompatActivity() {
     private fun setupClickListeners() {
         // Tab Order
         findViewById<android.view.View>(R.id.card_tab_order).setOnClickListener {
-            Toast.makeText(this, "Tab Order customization coming soon", Toast.LENGTH_SHORT).show()
+             val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+             val view = layoutInflater.inflate(R.layout.dialog_tab_order, null)
+             dialog.setContentView(view)
+             
+             // Fix corners
+             view.post {
+                (view.parent as? android.view.View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+             }
+             
+             val rvOrder = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_tab_order)
+             val btnSave = view.findViewById<android.widget.Button>(R.id.btn_save)
+             
+             rvOrder.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+             
+             // Get current order
+             val currentTabs = TabManager.getTabOrder(this).toMutableList()
+             val currentHome = TabManager.getHomeTabId(this)
+             
+             val itemTouchHelper = androidx.recyclerview.widget.ItemTouchHelper(object : androidx.recyclerview.widget.ItemTouchHelper.Callback() {
+                 override fun getMovementFlags(recyclerView: androidx.recyclerview.widget.RecyclerView, viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder): Int {
+                     return makeMovementFlags(androidx.recyclerview.widget.ItemTouchHelper.UP or androidx.recyclerview.widget.ItemTouchHelper.DOWN, 0)
+                 }
+                 override fun onMove(recyclerView: androidx.recyclerview.widget.RecyclerView, viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, target: androidx.recyclerview.widget.RecyclerView.ViewHolder): Boolean {
+                     (rvOrder.adapter as? TabOrderAdapter)?.onItemMove(viewHolder.adapterPosition, target.adapterPosition)
+                     return true
+                 }
+                 override fun onSwiped(viewHolder: androidx.recyclerview.widget.RecyclerView.ViewHolder, direction: Int) {}
+                 override fun isLongPressDragEnabled(): Boolean = false // We use handle
+             })
+             itemTouchHelper.attachToRecyclerView(rvOrder)
+             
+             val adapter = TabOrderAdapter(currentTabs, currentHome, 
+                 onHomeSelected = { newHomeId ->
+                     // No-op, adapter updates internally, we read it back on save? 
+                     // Actually adapter has currentHomeId var.
+                 },
+                 onStartDrag = { holder ->
+                     itemTouchHelper.startDrag(holder)
+                 }
+             )
+             rvOrder.adapter = adapter
+             
+             btnSave.setOnClickListener {
+                 android.util.Log.d("SettingsActivity", "Saving tab order: ${currentTabs.map { it.id }}")
+                 // Save Order
+                 TabManager.saveTabOrder(this, currentTabs)
+                 // Save Home
+                 TabManager.setHomeTabId(this, adapter.getCurrentHomeId())
+                 
+                 Toast.makeText(this, "Navigation updated.", Toast.LENGTH_SHORT).show()
+                 dialog.dismiss()
+                 
+                 // Apply changes immediately
+                 NavUtils.setupNavigation(this, R.id.nav_settings)
+             }
+             
+             dialog.show()
         }
 
         // Album Length

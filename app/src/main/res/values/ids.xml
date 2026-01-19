@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="nav_home" type="id"/>
+    <item name="nav_tracks" type="id"/>
+    <item name="nav_albums" type="id"/>
+    <item name="nav_folders" type="id"/>
+    <item name="nav_artists" type="id"/>
+    <item name="nav_playlist" type="id"/>
+    <item name="nav_search" type="id"/>
+    <item name="nav_settings" type="id"/>
+</resources>

@@ -16,31 +16,105 @@ object NavUtils {
 
     fun setupNavigation(activity: Activity, activeNavId: Int) {
         val bottomNav = activity.findViewById<View>(R.id.bottom_nav) ?: return
+        
+        // 1. Render Tabs Dynamically based on Order
+        renderTabs(activity, bottomNav, activeNavId)
 
-        // 1. Calculate and Apply Widths
+        // 2. Calculate and Apply Widths
         adjustItemWidths(activity, bottomNav)
+        
+        // 3. Highlight Active Item (handled in render but good to doublcheck)
+        // highlightActiveItem(activity, bottomNav, activeNavId) 
+    }
 
-        // 2. Setup Click Listeners
-        setupListeners(activity, bottomNav)
+    private fun renderTabs(activity: Activity, root: View, activeNavId: Int) {
+        val scrollContainer = root.findViewById<LinearLayout>(R.id.ll_nav_scroll_container) ?: return
+        scrollContainer.removeAllViews()
+        
+        val tabOrder = TabManager.getTabOrder(activity)
+        val inflater = android.view.LayoutInflater.from(activity)
+        
+        for (tab in tabOrder) {
+            if (tab.isVisible) {
+                val itemView = inflater.inflate(R.layout.item_nav_tab, scrollContainer, false) as LinearLayout
+                itemView.id = tab.viewId
+                
+                val icon = itemView.getChildAt(0) as ImageView
+                val text = itemView.getChildAt(1) as TextView
+                
+                icon.setImageResource(tab.iconResId)
+                text.text = tab.label
+                
+                // Highlight if active
+                if (tab.viewId == activeNavId) {
+                    icon.setColorFilter(activity.getColor(R.color.white))
+                    text.setTextColor(activity.getColor(R.color.white))
+                } else {
+                    icon.setColorFilter(activity.getColor(R.color.nav_text_unselected))
+                    text.setTextColor(activity.getColor(R.color.nav_text_unselected))
+                }
+                
+                // Click Listener
+                itemView.setOnClickListener {
+                    val targetClass = TabManager.getTargetActivity(tab.id)
+                    if (activity.javaClass != targetClass) {
+                        val intent = Intent(activity, targetClass)
+                         // NEW: Capture current scroll position
+                        val scrollView = root.findViewById<HorizontalScrollView>(R.id.hsv_nav_scroll)
+                        if (scrollView != null) {
+                            intent.putExtra("NAV_SCROLL_X", scrollView.scrollX)
+                        }
+                        intent.putExtra("IS_NAV_CLICK", true) // Mark as creating from Nav
+                        activity.startActivity(intent)
+                        activity.overridePendingTransition(0, 0)
+                    }
+                }
+                
+                scrollContainer.addView(itemView)
+            }
+        }
+        
+        // Fixed Listeners (Search and Settings are static in XML)
+        val search = root.findViewById<View>(R.id.nav_search)
+        val settings = root.findViewById<View>(R.id.nav_settings)
+        
+        setupFixedListener(activity, search, SearchActivity::class.java, R.id.nav_search, activeNavId)
+        setupFixedListener(activity, settings, SettingsActivity::class.java, R.id.nav_settings, activeNavId)
+    }
+    
+    private fun setupFixedListener(activity: Activity, view: View?, targetClass: Class<*>, id: Int, activeId: Int) {
+        if (view == null) return
+        
+        // Highlight logic for fixed items
+        if (view is LinearLayout) {
+             val icon = view.getChildAt(0) as ImageView
+             val text = view.getChildAt(1) as TextView
+             if (id == activeId) {
+                 icon.setColorFilter(activity.getColor(R.color.white))
+                 text.setTextColor(activity.getColor(R.color.white))
+             } else {
+                 icon.setColorFilter(activity.getColor(R.color.nav_text_unselected))
+                 text.setTextColor(activity.getColor(R.color.nav_text_unselected))
+             }
+        }
 
-        // 3. Highlight Active Item
-        highlightActiveItem(activity, bottomNav, activeNavId)
+        view.setOnClickListener {
+            if (activity.javaClass != targetClass) {
+                 val intent = Intent(activity, targetClass)
+                 activity.startActivity(intent)
+                 activity.overridePendingTransition(0, 0)
+            }
+        }
     }
 
     private fun adjustItemWidths(activity: Activity, root: View) {
         val scrollContainer = root.findViewById<LinearLayout>(R.id.ll_nav_scroll_container) ?: return
         val fixedContainer = root.findViewById<LinearLayout>(R.id.ll_nav_fixed_container) ?: return
         
-        // Wait for layout or measure immediately if possible. 
-        // Safer to use post to ensure fixed container has measured logic or use DisplayMetrics.
-        
         root.post {
-            // 1. Calculate Utilizable Width using actual root width (handles margins)
             val measuredWidth = root.width
             val padding = root.paddingStart + root.paddingEnd
             val utilizableWidth = measuredWidth - padding
-            
-            // 2. We want exactly 5 items visible in total width (3 scrollable + 2 fixed)
             val itemWidth = (utilizableWidth / 5.0).toInt()
             
             for (i in 0 until scrollContainer.childCount) {
@@ -50,7 +124,6 @@ object NavUtils {
                 child.layoutParams = params
             }
 
-            // Apply same width/gap logic to fixed items (Search & Settings)
             for (i in 0 until fixedContainer.childCount) {
                 val child = fixedContainer.getChildAt(i)
                 val params = child.layoutParams
@@ -58,52 +131,8 @@ object NavUtils {
                 child.layoutParams = params
             }
             
-            // 3. NOW restore scroll position because widths are set
             restoreScrollPosition(activity, root)
         }
-    }
-
-    private fun setupListeners(activity: Activity, root: View) {
-        setListener(activity, root, R.id.nav_home, MainActivity::class.java)
-        setListener(activity, root, R.id.nav_tracks, TracksActivity::class.java)
-        setListener(activity, root, R.id.nav_albums, AlbumsActivity::class.java)
-        setListener(activity, root, R.id.nav_folders, FoldersActivity::class.java)
-        setListener(activity, root, R.id.nav_artists, ArtistsActivity::class.java)
-        setListener(activity, root, R.id.nav_playlist, PlaylistActivity::class.java)
-        setListener(activity, root, R.id.nav_search, SearchActivity::class.java)
-        setListener(activity, root, R.id.nav_settings, SettingsActivity::class.java)
-    }
-    
-    private fun setListener(activity: Activity, root: View, id: Int, targetClass: Class<*>) {
-        root.findViewById<View>(id)?.setOnClickListener {
-            if (activity.javaClass != targetClass) {
-                val intent = Intent(activity, targetClass)
-                
-                // NEW: Capture current scroll position
-                val scrollView = root.findViewById<HorizontalScrollView>(R.id.hsv_nav_scroll)
-                if (scrollView != null) {
-                    intent.putExtra("NAV_SCROLL_X", scrollView.scrollX)
-                }
-                
-                // Add flags if needed to clear stack or reorder
-                activity.startActivity(intent)
-                activity.overridePendingTransition(0, 0)
-                if (activity !is MainActivity) { 
-                    // Optional: Finish current activity if not Main to prevent huge stack?
-                    // For now keeping standard behavior as requested.
-                }
-            }
-        }
-    }
-
-    private fun highlightActiveItem(activity: Activity, root: View, activeId: Int) {
-        val activeItem = root.findViewById<LinearLayout>(activeId) ?: return
-        
-        val icon = activeItem.getChildAt(0) as? ImageView
-        val text = activeItem.getChildAt(1) as? TextView
-        
-        icon?.setColorFilter(activity.getColor(R.color.white))
-        text?.setTextColor(activity.getColor(R.color.white))
     }
     
     private fun restoreScrollPosition(activity: Activity, root: View) {

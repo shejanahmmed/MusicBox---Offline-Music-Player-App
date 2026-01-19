@@ -159,6 +159,8 @@ class TracksActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateMiniPlayer()
+        // Refresh Navigation in case Settings changed
+        NavUtils.setupNavigation(this, R.id.nav_tracks)
     }
 
     private fun updateMiniPlayer() {

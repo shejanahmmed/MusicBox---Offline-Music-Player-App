@@ -39,6 +39,19 @@ class MainActivity : AppCompatActivity() {
             androidx.core.app.ActivityCompat.requestPermissions(this, permissionsToRequest.toTypedArray(), 101)
         }
 
+        // Check for Default Home Redirect (Only if fresh start and NOT from nav click)
+        if (savedInstanceState == null && !intent.getBooleanExtra("IS_NAV_CLICK", false)) {
+            val homeId = TabManager.getHomeTabId(this)
+            if (homeId != "home") {
+                val target = TabManager.getTargetActivity(homeId)
+                if (target != MainActivity::class.java) {
+                     startActivity(Intent(this, target))
+                     overridePendingTransition(0, 0)
+                     // Keep Main in backstack? Yes, usually.
+                }
+            }
+        }
+
         setContentView(R.layout.activity_main)
 
         // Load User Name

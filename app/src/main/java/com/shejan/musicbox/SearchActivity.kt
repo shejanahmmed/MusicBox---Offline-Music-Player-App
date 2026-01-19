@@ -130,6 +130,11 @@ class SearchActivity : AppCompatActivity() {
          } catch (e: Exception) { e.printStackTrace() }
     }
 
+    override fun onResume() {
+        super.onResume()
+        setupNav()
+    }
+
     private fun setupNav() {
         NavUtils.setupNavigation(this, R.id.nav_search)
     }
