@@ -9,13 +9,14 @@ MusicBox is a modern, feature-rich offline music player built with Kotlin for An
 
 *   **🎧 Comprehensive Library Management**: Automatically scans and organizes your local audio files into **Tracks**, **Albums**, **Artists**, **Folders** and **Playlists**.
 *   **❤️ Favorites & Playlists**: Easily create custom playlists and mark songs as favorites for quick access.
+*   **📤 Share Music**: Share audio files directly from the Now Playing screen or Track Options menu.
 *   **🔍 Smart Search**: Instantly find any song, artist, or album with a powerful search feature.
 *   **📂 Folder Browsing**: Navigate your storage directly to play music from specific folders.
 *   **🎛️ Dynamic Navigation**: Features a unique **Scrollable Bottom Navigation Bar** that provides quick access to 6+ categories (Home, Tracks, Albums, Folders, Artists, Playlists) while keeping essential tools like Search and Settings pinned.
-*   **🎨 Premium UI/UX**: Designed with a "Dark Mode first" aesthetic, utilizing glassmorphism elements, smooth transitions and a clean, clutter-free interface.
+*   **🎨 Premium UI/UX**: Designed with a "Dark Mode first" aesthetic, utilizing glassmorphism elements, smooth transitions, **typing animations**, and a clean, clutter-free interface.
+    *   **Custom Artwork Editor**: Create unique covers for your tracks with an 85% screen-height drawer for better visibility.
 *   **🔄 Sorting Options**: Sort your music by Title, Date Added, or Date Modified.
 *   **⏯️ Mini Player**: Persistent mini-player controls allowing you to manage playback while browsing the app.
-
 
 ## 🛠️ Tech Stack
 
@@ -23,12 +24,13 @@ MusicBox is a modern, feature-rich offline music player built with Kotlin for An
 *   **Architecture**: MVVM / Standard Android Architecture Patterns
 *   **UI Components**:
     *   XML Layouts
-    *   `ConstraintLayout`, `RecyclerView`, `HorizontalScrollView`
-    *   Custom Drawable Resources
+    *   `ConstraintLayout`, `RecyclerView`, `HorizontalScrollView`, `BottomSheetDialog`
+    *   Custom Drawable Resources & Animations
 *   **Core APIs**:
     *   `MediaStore` API (for fetching audio files)
     *   `MediaPlayer` (for audio playback)
     *   `SharedPreferences` (for settings and simple persistence)
+    *   `FileProvider` (for secure file sharing)
 *   **Permissions**: Handles Runtime Permissions for `READ_MEDIA_AUDIO` (Android 13+) and `READ_EXTERNAL_STORAGE`.
 
 ## 🚀 Getting Started
