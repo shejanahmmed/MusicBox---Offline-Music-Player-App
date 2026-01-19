@@ -117,6 +117,43 @@ class NowPlayingActivity : AppCompatActivity() {
         setupControls()
     }
     
+    // Global Swipe Detection
+    private var swipeStartY = 0f
+    private val SWIPE_THRESHOLD = 150f // Pixels
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent?): Boolean {
+        if (ev == null) return super.dispatchTouchEvent(ev)
+        
+        val displayMetrics = resources.displayMetrics
+        val screenHeight = displayMetrics.heightPixels
+        val headerLimit = screenHeight * 0.25
+        
+        when (ev.action) {
+            android.view.MotionEvent.ACTION_DOWN -> {
+                if (ev.y <= headerLimit) {
+                    swipeStartY = ev.y
+                } else {
+                    swipeStartY = -1f // Invalid
+                }
+            }
+            android.view.MotionEvent.ACTION_MOVE -> {
+                if (swipeStartY != -1f) {
+                    val deltaY = ev.y - swipeStartY
+                    if (deltaY > SWIPE_THRESHOLD) {
+                        finish()
+                        overridePendingTransition(R.anim.no_animation, R.anim.slide_down_exit)
+                        return true // Consume event
+                    }
+                }
+            }
+            android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                swipeStartY = -1f
+            }
+        }
+        
+        return super.dispatchTouchEvent(ev)
+    }
+
     private fun showQueueDialog() {
         if (MusicService.playlist.isEmpty()) return
 
