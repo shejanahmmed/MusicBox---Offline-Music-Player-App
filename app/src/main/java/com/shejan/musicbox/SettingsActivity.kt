@@ -157,22 +157,26 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun scanMediaFiles() {
-        // Show BottomSheetDialog
-        val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        // Show Center Popup Dialog
+        val dialog = android.app.Dialog(this)
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
         val view = layoutInflater.inflate(R.layout.dialog_scanning, null)
         dialog.setContentView(view)
         
-        // Fix corner background artifact
-        view.post {
-            (view.parent as android.view.View).background = android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
-        }
+        // Transparent background for rounded corners
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
 
         val tvTrackCount = view.findViewById<android.widget.TextView>(R.id.tv_track_count)
+        val progressBar = view.findViewById<android.widget.ProgressBar>(R.id.progress_scanning)
+        
         dialog.setCancelable(false)
         dialog.show()
+        
+        Toast.makeText(this, "Scanning started...", Toast.LENGTH_SHORT).show()
 
         Thread {
             try {
+                val startTime = System.currentTimeMillis()
                 val musicDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_MUSIC)
                 val filesToScan = mutableListOf<String>()
                 var count = 0
@@ -181,7 +185,6 @@ class SettingsActivity : AppCompatActivity() {
                     if (file.isFile && (file.extension.equals("mp3", true) || file.extension.equals("m4a", true) || file.extension.equals("wav", true))) {
                         filesToScan.add(file.absolutePath)
                         count++
-                        // Update UI periodically (every 5 files to avoid spamming UI thread, or just always for smooth effect if fast enough)
                         runOnUiThread {
                             tvTrackCount.text = "$count tracks found"
                         }
@@ -193,19 +196,18 @@ class SettingsActivity : AppCompatActivity() {
                         this,
                         filesToScan.toTypedArray(),
                         null
-                    ) { _, _ -> 
-                        // Optional: Callback
-                    }
+                    ) { _, _ -> }
                 }
                 
-                // artificial delay to show "Complete" state or just close
-                Thread.sleep(1000)
+                // FORCE MINIMUM DURATION: Ensure animation runs for at least 1 second
+                val elapsedTime = System.currentTimeMillis() - startTime
+                if (elapsedTime < 1000) {
+                    Thread.sleep(1000 - elapsedTime)
+                }
                 
                 runOnUiThread {
-                    if (filesToScan.isEmpty()) {
-                         Toast.makeText(this, "No new music files found", Toast.LENGTH_SHORT).show()
-                    }
                     dialog.dismiss()
+                    Toast.makeText(this, "Scanning finished. Found $count tracks.", Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {
