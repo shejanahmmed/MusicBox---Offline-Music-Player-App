@@ -57,7 +57,8 @@ class MainActivity : AppCompatActivity() {
         // Load User Name
         val userName = prefs.getString("USER_NAME", "LISTENER")?.uppercase() ?: "LISTENER"
         val greetingText = findViewById<android.widget.TextView>(R.id.tv_greeting)
-        greetingText.text = getString(R.string.good_morning) + "\n" + userName
+        val fullInfo = getString(R.string.good_morning) + "\n" + userName
+        typeWriterEffect(greetingText, fullInfo)
 
         // Helper to setup Nav clicks
         NavUtils.setupNavigation(this, R.id.nav_home)
@@ -200,5 +201,32 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         unregisterReceiver(updateReceiver)
+    }
+
+    private fun typeWriterEffect(textView: android.widget.TextView, text: String, delay: Long = 50) {
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        var index = 0
+        
+        val runnable = object : Runnable {
+            override fun run() {
+                if (index <= text.length) {
+                    // Show cursor while typing
+                    val currentText = text.subSequence(0, index).toString()
+                    textView.text = "$currentText|"
+                    
+                    if (index < text.length) {
+                        index++
+                        handler.postDelayed(this, delay)
+                    } else {
+                        // Finished typing, remove cursor after a moment or make it blink?
+                        // For now, let's remove it after a short pause to finalize the effect
+                         handler.postDelayed({
+                             textView.text = text
+                         }, 800)
+                    }
+                }
+            }
+        }
+        handler.post(runnable)
     }
 }
