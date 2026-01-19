@@ -155,6 +155,46 @@ class MainActivity : AppCompatActivity() {
         if (isBound && musicService != null) {
             updateDot(musicService?.isPlaying() == true)
         }
+        updateHomeStats()
+    }
+
+    private fun updateHomeStats() {
+        // Favorites
+        val favCount = FavoritesManager.getFavorites(this).size
+        findViewById<android.widget.TextView>(R.id.tv_fav_count).text = "$favCount Tracks"
+
+        // Playlists
+        var playlistCount = 0
+        try {
+            contentResolver.query(
+                android.provider.MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
+                arrayOf(android.provider.MediaStore.Audio.Playlists._ID),
+                null, null, null
+            )?.use { playlistCount = it.count }
+        } catch (e: Exception) { }
+        findViewById<android.widget.TextView>(R.id.tv_playlist_count).text = "$playlistCount Playlists"
+
+        // Albums
+        var albumCount = 0
+        try {
+            contentResolver.query(
+                android.provider.MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                arrayOf(android.provider.MediaStore.Audio.Albums._ID),
+                null, null, null
+            )?.use { albumCount = it.count }
+        } catch (e: Exception) { }
+        findViewById<android.widget.TextView>(R.id.tv_album_count).text = "$albumCount Albums"
+
+        // Artists
+        var artistCount = 0
+        try {
+            contentResolver.query(
+                android.provider.MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+                arrayOf(android.provider.MediaStore.Audio.Artists._ID),
+                null, null, null
+            )?.use { artistCount = it.count }
+        } catch (e: Exception) { }
+        findViewById<android.widget.TextView>(R.id.tv_artist_count).text = "$artistCount Artists"
     }
 
     override fun onPause() {

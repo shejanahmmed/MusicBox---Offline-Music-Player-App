@@ -50,23 +50,29 @@ object TrackMenuManager {
         val file = java.io.File(track.uri)
         val fileSize = if (file.exists()) String.format("%.2f MB", file.length() / (1024.0 * 1024.0)) else "N/A"
         
+        var durationStr = "--:--"
         var bitrate = "N/A"
         try {
             val retriever = android.media.MediaMetadataRetriever()
             retriever.setDataSource(track.uri)
+            val durMs = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0L
+            val minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(durMs)
+            val seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(durMs) - java.util.concurrent.TimeUnit.MINUTES.toSeconds(minutes)
+            durationStr = String.format("%02d:%02d", minutes, seconds)
+            
+            // Also get bitrate here to avoid double retrieval if possible, but keep existing logic for safety
+            // actually reusing retriever is better
             bitrate = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_BITRATE)?.let {
                 "${it.toLong() / 1000} kbit/s"
             } ?: "N/A"
+            
             retriever.release()
         } catch (e: Exception) { }
 
-        // We can't easily access MusicService here directly unless passed or singleton access improved.
-        // Skipping duration badge for now or using pseudo "N/A" to keep implementation simple in helper.
-        
         view.findViewById<TextView>(R.id.tv_track_info).text = "$bitrate    48000 Hz    $fileSize"
         view.findViewById<TextView>(R.id.tv_track_path).text = track.uri
         view.findViewById<TextView>(R.id.tv_format_badge).text = "AUDIO/MPEG"
-        view.findViewById<TextView>(R.id.tv_duration_badge).text = "⏱ --:--"
+        view.findViewById<TextView>(R.id.tv_duration_badge).text = "⏱ $durationStr"
         
         // Favorite
         val btnFavorite = view.findViewById<ImageButton>(R.id.btn_favorite)

@@ -21,7 +21,7 @@ class SettingsActivity : AppCompatActivity() {
         setupClickListeners()
 
         // Navigation
-        NavUtils.setupNavigation(this, R.id.nav_settings)
+
     }
 
     private fun setupClickListeners() {

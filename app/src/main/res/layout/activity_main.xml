@@ -77,9 +77,10 @@
                     app:layout_constraintVertical_bias="0.45" />
 
                 <TextView
+                    android:id="@+id/tv_fav_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/collection_01"
+                    android:text="-- Tracks"
                     android:textColor="@color/nav_text_unselected"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
@@ -87,6 +88,8 @@
                     app:layout_constraintBottom_toTopOf="@+id/iv_heart"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
+
+
 
                 <TextView
                     android:id="@+id/tv_fav_title"
@@ -139,9 +142,10 @@
                     app:layout_constraintVertical_bias="0.45" />
 
                 <TextView
+                    android:id="@+id/tv_playlist_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="COLLECTION 02"
+                    android:text="-- Playlists"
                     android:textColor="@color/nav_text_unselected"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
@@ -149,6 +153,8 @@
                     app:layout_constraintBottom_toTopOf="@+id/iv_playlist"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
+
+
 
                 <TextView
                     android:id="@+id/tv_playlist_title_home"
@@ -211,9 +217,10 @@
                     app:layout_constraintVertical_bias="0.45" />
 
                 <TextView
+                    android:id="@+id/tv_album_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="COLLECTION 03"
+                    android:text="-- Albums"
                     android:textColor="@color/nav_text_unselected"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
@@ -221,6 +228,8 @@
                     app:layout_constraintBottom_toTopOf="@+id/iv_albums"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
+
+
 
                 <TextView
                     android:id="@+id/tv_albums_title_home"
@@ -273,9 +282,10 @@
                     app:layout_constraintVertical_bias="0.45" />
 
                 <TextView
+                    android:id="@+id/tv_artist_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="COLLECTION 04"
+                    android:text="-- Artists"
                     android:textColor="@color/nav_text_unselected"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
@@ -283,6 +293,8 @@
                     app:layout_constraintBottom_toTopOf="@+id/iv_artists"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
+
+
 
                 <TextView
                     android:id="@+id/tv_artists_title_home"
