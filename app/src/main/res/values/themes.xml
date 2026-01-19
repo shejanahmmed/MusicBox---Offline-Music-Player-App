@@ -17,7 +17,7 @@
     
     <!-- Custom AlertDialog Theme -->
     <style name="CustomAlertDialog" parent="Theme.MaterialComponents.Dialog.Alert">
-        <item name="android:background">@color/background_dark</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_border</item>
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:textColorSecondary">#CCCCCC</item>
         <item name="colorAccent">@color/primary_red</item>

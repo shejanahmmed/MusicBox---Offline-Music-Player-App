@@ -197,7 +197,7 @@ object TrackMenuManager {
         
         AlertDialog.Builder(context, R.style.CustomAlertDialog)
             .setTitle("Add to Playlist")
-            .setItems(options.toTypedArray()) { _, which ->
+            .setAdapter(android.widget.ArrayAdapter(context, R.layout.item_playlist_dialog_option, android.R.id.text1, options)) { _, which ->
                 if (which == 0) showCreatePlaylistDialog(context, track)
                 else addTrackToPlaylist(context, track, playlists[which - 1].first, playlists[which - 1].second)
             }
@@ -206,20 +206,27 @@ object TrackMenuManager {
     }
     
     private fun showCreatePlaylistDialog(context: Context, track: Track) {
-        val input = EditText(context)
-        input.hint = "Playlist name"
-        input.setTextColor(context.getColor(R.color.white))
-        input.setHintTextColor(context.getColor(R.color.text_white_opacity_40))
+        val view = android.view.LayoutInflater.from(context).inflate(R.layout.dialog_create_playlist, null)
+        val input = view.findViewById<EditText>(R.id.et_playlist_name)
         
-        AlertDialog.Builder(context, R.style.CustomAlertDialog)
+        val dialog = AlertDialog.Builder(context, R.style.CustomAlertDialog)
             .setTitle("Create Playlist")
-            .setView(input)
-            .setPositiveButton("Create") { _, _ ->
-                val name = input.text.toString().trim()
-                if (name.isNotEmpty()) createPlaylistAndAddTrack(context, name, track)
-            }
+            .setView(view)
+            .setPositiveButton("Create", null)
             .setNegativeButton("Cancel", null)
-            .show()
+            .create()
+
+        dialog.show()
+        
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val name = input.text.toString().trim()
+            if (name.isNotEmpty()) {
+                createPlaylistAndAddTrack(context, name, track)
+                dialog.dismiss()
+            } else {
+                Toast.makeText(context, "Please enter a name", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
     
     private fun createPlaylistAndAddTrack(context: Context, name: String, track: Track) {
