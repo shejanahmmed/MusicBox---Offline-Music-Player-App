@@ -8,7 +8,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
 import androidx.media.app.NotificationCompat.MediaStyle
 
@@ -51,6 +53,30 @@ class MusicService : Service() {
         createNotificationChannel()
         mediaSession = MediaSessionCompat(this, "MusicBoxMediaSession")
 
+        mediaSession.setCallback(object : MediaSessionCompat.Callback() {
+            override fun onPlay() {
+                play()
+            }
+
+            override fun onPause() {
+                pause()
+            }
+
+            override fun onSkipToNext() {
+                playNext()
+            }
+
+            override fun onSkipToPrevious() {
+                playPrev()
+            }
+
+            override fun onSeekTo(pos: Long) {
+                mediaPlayer?.seekTo(pos.toInt())
+                updateMediaSessionState()
+            }
+        })
+        mediaSession.isActive = true
+
         // Initialize MediaPlayer
         mediaPlayer = android.media.MediaPlayer().apply {
             setOnCompletionListener {
@@ -63,14 +89,7 @@ class MusicService : Service() {
                     if (currentIndex < playlist.size - 1) {
                          playNext()
                     } else {
-                        // End of playlist, stop or just pause
-                        // For now let's just loop anyway or stop?
-                        // Standard behavior: Stop.
-                        // But playNext() loops by default in my previous code.
-                        // Let's modify playNext to respect this? 
-                        // Actually, let's keep playNext() as manual user action (loopy) but auto-advance respects repeat mode.
                          playNext() // For now, let's just default to next to avoid complexity, but usually Repeat Off means stop.
-                         // Let's stick to user request "make this button work" -> toggle states.
                     }
                 }
             }
@@ -131,6 +150,9 @@ class MusicService : Service() {
                 putExtra("ARTIST", track.artist)
             })
 
+            updateMediaSessionMetadata()
+            updateMediaSessionState()
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -141,6 +163,7 @@ class MusicService : Service() {
             if (!it.isPlaying) {
                 it.start()
                 updateNotification()
+                updateMediaSessionState() // State changed to Playing
                 sendBroadcast(Intent("MUSIC_BOX_UPDATE").apply { putExtra("IS_PLAYING", true) })
             }
         }
@@ -151,6 +174,7 @@ class MusicService : Service() {
             if (it.isPlaying) {
                 it.pause()
                 updateNotification()
+                updateMediaSessionState() // State changed to Paused
                 sendBroadcast(Intent("MUSIC_BOX_UPDATE").apply { putExtra("IS_PLAYING", false) })
             }
         }
@@ -282,5 +306,49 @@ class MusicService : Service() {
         super.onDestroy()
         mediaPlayer?.release()
         mediaSession.release()
+    }
+
+    private fun updateMediaSessionState() {
+        val state = if (isPlaying()) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
+        val position = mediaPlayer?.currentPosition?.toLong() ?: 0L
+        val playbackSpeed = if (isPlaying()) 1.0f else 0.0f
+        
+        val stateBuilder = PlaybackStateCompat.Builder()
+            .setActions(
+                PlaybackStateCompat.ACTION_PLAY or
+                PlaybackStateCompat.ACTION_PAUSE or
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                PlaybackStateCompat.ACTION_SEEK_TO or 
+                PlaybackStateCompat.ACTION_PLAY_PAUSE
+            )
+            .setState(state, position, 1.0f) // always 1.0f speed when playing, but for showing paused we can set speed 0 logic if preferred, but setState handles state enum. 
+                                             // Actually Android recommends passing 1.0f for speed if playing, 0 if paused? No, usually just state matters.
+        
+        mediaSession.setPlaybackState(stateBuilder.build())
+    }
+
+    private fun updateMediaSessionMetadata() {
+        val track = getCurrentTrack() ?: return
+        val duration = mediaPlayer?.duration?.toLong() ?: 0L
+        
+        // Try to load art bitmap
+        var artBitmap: android.graphics.Bitmap? = null
+        try {
+             artBitmap = MusicUtils.getAlbumArtBitmap(this, track.albumId)
+        } catch (e: Exception) { e.printStackTrace() }
+        
+        if (artBitmap == null) {
+            artBitmap = android.graphics.BitmapFactory.decodeResource(resources, R.drawable.ic_album)
+        }
+
+        val metadataBuilder = MediaMetadataCompat.Builder()
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, track.title)
+            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, track.artist)
+            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, track.album ?: "Unknown Album")
+            .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, artBitmap)
+
+        mediaSession.setMetadata(metadataBuilder.build())
     }
 }

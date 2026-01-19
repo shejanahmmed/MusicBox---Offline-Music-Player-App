@@ -109,4 +109,31 @@ object MusicUtils {
         imageView.setImageResource(R.drawable.ic_album)
         imageView.setColorFilter(android.graphics.Color.DKGRAY)
     }
+
+    fun getAlbumArtBitmap(context: Context, albumId: Long): android.graphics.Bitmap? {
+        if (albumId <= 0) return null
+        
+        val sArtworkUri = Uri.parse("content://media/external/audio/albumart")
+        val uri = ContentUris.withAppendedId(sArtworkUri, albumId)
+        
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                try {
+                    val size = android.util.Size(300, 300)
+                    return context.contentResolver.loadThumbnail(uri, size, null)
+                } catch (e: Exception) { }
+            }
+            
+            // Fallback / Pre-Q
+            try {
+                 val pfd = context.contentResolver.openFileDescriptor(uri, "r")
+                 if (pfd != null) {
+                      val fd = pfd.fileDescriptor
+                      return android.graphics.BitmapFactory.decodeFileDescriptor(fd)
+                 }
+            } catch (e: Exception) { }
+        } catch (e: Exception) { }
+        
+        return null
+    }
 }
