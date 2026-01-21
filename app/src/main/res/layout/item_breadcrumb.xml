@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="8dp">
+
+    <TextView
+        android:id="@+id/tv_breadcrumb_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="STORAGE"
+        android:textSize="9sp"
+        android:textColor="#66FFFFFF"
+        android:letterSpacing="0.15"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        android:paddingHorizontal="12dp"
+        android:background="?attr/selectableItemBackground" />
+
+    <View
+        android:id="@+id/v_separator"
+        android:layout_width="1dp"
+        android:layout_height="8dp"
+        android:background="#1AFFFFFF" />
+
+</LinearLayout>

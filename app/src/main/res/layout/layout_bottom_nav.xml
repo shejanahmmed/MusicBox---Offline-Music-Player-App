@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottom_nav"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/bg_floating_nav"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp"
+    android:elevation="8dp">
+
+    <!-- Scrollable Area (Weight 1 to take remaining space) -->
+    <HorizontalScrollView
+        android:id="@+id/hsv_nav_scroll"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:scrollbars="none"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:id="@+id/ll_nav_scroll_container"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Fixed Area (Right) -->
+    <LinearLayout
+        android:id="@+id/ll_nav_fixed_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Search -->
+        <LinearLayout
+            android:id="@+id/nav_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_search"
+                app:tint="@color/nav_text_unselected"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_search"
+                android:textSize="8sp"
+                android:textColor="@color/nav_text_unselected"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- Settings -->
+        <LinearLayout
+            android:id="@+id/nav_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_settings"
+                app:tint="@color/nav_text_unselected"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_settings"
+                android:textSize="8sp"
+                android:textColor="@color/nav_text_unselected"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true"
+        android:theme="@style/Theme.MusicBox">
+        
+        <!-- Declare foreground service type justification for Android 14+ -->
+        <property
+            android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+            android:value="Media playback" />
+        <property
+            android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE_EXPLANATION"
+            android:resource="@string/fgs_media_playback_explanation" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".WelcomeActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".TracksActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".NowPlayingActivity"
+            android:exported="false" />
+
+        <service
+            android:name=".MusicService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+        <activity
+            android:name=".SearchActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MusicBox" />
+        <activity
+            android:name=".PlaylistActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MusicBox" />
+        <activity
+            android:name=".CreatePlaylistActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MusicBox"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity
+            android:name=".ArtistsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MusicBox" />
+        <activity
+            android:name=".AlbumsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FoldersActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MusicBox" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MusicBox" />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+</manifest>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tv_sort_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SORT BY"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/switch_ascending"/>
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switch_ascending"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ascending"
+        android:textColor="@color/text_white_opacity_60"
+        android:checked="true"
+        app:thumbTint="@color/white"
+        app:trackTint="@color/selector_switch_track_white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/ll_sort_options"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@+id/switch_ascending">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_track_card"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <RadioButton
+                android:id="@+id/rb_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/white"
+                android:checked="true"
+                android:clickable="false"
+                android:background="@null"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Title (Alphabetical)"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@+id/rb_title"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_date_added"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_track_card"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <RadioButton
+                android:id="@+id/rb_date_added"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/white"
+                android:checked="false"
+                android:clickable="false"
+                android:background="@null"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Date Added"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@+id/rb_date_added"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_date_modified"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_track_card"
+            android:padding="16dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <RadioButton
+                android:id="@+id/rb_date_modified"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/white"
+                android:checked="false"
+                android:clickable="false"
+                android:background="@null"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Last Modified"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@+id/rb_date_modified"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

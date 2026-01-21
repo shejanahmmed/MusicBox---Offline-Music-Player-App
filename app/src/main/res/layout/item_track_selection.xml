@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
+
+    <CheckBox
+        android:id="@+id/cb_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:buttonTint="@color/primary_red"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+
+        <TextView
+            android:id="@+id/tv_track_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Song Title"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <TextView
+            android:id="@+id/tv_track_artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Artist Name"
+            android:textColor="#888888"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+    </LinearLayout>
+
+</LinearLayout>

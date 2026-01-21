@@ -1,0 +1,41 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <group
+        android:pivotX="50"
+        android:pivotY="50"
+        android:scaleX="0.85"
+        android:scaleY="0.85">
+        
+        <!-- Vinyl Base (Solid Black/Dark Grey) -->
+        <path
+            android:pathData="M50,2 A48,48 0 1,1 50,98 A48,48 0 1,1 50,2"
+            android:fillColor="#FF181818"/>
+
+        <!-- Subtle Groove Rings (Faint Grey Strokes) -->
+        <path
+            android:pathData="M50,18 A32,32 0 1,1 50,82 A32,32 0 1,1 50,18"
+            android:strokeWidth="0.5"
+            android:strokeColor="#FF282828"/>
+        <path
+            android:pathData="M50,25 A25,25 0 1,1 50,75 A25,25 0 1,1 50,25"
+            android:strokeWidth="0.5"
+            android:strokeColor="#FF282828"/>
+
+        <!-- Central Label (Matte Red) -->
+        <path
+            android:pathData="M50,34 A16,16 0 1,1 50,66 A16,16 0 1,1 50,34"
+            android:fillColor="#FFC62828"/>
+
+        <!-- Center Circle (Deep Ash) -->
+        <path
+            android:pathData="M50,42 A8,8 0 1,1 50,58 A8,8 0 1,1 50,42"
+            android:fillColor="#FF262521"/>
+            
+    </group>
+
+</vector>
