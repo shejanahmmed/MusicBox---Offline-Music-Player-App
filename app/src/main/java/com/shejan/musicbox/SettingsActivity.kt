@@ -138,6 +138,11 @@ class SettingsActivity : AppCompatActivity() {
             // Toast removed, dialog is shown inside scanMediaFiles
             scanMediaFiles()
         }
+
+        // Customize Home Page
+        findViewById<android.view.View>(R.id.card_customize_home).setOnClickListener {
+            startActivity(Intent(this, HomeCustomizationActivity::class.java))
+        }
         
         // Deleted Tracks
         findViewById<android.view.View>(R.id.card_deleted_tracks).setOnClickListener {

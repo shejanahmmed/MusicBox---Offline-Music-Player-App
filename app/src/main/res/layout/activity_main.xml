@@ -39,19 +39,20 @@
     <LinearLayout
         android:id="@+id/ll_grid_container"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="24dp"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintTop_toBottomOf="@+id/tv_greeting">
+        app:layout_constraintTop_toBottomOf="@+id/tv_greeting"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_nav"
+        app:layout_constraintVertical_bias="0.0">
 
         <!-- Row 1 -->
         <LinearLayout
+            android:id="@+id/ll_row1"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="8dp">
 
@@ -59,9 +60,9 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cl_favorite_box"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="145dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="4dp"
                 android:background="@drawable/bg_wireframe"
                 android:clickable="true"
                 android:focusable="true">
@@ -124,9 +125,9 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cl_playlist_box"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="145dp"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:background="@drawable/bg_wireframe"
                 android:clickable="true"
                 android:focusable="true">
@@ -189,19 +190,19 @@
 
         <!-- Row 2 -->
         <LinearLayout
+            android:id="@+id/ll_row2"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="8dp">
+            android:layout_marginBottom="8dp">
 
             <!-- Albums Box -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cl_albums_box"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="145dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="4dp"
                 android:background="@drawable/bg_wireframe"
                 android:clickable="true"
                 android:focusable="true">
@@ -264,9 +265,9 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cl_artists_box"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="145dp"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:background="@drawable/bg_wireframe"
                 android:clickable="true"
                 android:focusable="true">
@@ -327,27 +328,20 @@
 
         </LinearLayout>
 
-    </LinearLayout>
-
-    <!-- Row 3 -->
-    <LinearLayout
-        android:id="@+id/ll_row3"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp"
-        android:layout_marginHorizontal="24dp"
-        app:layout_constraintDimensionRatio="2:1"
-        app:layout_constraintTop_toBottomOf="@+id/ll_grid_container">
+        <!-- Row 3 -->
+        <LinearLayout
+            android:id="@+id/ll_row3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
         <!-- Tracks Box -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_tracks_box"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="145dp"
             android:layout_weight="1"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="4dp"
             android:background="@drawable/bg_wireframe"
             android:clickable="true"
             android:focusable="true">
@@ -408,9 +402,9 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_equalizer_box"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="145dp"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
             android:background="@drawable/bg_wireframe"
             android:clickable="true"
             android:focusable="true">
@@ -469,6 +463,8 @@
             <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
 
     </LinearLayout>
 

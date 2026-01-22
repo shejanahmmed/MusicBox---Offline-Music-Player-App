@@ -129,7 +129,85 @@ class MainActivity : AppCompatActivity() {
             openEqualizer()
         }
         
+        // Apply box visibility preferences
+        applyBoxVisibility()
 
+    }
+    
+    
+    private fun applyBoxVisibility() {
+        // Get visibility preferences
+        val favVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_FAVORITES)
+        val playlistVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_PLAYLISTS)
+        val albumsVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_ALBUMS)
+        val artistsVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_ARTISTS)
+        val tracksVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_TRACKS)
+        val equalizerVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_EQUALIZER)
+        
+        // Get boxes
+        val favBox = findViewById<View>(R.id.cl_favorite_box)
+        val playlistBox = findViewById<View>(R.id.cl_playlist_box)
+        val albumsBox = findViewById<View>(R.id.cl_albums_box)
+        val artistsBox = findViewById<View>(R.id.cl_artists_box)
+        val tracksBox = findViewById<View>(R.id.cl_tracks_box)
+        val equalizerBox = findViewById<View>(R.id.cl_equalizer_box)
+        
+        // Set box visibility
+        favBox.visibility = if (favVisible) View.VISIBLE else View.GONE
+        playlistBox.visibility = if (playlistVisible) View.VISIBLE else View.GONE
+        albumsBox.visibility = if (albumsVisible) View.VISIBLE else View.GONE
+        artistsBox.visibility = if (artistsVisible) View.VISIBLE else View.GONE
+        tracksBox.visibility = if (tracksVisible) View.VISIBLE else View.GONE
+        equalizerBox.visibility = if (equalizerVisible) View.VISIBLE else View.GONE
+        
+        // Adjust layout params for single boxes to prevent stretching
+        adjustSingleBoxWidth(favBox, favVisible && !playlistVisible)
+        adjustSingleBoxWidth(playlistBox, playlistVisible && !favVisible)
+        adjustSingleBoxWidth(albumsBox, albumsVisible && !artistsVisible)
+        adjustSingleBoxWidth(artistsBox, artistsVisible && !albumsVisible)
+        adjustSingleBoxWidth(tracksBox, tracksVisible && !equalizerVisible)
+        adjustSingleBoxWidth(equalizerBox, equalizerVisible && !tracksVisible)
+        
+        // Hide entire rows if all boxes in that row are hidden
+        findViewById<View>(R.id.ll_row1).visibility = 
+            if (favVisible || playlistVisible) View.VISIBLE else View.GONE
+        
+        findViewById<View>(R.id.ll_row2).visibility = 
+            if (albumsVisible || artistsVisible) View.VISIBLE else View.GONE
+        
+        findViewById<View>(R.id.ll_row3).visibility = 
+            if (tracksVisible || equalizerVisible) View.VISIBLE else View.GONE
+    }
+    
+    private fun adjustSingleBoxWidth(box: View, isSingle: Boolean) {
+        val params = box.layoutParams as? android.widget.LinearLayout.LayoutParams ?: return
+        
+        if (isSingle) {
+            // When alone, use match_parent and remove margins
+            // This makes it exactly the same width as two boxes + gap would be
+            params.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+            params.weight = 0f
+            params.marginStart = 0
+            params.marginEnd = 0
+        } else {
+            // When paired, use weight and restore margins
+            params.width = 0
+            params.weight = 1f
+            // Restore original margins based on box position
+            // Left boxes (even indices) have marginEnd, right boxes (odd) have marginStart
+            val boxId = box.id
+            when (boxId) {
+                R.id.cl_favorite_box, R.id.cl_albums_box, R.id.cl_tracks_box -> {
+                    params.marginEnd = (4 * resources.displayMetrics.density).toInt()
+                    params.marginStart = 0
+                }
+                R.id.cl_playlist_box, R.id.cl_artists_box, R.id.cl_equalizer_box -> {
+                    params.marginStart = (4 * resources.displayMetrics.density).toInt()
+                    params.marginEnd = 0
+                }
+            }
+        }
+        box.layoutParams = params
     }
 
     private val updateReceiver = object : BroadcastReceiver() {
@@ -172,9 +250,23 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        // Bind to service
         val intent = Intent(this, MusicService::class.java)
-        bindService(intent, connection, BIND_AUTO_CREATE)
+        bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        ContextCompat.registerReceiver(this, updateReceiver, IntentFilter("UPDATE_MAIN_ACTIVITY"), ContextCompat.RECEIVER_NOT_EXPORTED)
+        ContextCompat.registerReceiver(this, updateReceiver, IntentFilter("MUSIC_BOX_UPDATE"), ContextCompat.RECEIVER_NOT_EXPORTED)
+        updateHomeStats() // Renamed from updateCounts() to match existing method
+        updateGreeting()
+        NavUtils.setupNavigation(this, R.id.nav_home) // Refresh Navigation in case Settings changed
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        applyBoxVisibility() // Refresh box visibility when returning from settings
+        
+        // Also check if already bound (unlikely to change between start and resume, but good for sync)
+        if (isBound && musicService != null) {
+            updateDot(musicService?.isPlaying() == true)
+        }
     }
 
     override fun onStop() {
@@ -185,20 +277,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        val filter = IntentFilter("MUSIC_BOX_UPDATE")
-        ContextCompat.registerReceiver(this, updateReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
-        
-        // Refresh Navigation in case Settings changed
-        NavUtils.setupNavigation(this, R.id.nav_home)
-        
-        // Also check if already bound (unlikely to change between start and resume, but good for sync)
-        if (isBound && musicService != null) {
-            updateDot(musicService?.isPlaying() == true)
-        }
-        updateGreeting()
-        updateHomeStats()
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(updateReceiver)
     }
 
     private fun updateGreeting() {
@@ -288,11 +369,6 @@ class MainActivity : AppCompatActivity() {
             }
         } catch (_: Exception) { }
         findViewById<TextView>(R.id.tv_track_count).text = getString(R.string.home_track_count, trackCount)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        unregisterReceiver(updateReceiver)
     }
 
     private fun typeWriterEffect(textView: TextView, text: String, delay: Long = 50) {

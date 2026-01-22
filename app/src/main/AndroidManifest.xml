@@ -88,6 +88,10 @@
             android:name=".DeletedTracksActivity"
             android:exported="false"
             android:theme="@style/Theme.MusicBox" />
+        <activity
+            android:name=".HomeCustomizationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MusicBox" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
