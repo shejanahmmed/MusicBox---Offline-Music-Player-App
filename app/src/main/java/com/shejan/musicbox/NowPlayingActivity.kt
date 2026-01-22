@@ -40,6 +40,11 @@ class NowPlayingActivity : AppCompatActivity() {
                 putExtra(EXTRA_ARTIST, artist)
             }
             context.startActivity(intent)
+            // Apply slide-up animation for drawer-style effect
+            if (context is AppCompatActivity) {
+                @Suppress("DEPRECATION")
+                context.overridePendingTransition(R.anim.slide_up_enter, R.anim.no_animation)
+            }
         }
     }
 
@@ -113,6 +118,8 @@ class NowPlayingActivity : AppCompatActivity() {
 
         findViewById<ImageButton>(R.id.btn_back).setOnClickListener {
             finish()
+            @Suppress("DEPRECATION")
+            overridePendingTransition(R.anim.no_animation, R.anim.slide_down_exit)
         }
         
         findViewById<ImageButton>(R.id.btn_more).setOnClickListener {

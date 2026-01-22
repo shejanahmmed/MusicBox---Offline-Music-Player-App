@@ -31,6 +31,7 @@
     <string name="home_playlist_count">%1$d Playlists</string>
     <string name="home_album_count">%1$d Albums</string>
     <string name="home_artist_count">%1$d Artists</string>
+    <string name="home_track_count">%1$d Tracks</string>
     <string name="text_with_cursor">%1$s|</string>
     <string name="fgs_media_playback_explanation">MusicBox needs to play media in the background.</string>
     <string name="artist_track_count">%1$d Tracks</string>

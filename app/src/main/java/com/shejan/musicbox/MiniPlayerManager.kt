@@ -2,11 +2,14 @@ package com.shejan.musicbox
 
 import android.app.Activity
 import android.content.Intent
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import kotlin.math.abs
 
 
 object MiniPlayerManager {
@@ -14,31 +17,72 @@ object MiniPlayerManager {
     fun setup(activity: AppCompatActivity, getMusicService: () -> MusicService?) {
         val miniPlayer = activity.findViewById<View>(R.id.cl_mini_player) ?: return
         
-        // Setup Clicks (mostly specific service calls which need intents if service is not bound, but here we expect binding)
-        // Actually, cleaner if we just use calls to update UI, and the activity sets up listeners or we set them here if we have service.
-        
-        // Open Now Playing
-        miniPlayer.setOnClickListener {
-            val service = getMusicService()
-            val track = service?.getCurrentTrack()
-            if (track != null) {
-                NowPlayingActivity.start(activity, track.title, track.artist)
-            } else if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
-                val t = MusicService.playlist[MusicService.currentIndex]
-                 NowPlayingActivity.start(activity, t.title, t.artist)
+        // Create gesture detector for swipe detection
+        val gestureDetector = GestureDetector(activity, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onFling(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                velocityX: Float,
+                velocityY: Float
+            ): Boolean {
+                if (e1 == null) return false
+                
+                val diffX = e2.x - e1.x
+                val diffY = e2.y - e1.y
+                
+                // Check if horizontal swipe is more significant than vertical
+                if (abs(diffX) > abs(diffY)) {
+                    // Minimum swipe distance and velocity thresholds
+                    val SWIPE_THRESHOLD = 100
+                    val SWIPE_VELOCITY_THRESHOLD = 100
+                    
+                    if (abs(diffX) > SWIPE_THRESHOLD && abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX > 0) {
+                            // Swipe left-to-right: Next track
+                            val intent = Intent(activity, MusicService::class.java)
+                            intent.action = MusicService.ACTION_NEXT
+                            activity.startService(intent)
+                            return true
+                        } else {
+                            // Swipe right-to-left: Previous track
+                            val intent = Intent(activity, MusicService::class.java)
+                            intent.action = MusicService.ACTION_PREV
+                            activity.startService(intent)
+                            return true
+                        }
+                    }
+                }
+                return false
             }
+            
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                // Handle tap to open Now Playing (only when it's a confirmed tap, not a swipe)
+                val service = getMusicService()
+                val track = service?.getCurrentTrack()
+                if (track != null) {
+                    NowPlayingActivity.start(activity, track.title, track.artist)
+                } else if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
+                    val t = MusicService.playlist[MusicService.currentIndex]
+                    NowPlayingActivity.start(activity, t.title, t.artist)
+                }
+                return true
+            }
+        })
+        
+        // Attach touch listener to mini player for gesture detection
+        miniPlayer.setOnTouchListener { view, event ->
+            gestureDetector.onTouchEvent(event)
+            true // Consume all touch events to prevent double-tap
         }
 
+        // Setup button click listeners
         activity.findViewById<ImageButton>(R.id.btn_mini_play)?.setOnClickListener {
             val service = getMusicService()
-            if (service != null) { // Check if valid
-                 if (service.isPlaying()) service.pause() else service.play()
+            if (service != null) {
+                if (service.isPlaying()) service.pause() else service.play()
             } else {
-                // If service null (rare if bound), try start intent
                 val intent = Intent(activity, MusicService::class.java)
-                intent.action = MusicService.ACTION_PLAY // or toggle, but safer to just start
-                // We actually don't know state. 
-                // Better to rely on Service binding.
+                intent.action = MusicService.ACTION_PLAY
             }
         }
         
@@ -49,9 +93,9 @@ object MiniPlayerManager {
         }
         
         activity.findViewById<ImageButton>(R.id.btn_mini_prev)?.setOnClickListener {
-             val intent = Intent(activity, MusicService::class.java)
-             intent.action = MusicService.ACTION_PREV
-             activity.startService(intent)
+            val intent = Intent(activity, MusicService::class.java)
+            intent.action = MusicService.ACTION_PREV
+            activity.startService(intent)
         }
     }
 

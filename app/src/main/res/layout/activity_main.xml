@@ -329,6 +329,90 @@
 
     </LinearLayout>
 
+    <!-- Row 3 -->
+    <LinearLayout
+        android:id="@+id/ll_row3"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="24dp"
+        app:layout_constraintDimensionRatio="2:1"
+        app:layout_constraintTop_toBottomOf="@+id/ll_grid_container">
+
+        <!-- Tracks Box -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_tracks_box"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_wireframe"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:id="@+id/iv_tracks"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_music_note"
+                app:tint="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.45" />
+
+            <TextView
+                android:id="@+id/tv_track_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-- Tracks"
+                android:textColor="@color/nav_text_unselected"
+                android:textSize="10sp"
+                android:letterSpacing="0.2"
+                android:layout_marginBottom="16dp"
+                app:layout_constraintBottom_toTopOf="@+id/iv_tracks"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_tracks_title_home"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TRACKS"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:letterSpacing="-0.05"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/iv_tracks"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Corner Accents -->
+            <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+            <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+            <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+            <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+            <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+            <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+            <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+            <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Empty space to balance layout -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
+
     <!-- Bottom Navigation -->
     <include
         android:id="@+id/bottom_nav"

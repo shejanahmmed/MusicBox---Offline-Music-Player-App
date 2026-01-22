@@ -15,10 +15,28 @@ object HiddenTracksManager {
 
     fun hideTrack(context: Context, uri: String) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        val hidden = prefs.getStringSet(KEY_HIDDEN, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
-        hidden.add(uri)
+        val currentHidden = prefs.getStringSet(KEY_HIDDEN, emptySet()) ?: emptySet()
+        val newHidden = HashSet(currentHidden)
+        newHidden.add(uri)
         prefs.edit {
-            putStringSet(KEY_HIDDEN, hidden)
+            remove(KEY_HIDDEN)
+            putStringSet(KEY_HIDDEN, newHidden)
+        }
+    }
+    
+    fun getHiddenTracks(context: Context): Set<String> {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        return prefs.getStringSet(KEY_HIDDEN, emptySet()) ?: emptySet()
+    }
+    
+    fun restoreTrack(context: Context, uri: String) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val currentHidden = prefs.getStringSet(KEY_HIDDEN, emptySet()) ?: emptySet()
+        val newHidden = HashSet(currentHidden)
+        newHidden.remove(uri)
+        prefs.edit {
+            remove(KEY_HIDDEN)
+            putStringSet(KEY_HIDDEN, newHidden)
         }
     }
 }

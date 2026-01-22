@@ -15,19 +15,29 @@ object FavoritesManager {
 
     fun addFavorite(context: Context, uri: String) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        val favorites = prefs.getStringSet(KEY_FAVORITES, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
-        favorites.add(uri)
+        val currentFavorites = prefs.getStringSet(KEY_FAVORITES, emptySet()) ?: emptySet()
+        
+        // Create a new HashSet to avoid SharedPreferences mutation issues
+        val newFavorites = HashSet(currentFavorites)
+        newFavorites.add(uri)
+        
         prefs.edit {
-            putStringSet(KEY_FAVORITES, favorites)
+            remove(KEY_FAVORITES) // Remove old set first
+            putStringSet(KEY_FAVORITES, newFavorites)
         }
     }
 
     fun removeFavorite(context: Context, uri: String) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        val favorites = prefs.getStringSet(KEY_FAVORITES, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
-        favorites.remove(uri)
+        val currentFavorites = prefs.getStringSet(KEY_FAVORITES, emptySet()) ?: emptySet()
+        
+        // Create a new HashSet to avoid SharedPreferences mutation issues
+        val newFavorites = HashSet(currentFavorites)
+        newFavorites.remove(uri)
+        
         prefs.edit {
-            putStringSet(KEY_FAVORITES, favorites)
+            remove(KEY_FAVORITES) // Remove old set first
+            putStringSet(KEY_FAVORITES, newFavorites)
         }
     }
     

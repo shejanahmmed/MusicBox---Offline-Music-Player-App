@@ -138,6 +138,11 @@ class SettingsActivity : AppCompatActivity() {
             // Toast removed, dialog is shown inside scanMediaFiles
             scanMediaFiles()
         }
+        
+        // Deleted Tracks
+        findViewById<android.view.View>(R.id.card_deleted_tracks).setOnClickListener {
+            startActivity(Intent(this, DeletedTracksActivity::class.java))
+        }
 
         // Pre-Release Notification
         val switchPreRelease = findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switch_pre_release)
@@ -181,7 +186,6 @@ class SettingsActivity : AppCompatActivity() {
         dialog.window?.setBackgroundDrawable(android.graphics.Color.TRANSPARENT.toDrawable())
 
         val tvTrackCount = view.findViewById<android.widget.TextView>(R.id.tv_track_count)
-        // val progressBar = view.findViewById<android.widget.ProgressBar>(R.id.progress_scanning)
         
         dialog.setCancelable(false)
         dialog.show()
@@ -191,26 +195,21 @@ class SettingsActivity : AppCompatActivity() {
         Thread {
             try {
                 val startTime = System.currentTimeMillis()
-                val musicDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_MUSIC)
-                val filesToScan = mutableListOf<String>()
                 var count = 0
                 
-                musicDir.walkTopDown().forEach { file ->
-                    if (file.isFile && (file.extension.equals("mp3", true) || file.extension.equals("m4a", true) || file.extension.equals("wav", true))) {
-                        filesToScan.add(file.absolutePath)
-                        count++
-                        runOnUiThread {
-                            tvTrackCount.text = getString(R.string.tracks_found, count)
-                        }
+                // Query MediaStore for ALL audio files (including hidden tracks)
+                @Suppress("DEPRECATION")
+                contentResolver.query(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    arrayOf(android.provider.MediaStore.Audio.Media._ID, android.provider.MediaStore.Audio.Media.DATA),
+                    "${android.provider.MediaStore.Audio.Media.IS_MUSIC} != 0",
+                    null,
+                    null
+                )?.use { cursor ->
+                    count = cursor.count
+                    runOnUiThread {
+                        tvTrackCount.text = getString(R.string.tracks_found, count)
                     }
-                }
-
-                if (filesToScan.isNotEmpty()) {
-                    android.media.MediaScannerConnection.scanFile(
-                        this,
-                        filesToScan.toTypedArray(),
-                        null
-                    ) { _, _ -> }
                 }
                 
                 // FORCE MINIMUM DURATION: Ensure animation runs for at least 1 second

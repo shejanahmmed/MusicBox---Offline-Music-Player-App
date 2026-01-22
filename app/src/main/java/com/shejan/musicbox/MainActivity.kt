@@ -116,6 +116,13 @@ class MainActivity : AppCompatActivity() {
             overridePendingTransition(0, 0)
         }
         
+        // Tracks Box Click
+        findViewById<View>(R.id.cl_tracks_box).setOnClickListener {
+            startActivity(Intent(this, TracksActivity::class.java))
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, 0)
+        }
+        
 
     }
 
@@ -245,6 +252,36 @@ class MainActivity : AppCompatActivity() {
             )?.use { artistCount = it.count }
         } catch (_: Exception) { }
         findViewById<TextView>(R.id.tv_artist_count).text = getString(R.string.home_artist_count, artistCount)
+        
+        // Tracks (excluding hidden tracks and filtered by duration)
+        var trackCount = 0
+        val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
+        val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
+        val minDurationMs = minDurationSec * 1000
+        
+        try {
+            @Suppress("DEPRECATION")
+            contentResolver.query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.DURATION),
+                "${MediaStore.Audio.Media.IS_MUSIC} != 0",
+                null, null
+            )?.use { cursor ->
+                val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+                
+                while (cursor.moveToNext()) {
+                    val path = cursor.getString(dataColumn)
+                    val duration = cursor.getInt(durationColumn)
+                    
+                    // Only count if not hidden AND meets duration filter
+                    if (!HiddenTracksManager.isHidden(this, path) && duration >= minDurationMs) {
+                        trackCount++
+                    }
+                }
+            }
+        } catch (_: Exception) { }
+        findViewById<TextView>(R.id.tv_track_count).text = getString(R.string.home_track_count, trackCount)
     }
 
     override fun onPause() {
