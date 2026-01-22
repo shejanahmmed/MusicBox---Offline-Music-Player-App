@@ -16,6 +16,7 @@ import android.os.Looper
 import android.provider.MediaStore
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -121,6 +122,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, TracksActivity::class.java))
             @Suppress("DEPRECATION")
             overridePendingTransition(0, 0)
+        }
+        
+        // Equalizer Box Click
+        findViewById<View>(R.id.cl_equalizer_box).setOnClickListener {
+            openEqualizer()
         }
         
 
@@ -299,7 +305,8 @@ class MainActivity : AppCompatActivity() {
                 if (index <= text.length) {
                     // Show cursor while typing
                     val currentText = text.subSequence(0, index).toString()
-                    textView.text = getString(R.string.text_with_cursor, currentText)
+                    @Suppress("SetTextI18n")
+                    textView.text = "$currentText|"
                     
                     if (index < text.length) {
                         index++
@@ -314,5 +321,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
         typingHandler.post(typingRunnable!!)
+    }
+    
+    private fun openEqualizer() {
+        try {
+            val intent = Intent(android.media.audiofx.AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL)
+            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE, android.media.audiofx.AudioEffect.CONTENT_TYPE_MUSIC)
+            startActivity(intent)
+        } catch (_: Exception) {
+            Toast.makeText(this, "Equalizer not available", Toast.LENGTH_SHORT).show()
+        }
     }
 }

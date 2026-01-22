@@ -404,12 +404,71 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Empty space to balance layout -->
-        <View
+        <!-- Equalizer Box -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_equalizer_box"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"/>
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_wireframe"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:id="@+id/tv_equalizer_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tune Music"
+                android:textColor="@color/nav_text_unselected"
+                android:textSize="10sp"
+                android:letterSpacing="0.2"
+                android:layout_marginBottom="16dp"
+                app:layout_constraintBottom_toTopOf="@+id/iv_equalizer"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed" />
+
+            <ImageView
+                android:id="@+id/iv_equalizer"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_equalizer"
+                app:tint="@color/white"
+                android:layout_marginTop="8dp"
+                app:layout_constraintBottom_toTopOf="@+id/tv_equalizer_title_home"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv_equalizer_subtitle" />
+
+            <TextView
+                android:id="@+id/tv_equalizer_title_home"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="EQUALIZER"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:letterSpacing="-0.05"
+                android:layout_marginTop="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/iv_equalizer" />
+
+            <!-- Corner Accents -->
+            <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+            <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+            <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+            <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+            <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+            <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+            <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+            <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
 
