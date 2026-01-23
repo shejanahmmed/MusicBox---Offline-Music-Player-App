@@ -1,22 +1,45 @@
 # MusicBox 🎵
 **An Elegant, Offline Music Player for Android**
 
-MusicBox is a modern, feature-rich offline music player built with Kotlin for Android. It focuses on a premium user experience, featuring a sleek dark-themed UI, intuitive scrollable navigation and robust library management.
+MusicBox is a modern, feature-rich offline music player built with Kotlin for Android. It focuses on a premium user experience, featuring a sleek dark-themed UI, intuitive scrollable navigation, and robust library management with advanced customization options.
 
 ---
 
 ## ✨ Key Features
 
-*   **🎧 Comprehensive Library Management**: Automatically scans and organizes your local audio files into **Tracks**, **Albums**, **Artists**, **Folders** and **Playlists**.
-*   **❤️ Favorites & Playlists**: Easily create custom playlists and mark songs as favorites for quick access.
-*   **📤 Share Music**: Share audio files directly from the Now Playing screen or Track Options menu.
-*   **🔍 Smart Search**: Instantly find any song, artist, or album with a powerful search feature.
-*   **📂 Folder Browsing**: Navigate your storage directly to play music from specific folders.
-*   **🎛️ Dynamic Navigation**: Features a unique **Scrollable Bottom Navigation Bar** that provides quick access to 6+ categories (Home, Tracks, Albums, Folders, Artists, Playlists) while keeping essential tools like Search and Settings pinned.
-*   **🎨 Premium UI/UX**: Designed with a "Dark Mode first" aesthetic, utilizing glassmorphism elements, smooth transitions, **typing animations**, and a clean, clutter-free interface.
-    *   **Custom Artwork Editor**: Create unique covers for your tracks with an 85% screen-height drawer for better visibility.
-*   **🔄 Sorting Options**: Sort your music by Title, Date Added, or Date Modified.
-*   **⏯️ Mini Player**: Persistent mini-player controls allowing you to manage playback while browsing the app.
+### 🎵 Music Library
+*   **Comprehensive Library Management**: Automatically scans and organizes your local audio files into **Tracks**, **Albums**, **Artists**, **Folders**, and **Playlists**.
+*   **Smart Filtering**: Filter tracks by minimum duration to hide short audio clips and notifications.
+*   **Hidden Tracks Manager**: Hide unwanted tracks from your library and restore them anytime from the Deleted Tracks page.
+*   **Custom Metadata Editor**: Edit track titles, artists, and album names with persistent custom metadata storage.
+
+### 🎨 Personalization
+*   **Customizable Home Screen**: Reorder, show/hide home boxes (Favorites, Tracks, Albums, Artists, Playlists, Equalizer) to create your perfect layout.
+*   **Custom Artwork Editor**: Set custom album artwork for any track with an 85% screen-height drawer for better visibility.
+*   **Dynamic Greeting**: Personalized time-based greetings (Good Morning, Good Afternoon, Good Evening) with typing animation.
+*   **Flexible Navigation**: Set any page as your default home screen (Home, Tracks, Albums, Artists, Playlists, Search).
+
+### 🎧 Playback & Organization
+*   **❤️ Favorites & Playlists**: Create unlimited custom playlists with full CRUD operations (Create, Read, Update, Delete).
+*   **Advanced Sorting**: Sort by Title, Date Added, or Date Modified with persistent preferences per page.
+*   **Shuffle & Repeat Modes**: Full playback control with shuffle and repeat (All/One/Off) modes.
+*   **Queue Management**: View and reorder your "Up Next" queue with visual indicators for the currently playing track.
+*   **Mini Player**: Persistent mini-player controls allowing you to manage playback while browsing the app.
+
+### 🔍 Discovery & Navigation
+*   **Smart Search**: Instantly find any song, artist, or album with a powerful search feature.
+*   **📂 Folder Browsing**: Navigate your storage directly to play music from specific folders with breadcrumb navigation.
+*   **🎛️ Dynamic Navigation**: Features a unique **Scrollable Bottom Navigation Bar** that provides quick access to 6+ categories while keeping essential tools like Search and Settings pinned.
+
+### 📤 Sharing & Integration
+*   **Share Music**: Share audio files directly from the Now Playing screen or Track Options menu.
+*   **System Equalizer**: Quick access to your device's built-in equalizer for audio customization.
+
+### 🎨 Premium UI/UX
+*   **Dark Mode First**: Designed with a premium dark aesthetic, utilizing glassmorphism elements and smooth transitions.
+*   **Typing Animations**: Dynamic greeting text with typewriter effect.
+*   **Consistent Header Styling**: Unified header design across all content pages with dynamic item counts.
+*   **Context-Aware Navigation**: Bottom navigation intelligently highlights the relevant tab based on current content.
 
 ## 🛠️ Tech Stack
 
@@ -30,6 +53,7 @@ MusicBox is a modern, feature-rich offline music player built with Kotlin for An
     *   `MediaStore` API (for fetching audio files)
     *   `MediaPlayer` (for audio playback)
     *   `SharedPreferences` (for settings and simple persistence)
+    *   JSON-based local storage (for playlists and custom metadata)
     *   `FileProvider` (for secure file sharing)
 *   **Permissions**: Handles Runtime Permissions for `READ_MEDIA_AUDIO` (Android 13+) and `READ_EXTERNAL_STORAGE`.
 
@@ -60,6 +84,18 @@ MusicBox is a modern, feature-rich offline music player built with Kotlin for An
 To function correctly, MusicBox requires access to your device's storage to read audio files.
 *   On first launch, you will be prompted to grant **Storage/Music** permissions.
 *   The app gracefully handles permission denial with informative prompts.
+
+## 📱 App Structure
+
+*   **Home**: Customizable dashboard with quick access to all music categories
+*   **Tracks**: Complete track listing with sorting and filtering options
+*   **Albums**: Browse music organized by album with hidden track filtering
+*   **Artists**: View all artists with track counts and dynamic navigation
+*   **Playlists**: Create and manage custom playlists stored locally
+*   **Folders**: Navigate your file system to play music from specific directories
+*   **Search**: Global search across tracks, albums, and artists
+*   **Settings**: Customize app behavior, navigation, home layout, and track filtering
+*   **Now Playing**: Full-screen player with artwork, controls, queue, and sharing options
 
 ## 🤝 Contributing
 
