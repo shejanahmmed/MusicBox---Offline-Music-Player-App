@@ -5,7 +5,7 @@ import android.provider.MediaStore
 import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -74,7 +74,6 @@ class DeletedTracksActivity : AppCompatActivity() {
                 val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
                 val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
                 val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-                val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
                 val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
                 val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
 
@@ -124,6 +123,7 @@ class DeletedTracksActivity : AppCompatActivity() {
     private fun showRestoreDialog(track: Track) {
         val dialog = android.app.Dialog(this)
         dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        @android.annotation.SuppressLint("InflateParams")
         val view = layoutInflater.inflate(R.layout.dialog_restore_track, null)
         dialog.setContentView(view)
         
@@ -136,8 +136,8 @@ class DeletedTracksActivity : AppCompatActivity() {
         dialog.window?.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
         
         // Set track name in message
-        view.findViewById<android.widget.TextView>(R.id.tv_dialog_message).text = 
-            "Restore \"${track.title}\" to your library?"
+        val message = getString(R.string.delete_tracks_dialog_restore_message, track.title)
+        view.findViewById<android.widget.TextView>(R.id.tv_dialog_message).text = message
         
         // Cancel button
         view.findViewById<View>(R.id.btn_cancel).setOnClickListener {

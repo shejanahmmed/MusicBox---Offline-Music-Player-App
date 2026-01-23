@@ -66,6 +66,7 @@ class TracksActivity : AppCompatActivity() {
     }
     
     private var currentEditingTrackId: Long = -1L
+    private var isEditingPlaylist = false
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -170,7 +171,7 @@ class TracksActivity : AppCompatActivity() {
 
 
         // Navigation Logic
-        NavUtils.setupNavigation(this, R.id.nav_tracks)
+        NavUtils.setupNavigation(this, getNavId())
     }
 
     override fun onStart() {
@@ -191,11 +192,26 @@ class TracksActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    private fun getNavId(): Int {
+        return when {
+            intent.hasExtra("PLAYLIST_ID") -> R.id.nav_playlist
+            intent.hasExtra("ALBUM_NAME") -> R.id.nav_albums
+            intent.hasExtra("ARTIST_NAME") -> R.id.nav_artists
+            else -> R.id.nav_tracks
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         updateMiniPlayer()
         // Refresh Navigation in case Settings changed
-        NavUtils.setupNavigation(this, R.id.nav_tracks)
+        NavUtils.setupNavigation(this, getNavId())
+        
+        // Reload if coming back from edit
+        if (isEditingPlaylist) {
+             loadTracks()
+             isEditingPlaylist = false
+        }
         
         // Register Receiver
         // Register Receiver
@@ -297,8 +313,23 @@ class TracksActivity : AppCompatActivity() {
              val favorites = FavoritesManager.getFavorites(this)
              trackList.addAll(getAllTracks().filter { favorites.contains(it.uri) })
         } else if (playlistId != -1L) {
-             findViewById<TextView>(R.id.tv_header_title)?.text = playlistName?.uppercase() ?: "PLAYLIST"
+             // Fetch latest name from manager, fallback to intent
+             val playlist = AppPlaylistManager.getPlaylist(this, playlistId)
+             val displayName = playlist?.name ?: playlistName ?: "PLAYLIST"
+             
+             findViewById<TextView>(R.id.tv_header_title)?.text = displayName.uppercase()
              trackList.addAll(getPlaylistTracks(playlistId))
+             
+             // Show Edit Button
+             val btnEdit = findViewById<View>(R.id.btn_edit)
+             btnEdit.visibility = View.VISIBLE
+             btnEdit.setOnClickListener {
+                 val intent = Intent(this, CreatePlaylistActivity::class.java)
+                 intent.putExtra("EDIT_PLAYLIST_ID", playlistId)
+                 intent.putExtra("PLAYLIST_NAME", playlistName)
+                 isEditingPlaylist = true
+                 startActivity(intent)
+             }
         } else if (artistName != null) {
              findViewById<TextView>(R.id.tv_header_title)?.text = artistName.uppercase()
              trackList.addAll(getAllTracks().filter { it.artist.equals(artistName, ignoreCase = true) })
@@ -328,6 +359,9 @@ class TracksActivity : AppCompatActivity() {
             }
         }
         
+        // Update Count
+        findViewById<TextView>(R.id.tv_tracks_count)?.text = if (trackList.size == 1) "1 Song" else "${trackList.size} Songs"
+
         val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
         rvTracks.adapter = TrackAdapter(trackList) { track ->
             showTrackOptionsDialog(track)
@@ -390,40 +424,12 @@ class TracksActivity : AppCompatActivity() {
 
     @Suppress("DEPRECATION")
     private fun getPlaylistTracks(playlistId: Long): List<Track> {
-        val list = mutableListOf<Track>()
-        try {
-            val uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId)
-            val projection = arrayOf(
-                MediaStore.Audio.Playlists.Members.AUDIO_ID,
-                MediaStore.Audio.Playlists.Members.TITLE,
-                MediaStore.Audio.Playlists.Members.ARTIST,
-                MediaStore.Audio.Playlists.Members.DATA
-            )
-            
-            // Apply Duration Filter
-            val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
-            val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
-            val minDurationMillis = minDurationSec * 1000
-            val selection = "${MediaStore.Audio.Playlists.Members.DURATION} >= $minDurationMillis"
-
-            val cursor = contentResolver.query(uri, projection, selection, null, MediaStore.Audio.Playlists.Members.PLAY_ORDER)
-            cursor?.use {
-                val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Playlists.Members.AUDIO_ID)
-                val titleCol = it.getColumnIndexOrThrow(MediaStore.Audio.Playlists.Members.TITLE)
-                val artistCol = it.getColumnIndexOrThrow(MediaStore.Audio.Playlists.Members.ARTIST)
-                val pathCol = it.getColumnIndexOrThrow(MediaStore.Audio.Playlists.Members.DATA)
-                while (it.moveToNext()) {
-                    val id = it.getLong(idCol)
-                    val title = it.getString(titleCol)
-                    val artist = it.getString(artistCol)
-                    val path = it.getString(pathCol)
-                    // Playlist members query is limited. For full details we often query Media table by ID. 
-                    // For now, pass -1L which triggers fallback to loadTrackArt (by id) which works fine.
-                    list.add(TrackMetadataManager.applyMetadata(this, Track(id, title, artist, path, null, -1L)))
-                }
-            }
-        } catch (_: Exception) { }
-        return list
+        val playlist = AppPlaylistManager.getPlaylist(this, playlistId) ?: return emptyList()
+        val allTracks = getAllTracks()
+        
+        // Map paths to tracks to preserve order and get metadata
+        val trackMap = allTracks.associateBy { it.uri }
+        return playlist.trackPaths.mapNotNull { trackMap[it] }
     }
 
     // private fun loadDummyData() { removed }

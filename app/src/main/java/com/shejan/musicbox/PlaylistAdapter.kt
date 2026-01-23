@@ -15,7 +15,11 @@ data class PlaylistItem(
     val isAuto: Boolean = false
 )
 
-class PlaylistAdapter(private val playlists: List<PlaylistItem>, private val onClick: (PlaylistItem) -> Unit) : RecyclerView.Adapter<PlaylistAdapter.ViewHolder>() {
+class PlaylistAdapter(
+    private val playlists: List<PlaylistItem>, 
+    private val onClick: (PlaylistItem) -> Unit,
+    private val onLongClick: ((PlaylistItem) -> Unit)? = null
+) : RecyclerView.Adapter<PlaylistAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.tv_playlist_name)
@@ -46,6 +50,10 @@ class PlaylistAdapter(private val playlists: List<PlaylistItem>, private val onC
         }
 
         holder.root.setOnClickListener { onClick(item) }
+        holder.root.setOnLongClickListener {
+            onLongClick?.invoke(item)
+            true
+        }
     }
 
     override fun getItemCount() = playlists.size

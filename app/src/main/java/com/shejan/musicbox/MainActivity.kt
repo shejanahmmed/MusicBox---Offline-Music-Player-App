@@ -87,127 +87,104 @@ class MainActivity : AppCompatActivity() {
         // Helper to setup Nav clicks
         NavUtils.setupNavigation(this, R.id.nav_home)
 
-        // Favorite Box Click
-        findViewById<View>(R.id.cl_favorite_box).setOnClickListener {
-            val intent = Intent(this, TracksActivity::class.java)
-            intent.putExtra("SHOW_FAVORITES", true)
-            startActivity(intent)
-            @Suppress("DEPRECATION")
-            overridePendingTransition(0, 0)
-        }
+        // Setup Home Boxes RecyclerView
+        setupHomeBoxes()
         
-        // Playlist Box Click
-        findViewById<View>(R.id.cl_playlist_box).setOnClickListener {
-            startActivity(Intent(this, PlaylistActivity::class.java))
-            @Suppress("DEPRECATION")
-            overridePendingTransition(0, 0)
-        }
-        
-        // Albums Box Click
-        findViewById<View>(R.id.cl_albums_box).setOnClickListener {
-            startActivity(Intent(this, AlbumsActivity::class.java))
-            @Suppress("DEPRECATION")
-            overridePendingTransition(0, 0)
-        }
-        
-        // Artists Box Click
-        findViewById<View>(R.id.cl_artists_box).setOnClickListener {
-            startActivity(Intent(this, ArtistsActivity::class.java))
-            @Suppress("DEPRECATION")
-            overridePendingTransition(0, 0)
-        }
-        
-        // Tracks Box Click
-        findViewById<View>(R.id.cl_tracks_box).setOnClickListener {
-            startActivity(Intent(this, TracksActivity::class.java))
-            @Suppress("DEPRECATION")
-            overridePendingTransition(0, 0)
-        }
-        
-        // Equalizer Box Click
-        findViewById<View>(R.id.cl_equalizer_box).setOnClickListener {
-            openEqualizer()
-        }
-        
-        // Apply box visibility preferences
-        applyBoxVisibility()
-
     }
     
-    
-    private fun applyBoxVisibility() {
-        // Get visibility preferences
-        val favVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_FAVORITES)
-        val playlistVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_PLAYLISTS)
-        val albumsVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_ALBUMS)
-        val artistsVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_ARTISTS)
-        val tracksVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_TRACKS)
-        val equalizerVisible = HomeBoxPreferences.isBoxVisible(this, HomeBoxPreferences.BOX_EQUALIZER)
+    private fun setupHomeBoxes() {
+        val recyclerView = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_home_boxes)
         
-        // Get boxes
-        val favBox = findViewById<View>(R.id.cl_favorite_box)
-        val playlistBox = findViewById<View>(R.id.cl_playlist_box)
-        val albumsBox = findViewById<View>(R.id.cl_albums_box)
-        val artistsBox = findViewById<View>(R.id.cl_artists_box)
-        val tracksBox = findViewById<View>(R.id.cl_tracks_box)
-        val equalizerBox = findViewById<View>(R.id.cl_equalizer_box)
+        // Get saved box order
+        val savedOrder = HomeBoxPreferences.getBoxOrder(this)
+        val allBoxes = HomeBoxPreferences.getAllBoxes()
         
-        // Set box visibility
-        favBox.visibility = if (favVisible) View.VISIBLE else View.GONE
-        playlistBox.visibility = if (playlistVisible) View.VISIBLE else View.GONE
-        albumsBox.visibility = if (albumsVisible) View.VISIBLE else View.GONE
-        artistsBox.visibility = if (artistsVisible) View.VISIBLE else View.GONE
-        tracksBox.visibility = if (tracksVisible) View.VISIBLE else View.GONE
-        equalizerBox.visibility = if (equalizerVisible) View.VISIBLE else View.GONE
-        
-        // Adjust layout params for single boxes to prevent stretching
-        adjustSingleBoxWidth(favBox, favVisible && !playlistVisible)
-        adjustSingleBoxWidth(playlistBox, playlistVisible && !favVisible)
-        adjustSingleBoxWidth(albumsBox, albumsVisible && !artistsVisible)
-        adjustSingleBoxWidth(artistsBox, artistsVisible && !albumsVisible)
-        adjustSingleBoxWidth(tracksBox, tracksVisible && !equalizerVisible)
-        adjustSingleBoxWidth(equalizerBox, equalizerVisible && !tracksVisible)
-        
-        // Hide entire rows if all boxes in that row are hidden
-        findViewById<View>(R.id.ll_row1).visibility = 
-            if (favVisible || playlistVisible) View.VISIBLE else View.GONE
-        
-        findViewById<View>(R.id.ll_row2).visibility = 
-            if (albumsVisible || artistsVisible) View.VISIBLE else View.GONE
-        
-        findViewById<View>(R.id.ll_row3).visibility = 
-            if (tracksVisible || equalizerVisible) View.VISIBLE else View.GONE
-    }
-    
-    private fun adjustSingleBoxWidth(box: View, isSingle: Boolean) {
-        val params = box.layoutParams as? android.widget.LinearLayout.LayoutParams ?: return
-        
-        if (isSingle) {
-            // When alone, use match_parent and remove margins
-            // This makes it exactly the same width as two boxes + gap would be
-            params.width = android.widget.LinearLayout.LayoutParams.MATCH_PARENT
-            params.weight = 0f
-            params.marginStart = 0
-            params.marginEnd = 0
-        } else {
-            // When paired, use weight and restore margins
-            params.width = 0
-            params.weight = 1f
-            // Restore original margins based on box position
-            // Left boxes (even indices) have marginEnd, right boxes (odd) have marginStart
-            val boxId = box.id
-            when (boxId) {
-                R.id.cl_favorite_box, R.id.cl_albums_box, R.id.cl_tracks_box -> {
-                    params.marginEnd = (4 * resources.displayMetrics.density).toInt()
-                    params.marginStart = 0
-                }
-                R.id.cl_playlist_box, R.id.cl_artists_box, R.id.cl_equalizer_box -> {
-                    params.marginStart = (4 * resources.displayMetrics.density).toInt()
-                    params.marginEnd = 0
-                }
+        // Create ordered list of visible boxes
+        val visibleBoxes = savedOrder.mapNotNull { boxId ->
+            if (HomeBoxPreferences.isBoxVisible(this, boxId)) {
+                allBoxes.find { it.id == boxId }
+            } else {
+                null
             }
         }
-        box.layoutParams = params
+        
+        // Create MainHomeBox list with counts and click handlers
+        val homeBoxes = visibleBoxes.map { box ->
+            val (count, label, onClick) = when (box.id) {
+                HomeBoxPreferences.BOX_FAVORITES -> {
+                    Triple(getFavoriteCount(), "Favorites") {
+                        val intent = Intent(this, TracksActivity::class.java)
+                        intent.putExtra("SHOW_FAVORITES", true)
+                        startActivity(intent)
+                        @Suppress("DEPRECATION")
+                        overridePendingTransition(0, 0)
+                    }
+                }
+                HomeBoxPreferences.BOX_PLAYLISTS -> {
+                    Triple(getPlaylistCount(), "Playlists") {
+                        startActivity(Intent(this, PlaylistActivity::class.java))
+                        @Suppress("DEPRECATION")
+                        overridePendingTransition(0, 0)
+                    }
+                }
+                HomeBoxPreferences.BOX_ALBUMS -> {
+                    Triple(getAlbumCount(), "Albums") {
+                        startActivity(Intent(this, AlbumsActivity::class.java))
+                        @Suppress("DEPRECATION")
+                        overridePendingTransition(0, 0)
+                    }
+                }
+                HomeBoxPreferences.BOX_ARTISTS -> {
+                    Triple(getArtistCount(), "Artists") {
+                        startActivity(Intent(this, ArtistsActivity::class.java))
+                        @Suppress("DEPRECATION")
+                        overridePendingTransition(0, 0)
+                    }
+                }
+                HomeBoxPreferences.BOX_TRACKS -> {
+                    Triple(getTrackCount(), "Tracks") {
+                        startActivity(Intent(this, TracksActivity::class.java))
+                        @Suppress("DEPRECATION")
+                        overridePendingTransition(0, 0)
+                    }
+                }
+                HomeBoxPreferences.BOX_EQUALIZER -> {
+                    Triple(-1, "Tune Sound") {
+                        openEqualizer()
+                    }
+                }
+                else -> Triple(0, "") {}
+            }
+            
+            MainHomeBox(
+                id = box.id,
+                name = box.name.uppercase(),
+                iconRes = box.iconRes,
+                iconTint = getBoxIconTint(box.id),
+                count = count,
+                countLabel = label,
+                onClick = onClick
+            )
+        }
+        
+        // Setup RecyclerView if not already setup
+        if (recyclerView.layoutManager == null) {
+            val layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 2)
+            recyclerView.layoutManager = layoutManager
+            
+            // 8dp spacing both horizontally and vertically (padding reduced to 22dp to keep box size constant)
+            val spacing = (8 * resources.displayMetrics.density).toInt()
+            recyclerView.addItemDecoration(GridSpacingItemDecoration(2, spacing, spacing, false))
+        }
+        
+        recyclerView.adapter = MainHomeBoxAdapter(homeBoxes)
+    }
+    
+    private fun getBoxIconTint(boxId: String): Int {
+        return when (boxId) {
+            HomeBoxPreferences.BOX_FAVORITES -> ContextCompat.getColor(this, R.color.primary_red)
+            else -> ContextCompat.getColor(this, R.color.white)
+        }
     }
 
     private val updateReceiver = object : BroadcastReceiver() {
@@ -251,17 +228,17 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         val intent = Intent(this, MusicService::class.java)
-        bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        bindService(intent, connection, BIND_AUTO_CREATE)
         ContextCompat.registerReceiver(this, updateReceiver, IntentFilter("UPDATE_MAIN_ACTIVITY"), ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(this, updateReceiver, IntentFilter("MUSIC_BOX_UPDATE"), ContextCompat.RECEIVER_NOT_EXPORTED)
-        updateHomeStats() // Renamed from updateCounts() to match existing method
+        setupHomeBoxes() // Refresh boxes with latest data
         updateGreeting()
         NavUtils.setupNavigation(this, R.id.nav_home) // Refresh Navigation in case Settings changed
     }
     
     override fun onResume() {
         super.onResume()
-        applyBoxVisibility() // Refresh box visibility when returning from settings
+        setupHomeBoxes() // Refresh box visibility/order when returning from settings
         
         // Also check if already bound (unlikely to change between start and resume, but good for sync)
         if (isBound && musicService != null) {
@@ -299,49 +276,42 @@ class MainActivity : AppCompatActivity() {
         typeWriterEffect(greetingText, fullInfo)
     }
 
-    private fun updateHomeStats() {
-        // Favorites
-        val favCount = FavoritesManager.getFavorites(this).size
-        findViewById<TextView>(R.id.tv_fav_count).text = getString(R.string.home_fav_count, favCount)
-
-        // Playlists
-        var playlistCount = 0
-        try {
-            @Suppress("DEPRECATION")
-            contentResolver.query(
-                MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Audio.Playlists._ID),
-                null, null, null
-            )?.use { playlistCount = it.count }
-        } catch (_: Exception) { }
-        findViewById<TextView>(R.id.tv_playlist_count).text = getString(R.string.home_playlist_count, playlistCount)
-
-        // Albums
-        var albumCount = 0
+    private fun getFavoriteCount(): Int {
+        return FavoritesManager.getFavorites(this).size
+    }
+    
+    private fun getPlaylistCount(): Int {
+        return AppPlaylistManager.getAllPlaylists(this).size
+    }
+    
+    private fun getAlbumCount(): Int {
+        var count = 0
         try {
             @Suppress("DEPRECATION")
             contentResolver.query(
                 MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
                 arrayOf(MediaStore.Audio.Albums._ID),
                 null, null, null
-            )?.use { albumCount = it.count }
+            )?.use { count = it.count }
         } catch (_: Exception) { }
-        findViewById<TextView>(R.id.tv_album_count).text = getString(R.string.home_album_count, albumCount)
-
-        // Artists
-        var artistCount = 0
+        return count
+    }
+    
+    private fun getArtistCount(): Int {
+        var count = 0
         try {
             @Suppress("DEPRECATION")
             contentResolver.query(
                 MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
                 arrayOf(MediaStore.Audio.Artists._ID),
                 null, null, null
-            )?.use { artistCount = it.count }
+            )?.use { count = it.count }
         } catch (_: Exception) { }
-        findViewById<TextView>(R.id.tv_artist_count).text = getString(R.string.home_artist_count, artistCount)
-        
-        // Tracks (excluding hidden tracks and filtered by duration)
-        var trackCount = 0
+        return count
+    }
+    
+    private fun getTrackCount(): Int {
+        var count = 0
         val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
         val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
         val minDurationMs = minDurationSec * 1000
@@ -361,14 +331,13 @@ class MainActivity : AppCompatActivity() {
                     val path = cursor.getString(dataColumn)
                     val duration = cursor.getInt(durationColumn)
                     
-                    // Only count if not hidden AND meets duration filter
                     if (!HiddenTracksManager.isHidden(this, path) && duration >= minDurationMs) {
-                        trackCount++
+                        count++
                     }
                 }
             }
         } catch (_: Exception) { }
-        findViewById<TextView>(R.id.tv_track_count).text = getString(R.string.home_track_count, trackCount)
+        return count
     }
 
     private fun typeWriterEffect(textView: TextView, text: String, delay: Long = 50) {

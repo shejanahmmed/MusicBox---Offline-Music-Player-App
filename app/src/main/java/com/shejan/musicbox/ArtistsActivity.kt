@@ -123,6 +123,11 @@ class ArtistsActivity : AppCompatActivity() {
             Toast.makeText(this, "Error loading artists", Toast.LENGTH_SHORT).show()
         }
 
+        // Update Count
+        val countView = findViewById<android.widget.TextView>(R.id.tv_artists_count)
+        val countText = if (list.size == 1) "1 Artist" else "${list.size} Artists"
+        countView.text = countText
+
         val rv = findViewById<RecyclerView>(R.id.rv_artists)
         rv.layoutManager = LinearLayoutManager(this)
         rv.adapter = ArtistAdapter(list) { artist ->

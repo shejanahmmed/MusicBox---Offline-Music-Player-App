@@ -7,16 +7,19 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.switchmaterial.SwitchMaterial
+import java.util.Collections
 
 class HomeBoxAdapter(
-    private val boxes: List<HomeBox>,
-    private val onVisibilityChanged: (HomeBox, Boolean) -> Unit
+    private val boxes: MutableList<HomeBox>,
+    private val onVisibilityChanged: (HomeBox, Boolean) -> Unit,
+    private val onOrderChanged: (List<HomeBox>) -> Unit
 ) : RecyclerView.Adapter<HomeBoxAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val icon: ImageView = view.findViewById(R.id.iv_box_icon)
         val name: TextView = view.findViewById(R.id.tv_box_name)
         val switch: SwitchMaterial = view.findViewById(R.id.switch_visibility)
+        val dragHandle: ImageView = view.findViewById(R.id.iv_drag_handle)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -46,4 +49,19 @@ class HomeBoxAdapter(
     }
 
     override fun getItemCount() = boxes.size
+    
+    // Drag and drop support
+    fun onItemMove(fromPosition: Int, toPosition: Int) {
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(boxes, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(boxes, i, i - 1)
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition)
+        onOrderChanged(boxes)
+    }
 }

@@ -54,4 +54,10 @@ class TrackSelectionAdapter(
     fun getSelectedTrackIds(): List<Long> {
         return selectedTracks.toList()
     }
+
+    fun setSelectedTrackIds(ids: List<Long>) {
+        selectedTracks.clear()
+        selectedTracks.addAll(ids)
+        notifyDataSetChanged()
+    }
 }

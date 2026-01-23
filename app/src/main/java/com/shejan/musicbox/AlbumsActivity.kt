@@ -80,33 +80,43 @@ class AlbumsActivity : AppCompatActivity() {
     }
 
     private fun loadAlbums() {
-        val list = mutableListOf<Album>()
+        val albumMap = mutableMapOf<Long, Album>()
         try {
             val projection = arrayOf(
-                MediaStore.Audio.Albums._ID,
-                MediaStore.Audio.Albums.ALBUM,
-                MediaStore.Audio.Albums.ARTIST
+                MediaStore.Audio.Media.ALBUM_ID,
+                MediaStore.Audio.Media.ALBUM,
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.DATA
             )
             
+            // Querying Media to get individual tracks so we can filter hidden ones
             val cursor = contentResolver.query(
-                MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 projection,
+                "${MediaStore.Audio.Media.IS_MUSIC} != 0",
                 null,
-                null,
-                MediaStore.Audio.Albums.ALBUM + " ASC"
+                "${MediaStore.Audio.Media.ALBUM} ASC"
             )
 
             cursor?.use {
-                val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Albums._ID)
-                val albumCol = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM)
-                val artistCol = it.getColumnIndexOrThrow(MediaStore.Audio.Albums.ARTIST)
-                // ALBUM_ART is deprecated in Q+, but useful for older/simple checks. Uri construction preferred.
+                val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+                val albumCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+                val artistCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+                val pathCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
                 
                 while (it.moveToNext()) {
-                    val id = it.getLong(idCol)
-                    val title = it.getString(albumCol)
-                    val artist = it.getString(artistCol)
-                    list.add(Album(id, title, artist, null))
+                    val path = it.getString(pathCol)
+                    // Check if this specific track is hidden
+                    if (HiddenTracksManager.isHidden(this, path)) continue
+                    
+                    val albumId = it.getLong(idCol)
+                    
+                    // If we haven't seen this album yet, add it
+                    if (!albumMap.containsKey(albumId)) {
+                        val title = it.getString(albumCol)
+                        val artist = it.getString(artistCol)
+                        albumMap[albumId] = Album(albumId, title, artist, null)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -114,16 +124,22 @@ class AlbumsActivity : AppCompatActivity() {
             Toast.makeText(this, "Error loading albums", Toast.LENGTH_SHORT).show()
         }
 
+        val list = albumMap.values.toList().sortedBy { it.title }
+        
+        // Update Header
+        // findViewById<TextView>(R.id.tv_header_title).text = "ALBUMS" // Already set in XML
+        
+        // Update Count
+        val countView = findViewById<android.widget.TextView>(R.id.tv_albums_count)
+        val countText = if (list.size == 1) "1 Album" else "${list.size} Albums"
+        countView.text = countText
+
         val rv = findViewById<RecyclerView>(R.id.rv_albums)
         rv.layoutManager = GridLayoutManager(this, 2)
         rv.adapter = AlbumAdapter(list) { album ->
              // Open TracksActivity with Album Filter
-             // We need to support ALBUM_ID or ALBUM_NAME filter in TracksActivity
-             // Currently passing NAME as simpler if unique enough, but ID is safer.
-             // Let's pass ID and Name.
              val intent = Intent(this, TracksActivity::class.java)
              intent.putExtra("ALBUM_NAME", album.title) 
-             // TracksActivity needs update to handle ALBUM_NAME
              startActivity(intent)
         }
     }

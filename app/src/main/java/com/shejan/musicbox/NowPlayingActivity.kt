@@ -343,8 +343,8 @@ class NowPlayingActivity : AppCompatActivity() {
                  // Result launcher not needed unless we want to know when they return.
                  // startActivityForResult is deprecated but simple here. 
                  // Or just startActivity if we don't care about result.
-                 startActivityForResult(intent, 1002) 
-             } catch (e: Exception) {
+                 startActivity(intent) 
+             } catch (_: Exception) {
                  Toast.makeText(this, "No Equalizer found", Toast.LENGTH_SHORT).show()
              }
         }

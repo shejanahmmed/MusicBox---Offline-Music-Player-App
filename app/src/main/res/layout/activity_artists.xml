@@ -18,11 +18,20 @@
         android:letterSpacing="-0.05"
         android:textAllCaps="true"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="56dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
-
+    <TextView
+        android:id="@+id/tv_artists_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0 Artists"
+        android:textColor="#888888"
+        android:textSize="14sp"
+        android:layout_marginStart="24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_header_title"/>
 
     <!-- Artists List -->
     <androidx.recyclerview.widget.RecyclerView
@@ -33,7 +42,7 @@
         android:paddingHorizontal="24dp"
         android:paddingTop="24dp"
         android:paddingBottom="100dp"
-        app:layout_constraintTop_toBottomOf="@+id/tv_header_title"
+        app:layout_constraintTop_toBottomOf="@+id/tv_artists_count"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <!-- Mini Player -->

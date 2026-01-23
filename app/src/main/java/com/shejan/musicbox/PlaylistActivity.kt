@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.widget.TextView
+import android.widget.Toast
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -17,6 +18,9 @@ import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.ComponentName
 import android.os.IBinder
+import android.content.ContentUris
+import android.os.Build
+import android.app.RecoverableSecurityException
 
 class PlaylistActivity : AppCompatActivity() {
 
@@ -100,8 +104,8 @@ class PlaylistActivity : AppCompatActivity() {
     }
 
     private fun updateTopCards() {
-         val systemPlaylists = getSystemPlaylists()
-         findViewById<TextView>(R.id.tv_playlists_count).text = getString(R.string.lists_count, systemPlaylists.size)
+         val playlists = AppPlaylistManager.getAllPlaylists(this)
+         findViewById<TextView>(R.id.tv_playlists_count).text = getString(R.string.lists_count, playlists.size)
     }
 
     // setupTopCards removed as it only set listener on removed view
@@ -109,8 +113,11 @@ class PlaylistActivity : AppCompatActivity() {
     private fun loadPlaylists() {
         val list = mutableListOf<PlaylistItem>()
 
-        // 2. User Playlists from System
-        list.addAll(getSystemPlaylists())
+        // 2. User Playlists from App Storage
+        val appPlaylists = AppPlaylistManager.getAllPlaylists(this)
+        
+        // Map to PlaylistItem
+        list.addAll(appPlaylists.map { PlaylistItem(it.id, it.name, it.trackPaths.size) })
 
         val rv = findViewById<RecyclerView>(R.id.rv_playlists)
         val emptyView = findViewById<TextView>(R.id.tv_empty_state)
@@ -124,52 +131,65 @@ class PlaylistActivity : AppCompatActivity() {
         }
 
         rv.layoutManager = LinearLayoutManager(this)
-        rv.adapter = PlaylistAdapter(list) { item ->
+        rv.adapter = PlaylistAdapter(list, onClick = { item ->
              val intent = Intent(this, TracksActivity::class.java)
              intent.putExtra("PLAYLIST_ID", item.id)
              intent.putExtra("PLAYLIST_NAME", item.name)
              startActivity(intent)
-        }
+        }, onLongClick = { item ->
+            showDeleteDialog(item)
+        })
     }
 
 
 
-    @Suppress("DEPRECATION")
-    private fun getSystemPlaylists(): List<PlaylistItem> {
-        val playlists = mutableListOf<PlaylistItem>()
-        try {
-            val cursor = contentResolver.query(
-                MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Audio.Playlists._ID, MediaStore.Audio.Playlists.NAME),
-                null, null, null
-            )
-            cursor?.use {
-                val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Playlists._ID)
-                val nameCol = it.getColumnIndexOrThrow(MediaStore.Audio.Playlists.NAME)
-                while (it.moveToNext()) {
-                    val id = it.getLong(idCol)
-                    val name = it.getString(nameCol)
-                    // Get count for this playlist (requires another query usually, simplified here for speed)
-                    // Let's approximate count or query members
-                    val count = getPlaylistCount(id)
-                    playlists.add(PlaylistItem(id, name, count))
-                }
-            }
-        } catch (_: Exception) { }
-        return playlists
+    // getSystemPlaylists removed
+    
+    // getPlaylistCount removed
+
+
+    private fun showDeleteDialog(playlist: PlaylistItem) {
+        val dialog = android.app.Dialog(this)
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        val view = layoutInflater.inflate(R.layout.dialog_delete_playlist, null)
+        dialog.setContentView(view)
+        
+        // Transparent background
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        
+        // Width
+        val displayMetrics = resources.displayMetrics
+        val width = (displayMetrics.widthPixels * 0.95).toInt()
+        dialog.window?.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
+        
+        // Setup text
+        view.findViewById<android.widget.TextView>(R.id.tv_dialog_message).text = 
+            "Are you sure you want to delete \"${playlist.name}\"?"
+            
+        // Cancel
+        view.findViewById<View>(R.id.btn_cancel).setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        // Delete
+        view.findViewById<View>(R.id.btn_delete).setOnClickListener {
+            dialog.dismiss()
+            deletePlaylist(playlist)
+        }
+        
+        dialog.show()
     }
     
-    @Suppress("DEPRECATION")
-    private fun getPlaylistCount(playlistId: Long): Int {
-        var count = 0
-        try {
-            val uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId)
-            val cursor = contentResolver.query(uri, arrayOf(MediaStore.Audio.Playlists.Members._ID), null, null, null)
-            count = cursor?.count ?: 0
-            cursor?.close()
-        } catch (_: Exception) { }
-        return count
+    private fun deletePlaylist(playlist: PlaylistItem) {
+        AppPlaylistManager.deletePlaylist(this, playlist.id)
+        Toast.makeText(this, "Playlist deleted", Toast.LENGTH_SHORT).show()
+        
+        // Reload
+        loadPlaylists()
+        updateTopCards()
     }
+    
+    // onActivityResult removed as it is no longer needed/reachable for delete
 
     private fun setupNav() {
         NavUtils.setupNavigation(this, R.id.nav_playlist)

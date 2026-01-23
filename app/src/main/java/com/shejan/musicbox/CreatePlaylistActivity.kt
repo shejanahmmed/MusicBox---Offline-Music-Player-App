@@ -1,6 +1,6 @@
 package com.shejan.musicbox
 
-import android.content.ContentValues
+
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.EditText
@@ -16,6 +16,8 @@ class CreatePlaylistActivity : AppCompatActivity() {
 
     private lateinit var adapter: TrackSelectionAdapter
     private val allTracks = mutableListOf<Track>()
+    private var editPlaylistId: Long = -1L
+    private var isEditMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,9 +37,27 @@ class CreatePlaylistActivity : AppCompatActivity() {
         rv.layoutManager = LinearLayoutManager(this)
         rv.adapter = adapter
 
+        // Check for edit mode
+        editPlaylistId = intent.getLongExtra("EDIT_PLAYLIST_ID", -1L)
+        if (editPlaylistId != -1L) {
+            isEditMode = true
+            setupEditMode()
+        }
+
         findViewById<FloatingActionButton>(R.id.fab_save_playlist).setOnClickListener {
             savePlaylist()
         }
+    }
+
+    private fun setupEditMode() {
+        val playlist = AppPlaylistManager.getPlaylist(this, editPlaylistId) ?: return
+        
+        findViewById<EditText>(R.id.et_playlist_name).setText(playlist.name)
+        
+        // Pre-select tracks
+        val savedPaths = playlist.trackPaths.toSet()
+        val savedIds = allTracks.filter { it.uri in savedPaths }.map { it.id }
+        adapter.setSelectedTrackIds(savedIds)
     }
 
     private fun loadTracks() {
@@ -95,50 +115,19 @@ class CreatePlaylistActivity : AppCompatActivity() {
             Toast.makeText(this, "Please select at least one song", Toast.LENGTH_SHORT).show()
             return
         }
-
-        val playlistId = createPlaylist(name)
-        if (playlistId != -1L) {
-            addToPlaylist(playlistId, selectedIds)
-            Toast.makeText(this, "Playlist created!", Toast.LENGTH_SHORT).show()
-            finish()
-        } else {
-            Toast.makeText(this, "Failed to create playlist", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun createPlaylist(name: String): Long {
-        val values = ContentValues().apply {
-            put(MediaStore.Audio.Playlists.NAME, name)
-            put(MediaStore.Audio.Playlists.DATE_ADDED, System.currentTimeMillis() / 1000)
-            put(MediaStore.Audio.Playlists.DATE_MODIFIED, System.currentTimeMillis() / 1000)
-        }
-
-        return try {
-            val uri = contentResolver.insert(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, values)
-            uri?.lastPathSegment?.toLong() ?: -1L
-        } catch (e: Exception) {
-            e.printStackTrace()
-            -1L
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun addToPlaylist(playlistId: Long, trackIds: List<Long>) {
-        val uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId)
-        // Bulk insert or loop
-        // Loop is safer for order usually, but bulk is faster. Let's do loop to ensure order if we added that feature later.
-        // Actually, simple insert is fine.
         
-        var baseOrder = 1
-        trackIds.forEach { trackId ->
-            val values = ContentValues().apply {
-                put(MediaStore.Audio.Playlists.Members.PLAY_ORDER, baseOrder++)
-                put(MediaStore.Audio.Playlists.Members.AUDIO_ID, trackId)
-            }
-            try {
-                contentResolver.insert(uri, values)
-            } catch (e: Exception) { e.printStackTrace() }
+        // Get paths
+        val selectedPaths = allTracks.filter { selectedIds.contains(it.id) }.map { it.uri }
+        
+        if (isEditMode) {
+            AppPlaylistManager.updatePlaylist(this, editPlaylistId, name, selectedPaths)
+            Toast.makeText(this, "Playlist updated!", Toast.LENGTH_SHORT).show()
+        } else {
+            AppPlaylistManager.createPlaylist(this, name, selectedPaths)
+            Toast.makeText(this, "Playlist created!", Toast.LENGTH_SHORT).show()
         }
+        finish()
     }
+
+    // MediaStore methods removed
 }
