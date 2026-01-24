@@ -57,15 +57,15 @@ object MiniPlayerManager {
                     
                     if (abs(diffX) > SWIPE_THRESHOLD && abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
                         if (diffX > 0) {
-                            // Swipe left-to-right: Next track
+                            // Swipe left-to-right: Previous track
                             val intent = Intent(activity, MusicService::class.java)
-                            intent.action = MusicService.ACTION_NEXT
+                            intent.action = MusicService.ACTION_PREV
                             activity.startService(intent)
                             return true
                         } else {
-                            // Swipe right-to-left: Previous track
+                            // Swipe right-to-left: Next track
                             val intent = Intent(activity, MusicService::class.java)
-                            intent.action = MusicService.ACTION_PREV
+                            intent.action = MusicService.ACTION_NEXT
                             activity.startService(intent)
                             return true
                         }
@@ -156,4 +156,3 @@ object MiniPlayerManager {
         }
     }
 }
-
