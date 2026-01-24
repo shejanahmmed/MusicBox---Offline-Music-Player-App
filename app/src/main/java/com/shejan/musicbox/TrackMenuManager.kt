@@ -180,9 +180,12 @@ object TrackMenuManager {
                 val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
                 val displayMetrics = activity.resources.displayMetrics
                 val height = displayMetrics.heightPixels
-                val maxHeight = (height * 0.85).toInt()
+                val maxHeight = (height * 0.90).toInt()
                 
+                bottomSheet.layoutParams.height = maxHeight
+                bottomSheet.requestLayout()
                 behavior.peekHeight = maxHeight
+                behavior.skipCollapsed = true
                 behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
             }
         }
@@ -385,4 +388,3 @@ object TrackMenuManager {
         }
     }
 }
-

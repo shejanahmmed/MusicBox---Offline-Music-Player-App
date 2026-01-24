@@ -21,7 +21,7 @@ package com.shejan.musicbox
 
 import android.content.ContentUris
 import android.content.Context
-
+import android.media.ExifInterface
 import android.widget.ImageView
 import androidx.core.net.toUri
 
@@ -94,8 +94,6 @@ object MusicUtils {
         }
     }
 
-
-
     fun getTrackArtworkBitmap(context: Context, trackId: Long, albumId: Long): android.graphics.Bitmap? {
          // Check for custom artwork
          if (TrackArtworkManager.hasCustomArtwork(context, trackId)) {
@@ -105,12 +103,37 @@ object MusicUtils {
              } else if (customUri != null) {
                  try {
                      val uri = customUri.toUri()
-                     // Use ImageDecoder or BitmapFactory to get Bitmap from URI
-                     // For simplicity and backward compat, using contentResolver
-                     val pfd = context.contentResolver.openFileDescriptor(uri, "r")
-                     if (pfd != null) {
-                         return android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor)
+                     
+                     // 1. Decode Bitmap
+                     val pfd = context.contentResolver.openFileDescriptor(uri, "r") ?: return null
+                     val bitmap = android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor)
+                     pfd.close()
+                     
+                     if (bitmap == null) return null
+                     
+                     // 2. Read EXIF Orientation
+                     var rotation = 0f
+                     val inputStream = context.contentResolver.openInputStream(uri)
+                     if (inputStream != null) {
+                         val exif = ExifInterface(inputStream)
+                         val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+                         when (orientation) {
+                             ExifInterface.ORIENTATION_ROTATE_90 -> rotation = 90f
+                             ExifInterface.ORIENTATION_ROTATE_180 -> rotation = 180f
+                             ExifInterface.ORIENTATION_ROTATE_270 -> rotation = 270f
+                         }
+                         inputStream.close()
                      }
+                     
+                     // 3. Rotate if necessary
+                     if (rotation != 0f) {
+                         val matrix = android.graphics.Matrix()
+                         matrix.postRotate(rotation)
+                         return android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                     }
+                     
+                     return bitmap
+
                  } catch (e: Exception) {
                      e.printStackTrace()
                  }
@@ -170,4 +193,3 @@ object MusicUtils {
         return null
     }
 }
-
