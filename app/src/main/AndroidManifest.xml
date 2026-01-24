@@ -89,6 +89,10 @@
             android:exported="false"
             android:theme="@style/Theme.MusicBox" />
         <activity
+            android:name=".AboutActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MusicBox" />
+        <activity
             android:name=".HomeCustomizationActivity"
             android:exported="false"
             android:theme="@style/Theme.MusicBox" />

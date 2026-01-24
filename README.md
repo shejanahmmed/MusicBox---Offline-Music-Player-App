@@ -117,6 +117,15 @@ Contributions are welcome! If you have suggestions for new features or bug fixes
 *   **Instagram**: [iamshejan](https://www.instagram.com/iamshejan/)
 *   **Email**: [farjan.swe@gmail.com](mailto:farjan.swe@gmail.com)
 
+## 📄 License
+
+Copyright (C) 2026 Shejan
+
+This project is licensed under the **GNU General Public License v3.0**.  
+You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.
+
+See the [LICENSE](LICENSE) file for details.
+
 ---
 
 *Made with ❤️ and Kotlin.*
