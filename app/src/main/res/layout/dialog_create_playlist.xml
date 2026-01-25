@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
         android:background="@drawable/bg_settings_card"
-        android:fontFamily="sans-serif"
+
         android:hint="Playlist name"
         android:inputType="textCapSentences"
         android:padding="16dp"

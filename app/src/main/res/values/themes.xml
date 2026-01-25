@@ -13,6 +13,8 @@
         <item name="android:statusBarColor">@color/background_dark</item>
         <item name="android:windowLightStatusBar">false</item>
         <!-- Customize your theme here. -->
+        <item name="android:fontFamily">@font/arimo</item>
+        <item name="fontFamily">@font/arimo</item>
     </style>
     
     <!-- Custom AlertDialog Theme -->

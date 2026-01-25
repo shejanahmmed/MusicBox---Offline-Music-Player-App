@@ -94,7 +94,7 @@
             android:text="320 kbit/s    48000 Hz    12.93 MB"
             android:textColor="#888888"
             android:textSize="11sp"
-            android:fontFamily="monospace"
+
             android:layout_marginBottom="8dp" />
 
         <!-- Second Row: Path and Badges -->
