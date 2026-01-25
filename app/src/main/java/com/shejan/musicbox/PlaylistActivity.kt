@@ -19,35 +19,34 @@
 
 package com.shejan.musicbox
 
-import android.content.Intent
-import android.os.Bundle
-import android.provider.MediaStore
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import android.widget.TextView
-import android.widget.Toast
-import android.view.View
-import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
-import android.content.ComponentName
+import android.graphics.Color
+
+import android.os.Bundle
 import android.os.IBinder
-import android.content.ContentUris
-import android.os.Build
-import android.app.RecoverableSecurityException
+import android.view.View
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class PlaylistActivity : AppCompatActivity() {
+
+    private var localContentVersion: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_playlist)
-        
-        // Apply WindowInsets to handle Navigation Bar overlap
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, systemBars.bottom)
@@ -114,7 +113,10 @@ class PlaylistActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        loadPlaylists()
+        if (localContentVersion != MusicUtils.contentVersion) {
+            loadPlaylists()
+        }
+
         updateTopCards()
         MiniPlayerManager.update(this, musicService)
         MiniPlayerManager.setup(this) { musicService }
@@ -130,6 +132,7 @@ class PlaylistActivity : AppCompatActivity() {
     // setupTopCards removed as it only set listener on removed view
 
     private fun loadPlaylists() {
+        localContentVersion = MusicUtils.contentVersion
         val list = mutableListOf<PlaylistItem>()
 
         // 2. User Playlists from App Storage
@@ -167,6 +170,7 @@ class PlaylistActivity : AppCompatActivity() {
     // getPlaylistCount removed
 
 
+    @android.annotation.SuppressLint("InflateParams", "SetTextI18n")
     private fun showDeleteDialog(playlist: PlaylistItem) {
         val dialog = android.app.Dialog(this)
         dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
@@ -174,7 +178,7 @@ class PlaylistActivity : AppCompatActivity() {
         dialog.setContentView(view)
         
         // Transparent background
-        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        dialog.window?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
         
         // Width
         val displayMetrics = resources.displayMetrics
@@ -182,7 +186,7 @@ class PlaylistActivity : AppCompatActivity() {
         dialog.window?.setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT)
         
         // Setup text
-        view.findViewById<android.widget.TextView>(R.id.tv_dialog_message).text = 
+        view.findViewById<TextView>(R.id.tv_dialog_message).text = 
             "Are you sure you want to delete \"${playlist.name}\"?"
             
         // Cancel

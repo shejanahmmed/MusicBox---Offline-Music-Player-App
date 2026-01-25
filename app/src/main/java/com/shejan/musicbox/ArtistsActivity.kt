@@ -41,6 +41,7 @@ import android.os.IBinder
 
 class ArtistsActivity : AppCompatActivity() {
 
+    private var localContentVersion: Long = 0
     private var musicService: MusicService? = null
     private var isBound = false
 
@@ -87,6 +88,9 @@ class ArtistsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (localContentVersion != MusicUtils.contentVersion) {
+            loadArtists()
+        }
         MiniPlayerManager.update(this, musicService)
         MiniPlayerManager.setup(this) { musicService }
         NavUtils.setupNavigation(this, R.id.nav_artists)
@@ -109,6 +113,7 @@ class ArtistsActivity : AppCompatActivity() {
     }
 
     private fun loadArtists() {
+        localContentVersion = MusicUtils.contentVersion
         val list = mutableListOf<Artist>()
         try {
             val projection = arrayOf(

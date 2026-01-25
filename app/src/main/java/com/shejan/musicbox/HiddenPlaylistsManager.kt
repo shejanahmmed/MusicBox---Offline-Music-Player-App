@@ -20,7 +20,9 @@
 package com.shejan.musicbox
 
 import android.content.Context
+import androidx.core.content.edit
 
+@Suppress("unused")
 object HiddenPlaylistsManager {
     private const val PREF_NAME = "HiddenPlaylistsPrefs"
     private const val KEY_HIDDEN_IDS = "hidden_playlist_ids"
@@ -34,14 +36,13 @@ object HiddenPlaylistsManager {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val current = getHiddenPlaylists(context).toMutableSet()
         current.add(playlistId.toString())
-        prefs.edit().putStringSet(KEY_HIDDEN_IDS, current).apply()
+        prefs.edit { putStringSet(KEY_HIDDEN_IDS, current) }
     }
 
     fun unhidePlaylist(context: Context, playlistId: Long) {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val current = getHiddenPlaylists(context).toMutableSet()
         current.remove(playlistId.toString())
-        prefs.edit().putStringSet(KEY_HIDDEN_IDS, current).apply()
+        prefs.edit { putStringSet(KEY_HIDDEN_IDS, current) }
     }
 }
-

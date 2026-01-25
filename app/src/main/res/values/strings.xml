@@ -101,4 +101,18 @@
     <string name="msg_no_music">No music found on device</string>
     <string name="msg_storage_permission">Storage permission is required to load songs</string>
     <string name="delete_tracks_dialog_restore_message">Restore \"%1$s\" to your library?</string>
+    
+    <!-- Update Manager -->
+    <string name="update_available_title">Update Available: %1$s</string>
+    <string name="download">Update</string>
+    <string name="later">Cancel</string>
+    <string name="no_updates_found">No updates found</string>
+    <string name="checking_for_updates">Checking for updates...</string>
+    <string name="update_error">Error checking for updates</string>
+
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="privacy_policy_desc">Read our privacy policy</string>
+    
+    <string name="license_title">License</string>
+    <string name="license_desc">View GPL-3.0 License</string>
 </resources>

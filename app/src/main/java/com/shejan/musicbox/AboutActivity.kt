@@ -20,7 +20,7 @@
 package com.shejan.musicbox
 
 import android.content.Intent
-import android.net.Uri
+import androidx.core.net.toUri
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -47,9 +47,9 @@ class AboutActivity : AppCompatActivity() {
 
         findViewById<LinearLayout>(R.id.btn_github).setOnClickListener {
             try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App"))
+                val intent = Intent(Intent.ACTION_VIEW, "https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App".toUri())
                 startActivity(intent)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 Toast.makeText(this, "Could not open browser", Toast.LENGTH_SHORT).show()
             }
         }

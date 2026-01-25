@@ -109,6 +109,10 @@ class MainActivity : AppCompatActivity() {
         // Setup Home Boxes RecyclerView
         setupHomeBoxes()
         
+        // Check for Updates
+        if (prefs.getBoolean("show_pre_releases", false)) {
+            GitHubReleaseManager.checkForUpdates(this, isManualCheck = false)
+        }
     }
     
     private fun setupHomeBoxes() {
@@ -271,11 +275,13 @@ class MainActivity : AppCompatActivity() {
             unbindService(connection)
             isBound = false
         }
+        try {
+            unregisterReceiver(updateReceiver)
+        } catch (_: IllegalArgumentException) {}
     }
 
     override fun onPause() {
         super.onPause()
-        unregisterReceiver(updateReceiver)
     }
 
     private fun updateGreeting() {
@@ -434,4 +440,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-

@@ -525,25 +525,10 @@ class NowPlayingActivity : AppCompatActivity() {
                 updateUI()
             }
             override fun onTrackDeleted() {
-                 
-                 if (MusicService.playlist.isNotEmpty()) {
-                     
-                     val currentId = musicService?.getCurrentTrack()?.id
-                     
-                     
-                     if (currentId == track.id) {
-                         musicService?.playNext()
-                     }
-                     
-                     MusicService.playlist = MusicService.playlist.filter { !HiddenTracksManager.isHidden(this@NowPlayingActivity, it.uri) }
-                     
-                     if (MusicService.playlist.isEmpty()) {
-                         finish()
-                     } else {
-                         updateUI()
-                     }
-                 } else {
+                 if (MusicService.playlist.isEmpty()) {
                      finish()
+                 } else {
+                     updateUI()
                  }
             }
         })
@@ -566,4 +551,3 @@ class NowPlayingActivity : AppCompatActivity() {
         }
     }
 }
-

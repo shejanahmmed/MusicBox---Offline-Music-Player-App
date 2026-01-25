@@ -19,6 +19,7 @@
 
 package com.shejan.musicbox
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.MotionEvent
 import android.widget.ImageButton
@@ -107,11 +108,12 @@ class HomeCustomizationActivity : AppCompatActivity() {
         })
         rvBoxes.post { setupDragHandles(rvBoxes) }
     }
-    
+
     private fun setupDragHandles(recyclerView: RecyclerView) {
         for (i in 0 until recyclerView.childCount) {
             val viewHolder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i))
             if (viewHolder is HomeBoxAdapter.ViewHolder) {
+                @SuppressLint("ClickableViewAccessibility")
                 viewHolder.dragHandle.setOnTouchListener { _, event ->
                     if (event.actionMasked == MotionEvent.ACTION_DOWN) {
                         itemTouchHelper.startDrag(viewHolder)

@@ -19,6 +19,7 @@
 
 package com.shejan.musicbox
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -58,7 +59,7 @@ class MainHomeBoxAdapter(
         // Make box square by setting height = width (accounting for margins)
         holder.itemView.post {
             val width = holder.itemView.width
-            val layoutParams = holder.itemView.layoutParams as? androidx.recyclerview.widget.RecyclerView.LayoutParams
+            val layoutParams = holder.itemView.layoutParams as? RecyclerView.LayoutParams
             if (layoutParams != null) {
                 // Width includes margins, so height should too
                 layoutParams.height = width
@@ -72,6 +73,7 @@ class MainHomeBoxAdapter(
         if (box.count == -1) {
             holder.count.text = box.countLabel
         } else {
+            @SuppressLint("SetTextI18n")
             holder.count.text = "${box.count} ${box.countLabel}"
         }
         

@@ -60,6 +60,7 @@ class TracksActivity : AppCompatActivity() {
     // Sort State
     private var sortColumn = MediaStore.Audio.Media.TITLE
     private var isAscending = true
+    private var localContentVersion: Long = 0
     
     // Artwork Picker
     private val pickArtworkLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -91,6 +92,9 @@ class TracksActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "MUSIC_BOX_UPDATE") {
                 updateMiniPlayer()
+            } else if (intent?.action == "com.shejan.musicbox.TRACK_DELETED") {
+                // Refresh list if track deleted elsewhere
+                loadTracks()
             }
         }
     }
@@ -191,6 +195,11 @@ class TracksActivity : AppCompatActivity() {
 
         // Navigation Logic
         NavUtils.setupNavigation(this, getNavId())
+        
+        // Register Receiver
+        val filter = IntentFilter("MUSIC_BOX_UPDATE")
+        filter.addAction("com.shejan.musicbox.TRACK_DELETED")
+        ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     override fun onStart() {
@@ -207,12 +216,23 @@ class TracksActivity : AppCompatActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        loadTracks()
+        NavUtils.setupNavigation(this, getNavId())
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        try {
+            unregisterReceiver(receiver)
+        } catch (_: IllegalArgumentException) {}
     }
 
     private fun getNavId(): Int {
         return when {
+            intent.getBooleanExtra("SHOW_FAVORITES", false) -> R.id.nav_home
             intent.hasExtra("PLAYLIST_ID") -> R.id.nav_playlist
             intent.hasExtra("ALBUM_NAME") -> R.id.nav_albums
             intent.hasExtra("ARTIST_NAME") -> R.id.nav_artists
@@ -222,6 +242,9 @@ class TracksActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (localContentVersion != MusicUtils.contentVersion) {
+            loadTracks()
+        }
         updateMiniPlayer()
         // Refresh Navigation in case Settings changed
         NavUtils.setupNavigation(this, getNavId())
@@ -233,18 +256,12 @@ class TracksActivity : AppCompatActivity() {
         }
         
         // Register Receiver
-        // Register Receiver
-        val filter = IntentFilter("MUSIC_BOX_UPDATE")
-        ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        // Receiver Moved to onCreate/onDestroy
     }
     
     override fun onPause() {
         super.onPause()
-        try {
-            unregisterReceiver(receiver)
-        } catch (_: IllegalArgumentException) {
-            // Receiver not registered, ignore
-        }
+        // Receiver Unregister Moved
     }
 
     private fun updateMiniPlayer() {
@@ -325,6 +342,7 @@ class TracksActivity : AppCompatActivity() {
         val artistName = intent.getStringExtra("ARTIST_NAME")
         val albumName = intent.getStringExtra("ALBUM_NAME")
 
+        localContentVersion = MusicUtils.contentVersion
         val trackList = mutableListOf<Track>()
 
         if (showFavoritesOnly) {
@@ -553,4 +571,3 @@ class TracksActivity : AppCompatActivity() {
         })
     }
 }
-

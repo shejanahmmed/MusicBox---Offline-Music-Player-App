@@ -26,6 +26,8 @@ import android.widget.ImageView
 import androidx.core.net.toUri
 
 object MusicUtils {
+    @Volatile var contentVersion: Long = 0
+
     
     fun loadAlbumArt(context: Context, albumId: Long, imageView: ImageView) {
         if (albumId <= 0) {
@@ -104,14 +106,27 @@ object MusicUtils {
                  try {
                      val uri = customUri.toUri()
                      
-                     // 1. Decode Bitmap
-                     val pfd = context.contentResolver.openFileDescriptor(uri, "r") ?: return null
-                     val bitmap = android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor)
+                     // 1. Decode Bounds First
+                     var pfd = context.contentResolver.openFileDescriptor(uri, "r") ?: return null
+                     val options = android.graphics.BitmapFactory.Options()
+                     options.inJustDecodeBounds = true
+                     android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor, null, options)
+                     pfd.close()
+                     
+                     // Calculate inSampleSize
+                     val reqWidth = 500
+                     val reqHeight = 500
+                     options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
+                     options.inJustDecodeBounds = false
+                     
+                     // 2. Decode Full
+                     pfd = context.contentResolver.openFileDescriptor(uri, "r") ?: return null
+                     val bitmap = android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor, null, options)
                      pfd.close()
                      
                      if (bitmap == null) return null
                      
-                     // 2. Read EXIF Orientation
+                     // 3. Read EXIF Orientation
                      var rotation = 0f
                      val inputStream = context.contentResolver.openInputStream(uri)
                      if (inputStream != null) {
@@ -125,7 +140,7 @@ object MusicUtils {
                          inputStream.close()
                      }
                      
-                     // 3. Rotate if necessary
+                     // 4. Rotate if necessary
                      if (rotation != 0f) {
                          val matrix = android.graphics.Matrix()
                          matrix.postRotate(rotation)
@@ -182,14 +197,42 @@ object MusicUtils {
             
             // Fallback / Pre-Q
             try {
-                 val pfd = context.contentResolver.openFileDescriptor(uri, "r")
+                 var pfd = context.contentResolver.openFileDescriptor(uri, "r")
                  if (pfd != null) {
-                      val fd = pfd.fileDescriptor
-                      return android.graphics.BitmapFactory.decodeFileDescriptor(fd)
+                      val options = android.graphics.BitmapFactory.Options()
+                      options.inJustDecodeBounds = true
+                      android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor, null, options)
+                      pfd.close()
+                      
+                      options.inSampleSize = calculateInSampleSize(options, 500, 500)
+                      options.inJustDecodeBounds = false
+                      
+                      pfd = context.contentResolver.openFileDescriptor(uri, "r")
+                      if (pfd != null) {
+                          return android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor, null, options).also {
+                              pfd.close()
+                          }
+                      }
                  }
             } catch (_: Exception) { }
         } catch (_: Exception) { }
         
         return null
+    }
+
+    private fun calculateInSampleSize(options: android.graphics.BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val (height: Int, width: Int) = options.outHeight to options.outWidth
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
     }
 }

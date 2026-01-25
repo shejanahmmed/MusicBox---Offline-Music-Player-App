@@ -32,11 +32,12 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.IntentFilter
 import android.content.ServiceConnection
-import android.os.Build
+
 import android.os.IBinder
 
 class AlbumsActivity : AppCompatActivity() {
 
+    private var localContentVersion: Long = 0
     private var musicService: MusicService? = null
     private var isBound = false
 
@@ -84,6 +85,9 @@ class AlbumsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (localContentVersion != MusicUtils.contentVersion) {
+            loadAlbums()
+        }
         MiniPlayerManager.update(this, musicService)
         MiniPlayerManager.setup(this) { musicService }
         NavUtils.setupNavigation(this, R.id.nav_albums)
@@ -99,6 +103,7 @@ class AlbumsActivity : AppCompatActivity() {
     }
 
     private fun loadAlbums() {
+        localContentVersion = MusicUtils.contentVersion
         val albumMap = mutableMapOf<Long, Album>()
         try {
             val projection = arrayOf(

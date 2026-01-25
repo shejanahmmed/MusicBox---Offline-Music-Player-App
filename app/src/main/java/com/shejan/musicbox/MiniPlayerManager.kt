@@ -19,6 +19,7 @@
 
 package com.shejan.musicbox
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.view.GestureDetector
@@ -52,10 +53,10 @@ object MiniPlayerManager {
                 // Check if horizontal swipe is more significant than vertical
                 if (abs(diffX) > abs(diffY)) {
                     // Minimum swipe distance and velocity thresholds
-                    val SWIPE_THRESHOLD = 100
-                    val SWIPE_VELOCITY_THRESHOLD = 100
+                    val swipeThreshold = 100
+                    val swipeVelocityThreshold = 100
                     
-                    if (abs(diffX) > SWIPE_THRESHOLD && abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                    if (abs(diffX) > swipeThreshold && abs(velocityX) > swipeVelocityThreshold) {
                         if (diffX > 0) {
                             // Swipe left-to-right: Previous track
                             val intent = Intent(activity, MusicService::class.java)
@@ -89,7 +90,8 @@ object MiniPlayerManager {
         })
         
         // Attach touch listener to mini player for gesture detection
-        miniPlayer.setOnTouchListener { view, event ->
+        @SuppressLint("ClickableViewAccessibility")
+        miniPlayer.setOnTouchListener { _, event ->
             gestureDetector.onTouchEvent(event)
             true // Consume all touch events to prevent double-tap
         }

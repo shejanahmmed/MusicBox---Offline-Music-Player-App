@@ -72,7 +72,7 @@ object NavUtils {
                 // Click Listener
                 itemView.setOnClickListener {
                     val targetClass = TabManager.getTargetActivity(tab.id)
-                    if (activity.javaClass != targetClass) {
+                    if (activity.javaClass != targetClass || tab.viewId != activeNavId) {
                         val intent = Intent(activity, targetClass)
                          // NEW: Capture current scroll position
                         val scrollView = root.findViewById<HorizontalScrollView>(R.id.hsv_nav_scroll)
@@ -116,7 +116,7 @@ object NavUtils {
         }
 
         view.setOnClickListener {
-            if (activity.javaClass != targetClass) {
+            if (activity.javaClass != targetClass || id != activeId) {
                  val intent = Intent(activity, targetClass)
                  intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                  activity.startActivity(intent)

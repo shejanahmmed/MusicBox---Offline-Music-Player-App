@@ -63,6 +63,48 @@ class MusicService : Service() {
         var currentTrackUri: String? = null
     }
 
+    private val noisyReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action == android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
+                if (isPlaying()) {
+                    pause()
+                }
+            }
+        }
+    }
+
+    private val deletionReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+             if (intent?.action == "com.shejan.musicbox.TRACK_DELETED") {
+                 val deletedUri = intent.getStringExtra("DELETED_TRACK_URI") ?: return
+                 
+                 val mutableList = playlist.toMutableList()
+                 val index = mutableList.indexOfFirst { it.uri == deletedUri }
+                 
+                 if (index != -1) {
+                     val wasPlaying = (index == currentIndex)
+                     mutableList.removeAt(index)
+                     playlist = mutableList
+                     
+                     if (wasPlaying) {
+                         if (currentIndex >= playlist.size) {
+                             currentIndex = 0 
+                         }
+                         if (playlist.isNotEmpty()) {
+                             playTrack(currentIndex)
+                         } else {
+                             stopSelf()
+                         }
+                     } else {
+                         if (index < currentIndex) {
+                             currentIndex--
+                         }
+                     }
+                 }
+             }
+        }
+    }
+
     private val binder = MusicBinder()
 
     inner class MusicBinder : android.os.Binder() {
@@ -97,6 +139,18 @@ class MusicService : Service() {
             }
         })
         mediaSession.isActive = true
+
+        // Register Noisy Receiver
+        val filter = android.content.IntentFilter(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+        registerReceiver(noisyReceiver, filter)
+        
+        // Register Deletion Receiver
+        val deleteFilter = android.content.IntentFilter("com.shejan.musicbox.TRACK_DELETED")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(deletionReceiver, deleteFilter, RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(deletionReceiver, deleteFilter)
+        }
 
         // Initialize MediaPlayer
         mediaPlayer = android.media.MediaPlayer().apply {
@@ -254,7 +308,7 @@ class MusicService : Service() {
     fun isPlaying(): Boolean {
         return try {
             mediaPlayer?.isPlaying ?: false
-        } catch (e: IllegalStateException) {
+        } catch (_: IllegalStateException) {
             false
         }
     }
@@ -351,6 +405,14 @@ class MusicService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        try {
+            unregisterReceiver(noisyReceiver)
+        } catch (_: IllegalArgumentException) { }
+        
+        try {
+            unregisterReceiver(deletionReceiver)
+        } catch (_: IllegalArgumentException) { }
+        
         mediaPlayer?.release()
         mediaPlayer = null
         mediaSession.release()
@@ -378,10 +440,11 @@ class MusicService : Service() {
         val track = getCurrentTrack() ?: return
         val duration = mediaPlayer?.duration?.toLong() ?: 0L
         
-        // Try to load art bitmap
+        // Try to load art bitmap (Custom or Album)
         var artBitmap: android.graphics.Bitmap? = null
         try {
-             artBitmap = MusicUtils.getAlbumArtBitmap(this, track.albumId)
+             // Use generic tracker loader which handles custom art AND safe fallback
+             artBitmap = MusicUtils.getTrackArtworkBitmap(this, track.id, track.albumId)
         } catch (e: Exception) { e.printStackTrace() }
         
         if (artBitmap == null) {

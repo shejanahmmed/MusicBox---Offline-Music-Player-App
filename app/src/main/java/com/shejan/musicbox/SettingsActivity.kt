@@ -27,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.net.toUri
+
 import android.annotation.SuppressLint
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -55,6 +56,8 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
+        val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
+
         // Tab Order
         findViewById<android.view.View>(R.id.card_tab_order).setOnClickListener {
              val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
@@ -168,9 +171,14 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent(this, DeletedTracksActivity::class.java))
         }
 
+
+
         // Pre-Release Notification
         val switchPreRelease = findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switch_pre_release)
         val cardPreRelease = findViewById<android.view.View>(R.id.card_pre_release)
+        
+        // Load preference
+        switchPreRelease.isChecked = prefs.getBoolean("show_pre_releases", false)
         
         // Toggle switch when card is clicked
         cardPreRelease.setOnClickListener {
@@ -178,8 +186,14 @@ class SettingsActivity : AppCompatActivity() {
         }
         
         switchPreRelease.setOnCheckedChangeListener { _, isChecked ->
+             prefs.edit { putBoolean("show_pre_releases", isChecked) }
              val msg = if (isChecked) getString(R.string.notifications_enabled) else getString(R.string.notifications_disabled)
              Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+             
+             // Trigger check immediately if enabled
+             if (isChecked) {
+                 GitHubReleaseManager.checkForUpdates(this, isManualCheck = true)
+             }
         }
 
         // Github
@@ -192,6 +206,28 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
         
+        // Privacy Policy
+        findViewById<android.view.View>(R.id.card_privacy_policy).setOnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, "https://www.farjan.me/privacy-policy.html".toUri())
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this, R.string.open_browser_error, Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        }
+
+        // License
+        findViewById<android.view.View>(R.id.card_license).setOnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, "https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App?tab=GPL-3.0-1-ov-file".toUri())
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this, R.string.open_browser_error, Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        }
+
         // About
         findViewById<android.view.View>(R.id.card_about).setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
@@ -199,7 +235,7 @@ class SettingsActivity : AppCompatActivity() {
 
         // Version
          findViewById<android.view.View>(R.id.card_version).setOnClickListener {
-            Toast.makeText(this, R.string.version_text, Toast.LENGTH_SHORT).show()
+            GitHubReleaseManager.checkForUpdates(this, isManualCheck = true)
         }
     }
 

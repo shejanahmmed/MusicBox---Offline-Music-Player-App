@@ -149,7 +149,13 @@ object TrackMenuManager {
             // Hide Track (Remove from app only)
             // Hide Track (Remove from app only)
             HiddenTracksManager.hideTrack(activity, track.uri)
+            MusicUtils.contentVersion++
             Toast.makeText(activity, activity.getString(R.string.removed_from_library), Toast.LENGTH_SHORT).show()
+            
+            // Broadcast deletion to update other lists
+            val intent = Intent("com.shejan.musicbox.TRACK_DELETED")
+            intent.putExtra("DELETED_TRACK_URI", track.uri)
+            activity.sendBroadcast(intent)
             
             callback?.onTrackDeleted()
             dialog.dismiss()
