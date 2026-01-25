@@ -87,6 +87,7 @@ class TracksActivity : AppCompatActivity() {
     
     private var currentEditingTrackId: Long = -1L
     private var isEditingPlaylist = false
+    private var adapter: TrackAdapter? = null
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -400,8 +401,13 @@ class TracksActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tv_tracks_count)?.text = if (trackList.size == 1) "1 Song" else "${trackList.size} Songs"
 
         val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
-        rvTracks.adapter = TrackAdapter(trackList) { track ->
-            showTrackOptionsDialog(track)
+        if (adapter == null) {
+            adapter = TrackAdapter(trackList) { track ->
+                showTrackOptionsDialog(track)
+            }
+            rvTracks.adapter = adapter
+        } else {
+            adapter?.updateData(trackList)
         }
     }
 

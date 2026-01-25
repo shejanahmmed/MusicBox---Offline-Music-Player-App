@@ -36,6 +36,7 @@ class DeletedTracksActivity : AppCompatActivity() {
     private lateinit var rvDeletedTracks: RecyclerView
     private lateinit var llEmptyState: View
     private val deletedTracks = mutableListOf<Track>()
+    private var adapter: TrackAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,10 +129,14 @@ class DeletedTracksActivity : AppCompatActivity() {
         rvDeletedTracks.visibility = View.VISIBLE
         llEmptyState.visibility = View.GONE
 
-        val adapter = TrackAdapter(deletedTracks) { track ->
-            showRestoreDialog(track)
+        if (adapter == null) {
+            adapter = TrackAdapter(deletedTracks) { track ->
+                showRestoreDialog(track)
+            }
+            rvDeletedTracks.adapter = adapter
+        } else {
+            adapter?.updateData(deletedTracks)
         }
-        rvDeletedTracks.adapter = adapter
     }
 
     private fun showEmptyState() {

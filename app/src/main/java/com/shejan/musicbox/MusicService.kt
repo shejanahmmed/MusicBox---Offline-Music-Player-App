@@ -175,6 +175,9 @@ class MusicService : Service() {
         val action = intent?.action
         
         if (action != null) {
+            if (action == Intent.ACTION_MEDIA_BUTTON) {
+                androidx.media.session.MediaButtonReceiver.handleIntent(mediaSession, intent)
+            }
             when (action) {
                 ACTION_PLAY -> play()
                 ACTION_PAUSE -> pause()

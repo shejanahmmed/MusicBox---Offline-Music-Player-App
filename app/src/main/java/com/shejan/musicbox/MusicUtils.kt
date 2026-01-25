@@ -107,29 +107,30 @@ object MusicUtils {
                      val uri = customUri.toUri()
                      
                      // 1. Decode Bounds First
-                     var pfd = context.contentResolver.openFileDescriptor(uri, "r") ?: return null
-                     val options = android.graphics.BitmapFactory.Options()
-                     options.inJustDecodeBounds = true
-                     android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor, null, options)
-                     pfd.close()
+                     val boundsOptions = android.graphics.BitmapFactory.Options()
+                     boundsOptions.inJustDecodeBounds = true
+                     context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                         android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor, null, boundsOptions)
+                     } ?: return null
                      
                      // Calculate inSampleSize
                      val reqWidth = 500
                      val reqHeight = 500
-                     options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
+                     val options = android.graphics.BitmapFactory.Options()
+                     options.inSampleSize = calculateInSampleSize(boundsOptions, reqWidth, reqHeight)
                      options.inJustDecodeBounds = false
                      
                      // 2. Decode Full
-                     pfd = context.contentResolver.openFileDescriptor(uri, "r") ?: return null
-                     val bitmap = android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor, null, options)
-                     pfd.close()
+                     var bitmap: android.graphics.Bitmap? = null
+                     context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                         bitmap = android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor, null, options)
+                     }
                      
                      if (bitmap == null) return null
                      
                      // 3. Read EXIF Orientation
                      var rotation = 0f
-                     val inputStream = context.contentResolver.openInputStream(uri)
-                     if (inputStream != null) {
+                     context.contentResolver.openInputStream(uri)?.use { inputStream ->
                          val exif = ExifInterface(inputStream)
                          val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
                          when (orientation) {
@@ -137,14 +138,13 @@ object MusicUtils {
                              ExifInterface.ORIENTATION_ROTATE_180 -> rotation = 180f
                              ExifInterface.ORIENTATION_ROTATE_270 -> rotation = 270f
                          }
-                         inputStream.close()
                      }
                      
                      // 4. Rotate if necessary
                      if (rotation != 0f) {
                          val matrix = android.graphics.Matrix()
                          matrix.postRotate(rotation)
-                         return android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                         return android.graphics.Bitmap.createBitmap(bitmap!!, 0, 0, bitmap!!.width, bitmap!!.height, matrix, true)
                      }
                      
                      return bitmap
@@ -197,21 +197,16 @@ object MusicUtils {
             
             // Fallback / Pre-Q
             try {
-                 var pfd = context.contentResolver.openFileDescriptor(uri, "r")
-                 if (pfd != null) {
+                 context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
                       val options = android.graphics.BitmapFactory.Options()
                       options.inJustDecodeBounds = true
                       android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor, null, options)
-                      pfd.close()
                       
                       options.inSampleSize = calculateInSampleSize(options, 500, 500)
                       options.inJustDecodeBounds = false
                       
-                      pfd = context.contentResolver.openFileDescriptor(uri, "r")
-                      if (pfd != null) {
-                          return android.graphics.BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor, null, options).also {
-                              pfd.close()
-                          }
+                      context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd2 ->
+                          return android.graphics.BitmapFactory.decodeFileDescriptor(pfd2.fileDescriptor, null, options)
                       }
                  }
             } catch (_: Exception) { }
