@@ -23,6 +23,7 @@ MusicBox is a modern, feature-rich offline music player built with Kotlin for An
 *   **❤️ Favorites & Playlists**: Create unlimited custom playlists with full CRUD operations (Create, Read, Update, Delete).
 *   **Advanced Sorting**: Sort by Title, Date Added, or Date Modified with persistent preferences per page.
 *   **Shuffle & Repeat Modes**: Full playback control with shuffle and repeat (All/One/Off) modes.
+*   **Headset Support**: Seamlessly control playback (Play/Pause/Next/Previous) using wired or Bluetooth headset buttons.
 *   **Queue Management**: View and reorder your "Up Next" queue with visual indicators for the currently playing track.
 *   **Mini Player**: Persistent mini-player controls allowing you to manage playback while browsing the app.
 
@@ -52,6 +53,7 @@ MusicBox is a modern, feature-rich offline music player built with Kotlin for An
 *   **Core APIs**:
     *   `MediaStore` API (for fetching audio files)
     *   `MediaPlayer` (for audio playback)
+    *   `MediaSession` (for background playback and media controls)
     *   `SharedPreferences` (for settings and simple persistence)
     *   JSON-based local storage (for playlists and custom metadata)
     *   `FileProvider` (for secure file sharing)
