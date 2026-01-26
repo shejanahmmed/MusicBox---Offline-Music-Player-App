@@ -96,14 +96,16 @@ class SearchActivity : AppCompatActivity() {
         }
     }
     
-    private fun performSearch(query: String) {
-        if (query.isEmpty()) {
-            adapter.updateData(emptyList()) 
-            return
-        }
-        
-        // Optimized: Search directly via MediaStore query instead of filtering a huge list in memory
-        val trackList = mutableListOf<Track>()
+    private val allTracks = mutableListOf<Track>()
+
+    override fun onResume() {
+        super.onResume()
+        setupNav()
+        loadAllTracks()
+    }
+
+    private fun loadAllTracks() {
+        allTracks.clear()
         try {
             val projection = arrayOf(
                 MediaStore.Audio.Media._ID,
@@ -113,23 +115,18 @@ class SearchActivity : AppCompatActivity() {
                 MediaStore.Audio.Media.ALBUM,
                 MediaStore.Audio.Media.ALBUM_ID
             )
-            
+
             val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
             val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
             val minDurationMillis = minDurationSec * 1000
-            
-            // Search in Title OR Artist
-            val selection = "(${MediaStore.Audio.Media.TITLE} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ?) " +
-                            "AND ${MediaStore.Audio.Media.IS_MUSIC} != 0 " +
-                            "AND ${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
-            
-            val selectionArgs = arrayOf("%$query%", "%$query%")
-            
+
+            val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
+
             contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 projection,
                 selection,
-                selectionArgs,
+                null,
                 "${MediaStore.Audio.Media.TITLE} ASC"
             )?.use { cursor ->
                 val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
@@ -141,10 +138,10 @@ class SearchActivity : AppCompatActivity() {
 
                 while (cursor.moveToNext()) {
                     val path = cursor.getString(dataCol)
-                    if (!HiddenTracksManager.isHidden(this, path) && 
-                        !path.lowercase().contains("ringtone") && 
+                    if (!HiddenTracksManager.isHidden(this, path) &&
+                        !path.lowercase().contains("ringtone") &&
                         !path.lowercase().contains("notification")) {
-                        
+
                         val track = Track(
                             cursor.getLong(idCol),
                             cursor.getString(titleCol),
@@ -153,19 +150,29 @@ class SearchActivity : AppCompatActivity() {
                             cursor.getString(albumCol),
                             cursor.getLong(albumIdCol)
                         )
-                        trackList.add(TrackMetadataManager.applyMetadata(this, track))
+                        // Apply metadata immediately so search works on custom names
+                        allTracks.add(TrackMetadataManager.applyMetadata(this, track))
                     }
                 }
             }
         } catch (e: Exception) { e.printStackTrace() }
-        
-        adapter.updateData(trackList)
     }
 
-    override fun onResume() {
-        super.onResume()
-        setupNav()
+    private fun performSearch(query: String) {
+        if (query.isEmpty()) {
+            adapter.updateData(emptyList())
+            return
+        }
+
+        val filteredList = allTracks.filter { track ->
+            track.title.contains(query, ignoreCase = true) ||
+            track.artist.contains(query, ignoreCase = true)
+        }
+
+        adapter.updateData(filteredList)
     }
+
+
 
     private fun setupNav() {
         NavUtils.setupNavigation(this, R.id.nav_search)
