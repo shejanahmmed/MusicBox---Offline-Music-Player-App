@@ -156,17 +156,7 @@ class TracksActivity : AppCompatActivity() {
              }
         }
 
-        findViewById<View>(R.id.btn_mini_next)?.setOnClickListener {
-            val intent = Intent(this, MusicService::class.java)
-            intent.action = MusicService.ACTION_NEXT
-            startService(intent)
-        }
-
-        findViewById<View>(R.id.btn_mini_prev)?.setOnClickListener {
-            val intent = Intent(this, MusicService::class.java)
-            intent.action = MusicService.ACTION_PREV
-            startService(intent)
-        }
+        MiniPlayerManager.setup(this) { musicService }
         
         NavUtils.setupNavigation(this, getNavId())
         
@@ -248,7 +238,6 @@ class TracksActivity : AppCompatActivity() {
         }
         
         MiniPlayerManager.update(this, musicService)
-        MiniPlayerManager.setup(this) { musicService }
 
         var track: Track? = null
         if (isBound && musicService != null) {
@@ -298,63 +287,71 @@ class TracksActivity : AppCompatActivity() {
         val albumName = intent.getStringExtra("ALBUM_NAME")
 
         localContentVersion = MusicUtils.contentVersion
-        val trackList: List<Track> = if (showFavoritesOnly) {
-             findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.title_favorites)
-             val favorites = FavoritesManager.getFavorites(this)
-             // Favorites still requires filtering the full list since they are URIs in prefs
-             getTracks(null, null).filter { favorites.contains(it.uri) }
-        } else if (playlistId != -1L) {
-             val playlist = AppPlaylistManager.getPlaylist(this, playlistId)
-             val displayName = playlist?.name ?: playlistName ?: "PLAYLIST"
-             findViewById<TextView>(R.id.tv_header_title)?.text = displayName.uppercase()
-             
-             val btnEdit = findViewById<View>(R.id.btn_edit)
-             btnEdit.visibility = View.VISIBLE
-             btnEdit.setOnClickListener {
-                 val intent = Intent(this, CreatePlaylistActivity::class.java)
-                 intent.putExtra("EDIT_PLAYLIST_ID", playlistId)
-                 intent.putExtra("PLAYLIST_NAME", playlistName)
-                 isEditingPlaylist = true
-                 startActivity(intent)
-             }
-             getPlaylistTracks(playlistId)
-        } else if (artistName != null) {
-             findViewById<TextView>(R.id.tv_header_title)?.text = artistName.uppercase()
-             // Optimized: Filter at DB level
-             getTracks("${MediaStore.Audio.Media.ARTIST} = ?", arrayOf(artistName))
-        } else if (albumName != null) {
-             findViewById<TextView>(R.id.tv_header_title)?.text = albumName.uppercase()
-             // Optimized: Filter at DB level
-             getTracks("${MediaStore.Audio.Media.ALBUM} = ?", arrayOf(albumName))
-        } else {
-             findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.tab_tracks).uppercase()
-             getTracks(null, null)
-        }
-
-        if (trackList.isEmpty()) {
-            val msg = when {
-                showFavoritesOnly -> getString(R.string.msg_no_favorites)
-                playlistId != -1L -> getString(R.string.msg_playlist_empty)
-                artistName != null -> getString(R.string.msg_no_artist_tracks)
-                else -> getString(R.string.msg_no_music)
-            }
-            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
-        }
         
-        findViewById<TextView>(R.id.tv_tracks_count)?.text = if (trackList.size == 1) "1 Song" else "${trackList.size} Songs"
-
-        val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
-        if (adapter == null) {
-            adapter = TrackAdapter(trackList) { track ->
-                showTrackOptionsDialog(track)
+        // Show loading state if needed (optional)
+        
+        Thread {
+            val trackList: List<Track> = if (showFavoritesOnly) {
+                 val favorites = FavoritesManager.getFavorites(this)
+                 getTracks(null, null).filter { favorites.contains(it.uri) }
+            } else if (playlistId != -1L) {
+                 getPlaylistTracks(playlistId)
+            } else if (artistName != null) {
+                 getTracks("${MediaStore.Audio.Media.ARTIST} = ?", arrayOf(artistName))
+            } else if (albumName != null) {
+                 getTracks("${MediaStore.Audio.Media.ALBUM} = ?", arrayOf(albumName))
+            } else {
+                 getTracks(null, null)
             }
-            rvTracks.adapter = adapter
-        } else {
-            adapter?.updateData(trackList)
-        }
+            
+            runOnUiThread {
+                if (showFavoritesOnly) findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.title_favorites)
+                else if (playlistId != -1L) {
+                     val playlist = AppPlaylistManager.getPlaylist(this, playlistId)
+                     val displayName = playlist?.name ?: playlistName ?: "PLAYLIST"
+                     findViewById<TextView>(R.id.tv_header_title)?.text = displayName.uppercase()
+                     
+                     val btnEdit = findViewById<View>(R.id.btn_edit)
+                     btnEdit.visibility = View.VISIBLE
+                     btnEdit.setOnClickListener {
+                         val intent = Intent(this, CreatePlaylistActivity::class.java)
+                         intent.putExtra("EDIT_PLAYLIST_ID", playlistId)
+                         intent.putExtra("PLAYLIST_NAME", playlistName)
+                         isEditingPlaylist = true
+                         startActivity(intent)
+                     }
+                } else if (artistName != null) findViewById<TextView>(R.id.tv_header_title)?.text = artistName.uppercase()
+                else if (albumName != null) findViewById<TextView>(R.id.tv_header_title)?.text = albumName.uppercase()
+                else findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.tab_tracks).uppercase()
+
+                if (trackList.isEmpty()) {
+                    val msg = when {
+                        showFavoritesOnly -> getString(R.string.msg_no_favorites)
+                        playlistId != -1L -> getString(R.string.msg_playlist_empty)
+                        artistName != null -> getString(R.string.msg_no_artist_tracks)
+                        else -> getString(R.string.msg_no_music)
+                    }
+                    Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                }
+                
+                findViewById<TextView>(R.id.tv_tracks_count)?.text = if (trackList.size == 1) "1 Song" else "${trackList.size} Songs"
+
+                val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
+                if (adapter == null) {
+                    adapter = TrackAdapter(trackList) { track ->
+                        showTrackOptionsDialog(track)
+                    }
+                    rvTracks.adapter = adapter
+                } else {
+                    adapter?.updateData(trackList)
+                }
+            }
+        }.start()
     }
 
     private fun getTracks(selection: String?, selectionArgs: Array<String>?): List<Track> {
+        // This function is now just a helper for reading DB, called by loadTracks background thread.
+        // Or better, we keep getTracks compliant with synchronous if needed, but loadTracks does the threading.
         val list = mutableListOf<Track>()
         try {
              val projection = arrayOf(

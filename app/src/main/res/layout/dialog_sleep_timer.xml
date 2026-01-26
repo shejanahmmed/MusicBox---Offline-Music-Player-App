@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_bottom_sheet"
+    android:padding="24dp">
+
+    <!-- Drag Handle -->
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:background="#33FFFFFF"
+        android:src="@drawable/thumb_null" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SLEEP TIMER"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.1"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="8dp" />
+
+    <!-- SETUP VIEW -->
+    <LinearLayout
+        android:id="@+id/ll_timer_setup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select a duration to stop playback automatically"
+            android:textColor="#88FFFFFF"
+            android:textSize="12sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Preset Chips -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_15_min"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="15m"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:minWidth="60dp"
+                android:layout_marginEnd="8dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_30_min"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="30m"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:minWidth="60dp"
+                android:layout_marginEnd="8dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_45_min"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="45m"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:minWidth="60dp"
+                android:layout_marginEnd="8dp" />
+                
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_60_min"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="60m"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:minWidth="60dp" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/et_custom_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter minutes"
+            android:inputType="number"
+            android:textColor="@color/white"
+            android:textColorHint="#888888"
+            android:background="@drawable/bg_edit_text"
+            android:padding="12dp"
+            android:layout_marginBottom="24dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_start_timer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="START TIMER"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_button_primary"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- ACTIVE VIEW (Hidden by default) -->
+    <LinearLayout
+        android:id="@+id/ll_timer_active"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Music will pause in"
+            android:textColor="#88FFFFFF"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_timer_countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="14:32"
+            android:textColor="@color/white"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="32dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_cancel_timer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CANCEL TIMER"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_button_primary"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>

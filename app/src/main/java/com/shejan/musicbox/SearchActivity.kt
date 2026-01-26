@@ -109,57 +109,70 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun loadAllTracks() {
-        allTracks.clear()
-        try {
-            val projection = arrayOf(
-                MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.DATA,
-                MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.ALBUM_ID
-            )
-
-            val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
-            val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
-            val minDurationMillis = minDurationSec * 1000
-
-            val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
-
-            contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                selection,
-                null,
-                "${MediaStore.Audio.Media.TITLE} ASC"
-            )?.use { cursor ->
-                val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-                val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                val dataCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                val albumCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-                val albumIdCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
-
-                while (cursor.moveToNext()) {
-                    val path = cursor.getString(dataCol)
-                    if (!HiddenTracksManager.isHidden(this, path) &&
-                        !path.lowercase().contains("ringtone") &&
-                        !path.lowercase().contains("notification")) {
-
-                        val track = Track(
-                            cursor.getLong(idCol),
-                            cursor.getString(titleCol),
-                            cursor.getString(artistCol) ?: "Unknown Artist",
-                            path,
-                            cursor.getString(albumCol),
-                            cursor.getLong(albumIdCol)
-                        )
-                        // Apply metadata immediately so search works on custom names
-                        allTracks.add(TrackMetadataManager.applyMetadata(this, track))
+        // Run DB Query in Background
+        Thread {
+            val tempList = mutableListOf<Track>()
+            try {
+                val projection = arrayOf(
+                    MediaStore.Audio.Media._ID,
+                    MediaStore.Audio.Media.TITLE,
+                    MediaStore.Audio.Media.ARTIST,
+                    MediaStore.Audio.Media.DATA,
+                    MediaStore.Audio.Media.ALBUM,
+                    MediaStore.Audio.Media.ALBUM_ID
+                )
+    
+                val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
+                val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
+                val minDurationMillis = minDurationSec * 1000
+    
+                val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
+    
+                contentResolver.query(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    projection,
+                    selection,
+                    null,
+                    "${MediaStore.Audio.Media.TITLE} ASC"
+                )?.use { cursor ->
+                    val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+                    val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+                    val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+                    val dataCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                    val albumCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+                    val albumIdCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+    
+                    while (cursor.moveToNext()) {
+                        val path = cursor.getString(dataCol)
+                        if (!HiddenTracksManager.isHidden(this, path) &&
+                            !path.lowercase().contains("ringtone") &&
+                            !path.lowercase().contains("notification")) {
+    
+                            val track = Track(
+                                cursor.getLong(idCol),
+                                cursor.getString(titleCol),
+                                cursor.getString(artistCol) ?: "Unknown Artist",
+                                path,
+                                cursor.getString(albumCol),
+                                cursor.getLong(albumIdCol)
+                            )
+                            // Apply metadata immediately so search works on custom names
+                            tempList.add(TrackMetadataManager.applyMetadata(this, track))
+                        }
                     }
                 }
+            } catch (e: Exception) { e.printStackTrace() }
+            
+            // Update Data on Main Thread
+            runOnUiThread {
+                allTracks.clear()
+                allTracks.addAll(tempList)
+                // If user already typed something, re-filter
+                if (currentSearchQuery.isNotEmpty()) {
+                    performSearch(currentSearchQuery)
+                }
             }
-        } catch (e: Exception) { e.printStackTrace() }
+        }.start()
     }
 
     private fun performSearch(query: String) {

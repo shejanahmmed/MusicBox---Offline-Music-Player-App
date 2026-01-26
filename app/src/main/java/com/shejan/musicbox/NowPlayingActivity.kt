@@ -351,12 +351,9 @@ class NowPlayingActivity : AppCompatActivity() {
             showQueueDialog()
         }
 
-        // Share Button Logic
-        findViewById<View>(R.id.btn_share).setOnClickListener {
-             val track = musicService?.getCurrentTrack()
-             if (track != null) {
-                 shareTrack(track)
-             }
+        // Sleep Timer Logic
+        findViewById<View>(R.id.btn_sleep_timer).setOnClickListener {
+             showSleepTimerDialog()
         }
 
         // Equalizer Button Logic
@@ -457,6 +454,17 @@ class NowPlayingActivity : AppCompatActivity() {
             btnRepeat.setColorFilter(COLOR_INACTIVE_INT)
             btnRepeat.alpha = 1.0f
         }
+
+        // Update Sleep Timer Icon
+        val btnSleepTimer = findViewById<ImageView>(R.id.btn_sleep_timer)
+        val sleepEndTime = musicService?.sleepTimerEndTime ?: 0L
+        if (sleepEndTime > System.currentTimeMillis()) {
+            btnSleepTimer.setColorFilter(getColor(R.color.primary_red))
+            btnSleepTimer.alpha = 1.0f
+        } else {
+            btnSleepTimer.setColorFilter(getColor(R.color.white))
+            btnSleepTimer.alpha = 1.0f
+        }
     }
 
     private fun updateProgress() {
@@ -521,6 +529,96 @@ class NowPlayingActivity : AppCompatActivity() {
         findViewById<SeekBar>(R.id.sb_volume)?.progress = currentVolume
     }
     
+    @SuppressLint("InflateParams")
+    private fun showSleepTimerDialog() {
+        val dialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.dialog_sleep_timer, null)
+        dialog.setContentView(view)
+        
+        view.post {
+            (view.parent as? View)?.setBackgroundColor(Color.TRANSPARENT)
+        }
+        
+        val llSetup = view.findViewById<View>(R.id.ll_timer_setup)
+        val llActive = view.findViewById<View>(R.id.ll_timer_active)
+        val tvCountdown = view.findViewById<TextView>(R.id.tv_timer_countdown)
+        
+        val updateTimerView = object : Runnable {
+            override fun run() {
+                val endTime = musicService?.sleepTimerEndTime ?: 0L
+                val remaining = endTime - System.currentTimeMillis()
+                
+                if (remaining > 0) {
+                    llSetup.visibility = View.GONE
+                    llActive.visibility = View.VISIBLE
+                    
+                    val seconds = (remaining / 1000) % 60
+                    val minutes = (remaining / (1000 * 60)) % 60
+                    val hours = (remaining / (1000 * 60 * 60))
+                    
+                    tvCountdown.text = if (hours > 0) {
+                        String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds)
+                    } else {
+                        String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+                    }
+                    
+                    view.postDelayed(this, 1000)
+                } else {
+                    llSetup.visibility = View.VISIBLE
+                    llActive.visibility = View.GONE
+                    view.removeCallbacks(this)
+                }
+            }
+        }
+        
+        // Initial Check
+        updateTimerView.run()
+        
+        // Handle Dialog Dismiss to stop updating UI
+        dialog.setOnDismissListener {
+            view.removeCallbacks(updateTimerView)
+        }
+        
+        val etCustom = view.findViewById<android.widget.EditText>(R.id.et_custom_time)
+        val btnStart = view.findViewById<android.view.View>(R.id.btn_start_timer)
+        val btnCancel = view.findViewById<android.view.View>(R.id.btn_cancel_timer)
+        
+        btnCancel.setOnClickListener {
+            musicService?.cancelSleepTimer()
+            Toast.makeText(this, "Sleep timer cancelled", Toast.LENGTH_SHORT).show()
+            updateTimerView.run() // Refresh view immediately
+            updateUI()
+        }
+        
+        val setTime = { min: Int ->
+            musicService?.startSleepTimer(min)
+            Toast.makeText(this, "Sleep timer set for $min minutes", Toast.LENGTH_SHORT).show()
+            updateUI()
+            dialog.dismiss()
+        }
+        
+        // Presets now just fill the text box
+        view.findViewById<View>(R.id.btn_15_min).setOnClickListener { etCustom.setText("15"); etCustom.setSelection(2) }
+        view.findViewById<View>(R.id.btn_30_min).setOnClickListener { etCustom.setText("30"); etCustom.setSelection(2) }
+        view.findViewById<View>(R.id.btn_45_min).setOnClickListener { etCustom.setText("45"); etCustom.setSelection(2) }
+        view.findViewById<View>(R.id.btn_60_min).setOnClickListener { etCustom.setText("60"); etCustom.setSelection(2) }
+        
+        btnStart.setOnClickListener {
+            val input = etCustom.text.toString()
+            if (input.isNotEmpty()) {
+                val min = input.toIntOrNull()
+                if (min != null && min > 0) {
+                    setTime(min)
+                    updateUI()
+                } else {
+                    Toast.makeText(this, getString(R.string.enter_valid_number), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        
+        dialog.show()
+    }
+
     private fun showTrackOptionsDialog() {
         val track = musicService?.getCurrentTrack() ?: return
         

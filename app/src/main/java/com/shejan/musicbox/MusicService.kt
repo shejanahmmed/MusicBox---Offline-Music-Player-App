@@ -44,6 +44,11 @@ class MusicService : Service() {
     private lateinit var mediaSession: MediaSessionCompat
     private var mediaPlayer: android.media.MediaPlayer? = null
     private var placeholderBitmap: Bitmap? = null
+    
+    // Sleep Timer
+    private val sleepTimerHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var sleepTimerRunnable: Runnable? = null
+    var sleepTimerEndTime: Long = 0L
 
     // Queue Management
     companion object {
@@ -625,16 +630,23 @@ class MusicService : Service() {
         val prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val editor = prefs.edit()
         
-        synchronized(playlist) {
-            editor.putInt("current_index", currentIndex)
-            editor.putInt("current_position", getCurrentPosition())
-            editor.putString("current_track_uri", currentTrackUri)
+        // Clone logic to avoid concurrency issues during saving
+        val currentPlaylistCopy = synchronized(playlist) { ArrayList(playlist) }
+        val originalPlaylistCopy = synchronized(playlist) { ArrayList(originalPlaylist) }
+        val currentIndexCopy = currentIndex
+        val currentPosCopy = getCurrentPosition()
+        val currentUriCopy = currentTrackUri
+
+        // Run Serialization in Background Thread
+        Thread {
+            synchronized(playlist) { 
+               // Note: We already copied, so we don't strictly need synchronized here 
+               // BUT prefs edit is thread safe usually.
+            }
             
-            // Serialize Playlist
-            // Only save if not empty to avoid overwriting with empty on bad state
-            if (playlist.isNotEmpty()) {
-                val jsonArray = org.json.JSONArray()
-                for (track in playlist) {
+            val jsonArray = org.json.JSONArray()
+            if (currentPlaylistCopy.isNotEmpty()) {
+                for (track in currentPlaylistCopy) {
                     val jsonObj = org.json.JSONObject()
                     jsonObj.put("id", track.id)
                     jsonObj.put("title", track.title)
@@ -644,13 +656,11 @@ class MusicService : Service() {
                     jsonObj.put("albumId", track.albumId)
                     jsonArray.put(jsonObj)
                 }
-                editor.putString("saved_playlist", jsonArray.toString())
             }
             
-            // Serialize Original Playlist if Shuffle is ON
-            if (isShuffleEnabled && originalPlaylist.isNotEmpty()) {
-                 val jsonArrayComp = org.json.JSONArray()
-                 for (track in originalPlaylist) {
+            val jsonArrayComp = org.json.JSONArray()
+            if (isShuffleEnabled && originalPlaylistCopy.isNotEmpty()) {
+                 for (track in originalPlaylistCopy) {
                     val jsonObj = org.json.JSONObject()
                     jsonObj.put("id", track.id)
                     jsonObj.put("title", track.title)
@@ -660,9 +670,17 @@ class MusicService : Service() {
                     jsonObj.put("albumId", track.albumId)
                     jsonArrayComp.put(jsonObj)
                  }
-                 editor.putString("saved_original_playlist", jsonArrayComp.toString())
             }
-        }
+            
+            // Apply to Prefs
+            editor.putInt("current_index", currentIndexCopy)
+            editor.putInt("current_position", currentPosCopy)
+            editor.putString("current_track_uri", currentUriCopy)
+            if (currentPlaylistCopy.isNotEmpty()) editor.putString("saved_playlist", jsonArray.toString())
+            if (isShuffleEnabled && originalPlaylistCopy.isNotEmpty()) editor.putString("saved_original_playlist", jsonArrayComp.toString())
+            
+            editor.apply()
+        }.start()
         editor.apply()
     }
     
@@ -759,6 +777,30 @@ class MusicService : Service() {
         mediaSession.setPlaybackState(stateBuilder.build())
     }
 
+    fun startSleepTimer(minutes: Int) {
+        cancelSleepTimer()
+        if (minutes <= 0) return
+        
+        val delayMs = minutes * 60 * 1000L
+        sleepTimerEndTime = System.currentTimeMillis() + delayMs
+        
+        sleepTimerRunnable = Runnable {
+            if (isPlaying()) {
+                pause()
+                // Optional: Stop service or close app? Pause is safer.
+            }
+            sleepTimerEndTime = 0L
+            sleepTimerRunnable = null
+        }
+        sleepTimerHandler.postDelayed(sleepTimerRunnable!!, delayMs)
+    }
+
+    fun cancelSleepTimer() {
+        sleepTimerRunnable?.let { sleepTimerHandler.removeCallbacks(it) }
+        sleepTimerRunnable = null
+        sleepTimerEndTime = 0L
+    }
+    
     private fun updateMediaSessionMetadata() {
         val track = getCurrentTrack() ?: return
         val duration = try { mediaPlayer?.duration?.toLong() ?: 0L } catch (_: Exception) { 0L }

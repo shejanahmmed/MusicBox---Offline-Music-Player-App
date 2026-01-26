@@ -79,24 +79,11 @@ object MusicUtils {
     }
     
     fun loadTrackArt(context: Context, trackId: Long, albumId: Long, trackUri: String, imageView: ImageView) {
-        // Guard checking: Fail only if BOTH ID is invalid AND trackUri is empty.
-        // This allows Folder Browser to pass -1 ID but a valid URI.
-        if (trackId <= 0L && trackUri.isEmpty()) {
-            setDefaultArt(imageView)
-            return
-        }
-
-        // Direct Load (Old way, blocking)
-        val bitmap = getTrackArtworkBitmap(context, trackId, albumId, trackUri)
-        if (bitmap != null) {
-            imageView.scaleType = ImageView.ScaleType.CENTER_CROP
-            imageView.setImageBitmap(bitmap)
-            imageView.clearColorFilter()
-        } else {
-            setDefaultArt(imageView)
-        }
+        // Forward to ImageLoader for async handling
+        ImageLoader.load(context, trackId, albumId, trackUri, imageView)
     }
 
+    // Retaining this for internal use by ImageLoader or other background threads
     fun getTrackArtworkBitmap(context: Context, trackId: Long, albumId: Long, trackUri: String): android.graphics.Bitmap? {
          // Check for custom artwork
          if (TrackArtworkManager.hasCustomArtwork(context, trackUri)) {
