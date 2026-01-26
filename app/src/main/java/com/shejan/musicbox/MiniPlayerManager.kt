@@ -104,6 +104,7 @@ object MiniPlayerManager {
             } else {
                 val intent = Intent(activity, MusicService::class.java)
                 intent.action = MusicService.ACTION_PLAY
+                activity.startService(intent)
             }
         }
         
