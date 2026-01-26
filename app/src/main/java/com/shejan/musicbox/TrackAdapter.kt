@@ -56,11 +56,8 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         }
 
         holder.root.setOnClickListener {
-            // FIXED: Synchronized playlist update to prevent race conditions
-            synchronized(MusicService.playlist) {
-                MusicService.playlist.clear()
-                MusicService.playlist.addAll(tracks)
-            }
+            // FIXED: Use centralized playlist update to handle shuffle logic
+            MusicService.updatePlaylist(tracks, position)
             
             val intent = Intent(holder.root.context, MusicService::class.java).apply {
                 putExtra("TITLE", track.title)

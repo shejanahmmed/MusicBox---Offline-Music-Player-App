@@ -23,6 +23,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
@@ -35,6 +36,7 @@ import androidx.media.app.NotificationCompat.MediaStyle
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.core.content.edit
 import java.util.Collections
 
 class MusicService : Service() {
@@ -53,18 +55,66 @@ class MusicService : Service() {
         const val ACTION_NEXT = "action_next"
         const val ACTION_PREV = "action_prev"
         
+        private const val PREF_NAME = "MusicBoxPlaybackPrefs"
+        private const val KEY_SHUFFLE = "shuffle_enabled"
+        private const val KEY_REPEAT = "repeat_mode"
+        
         // Thread-safe playlist to prevent race conditions
         var playlist: MutableList<Track> = Collections.synchronizedList(mutableListOf())
+        var originalPlaylist: MutableList<Track> = Collections.synchronizedList(mutableListOf()) // Store original order
         var currentIndex: Int = -1
-        var isShuffleEnabled = false
         
-        // Repeat Modes
+        var isShuffleEnabled = false
+        var repeatMode = 0
+        
         const val REPEAT_OFF = 0
         const val REPEAT_ALL = 1
         const val REPEAT_ONE = 2
-        var repeatMode = REPEAT_OFF
         
         var currentTrackUri: String? = null
+
+        fun initPrefs(context: Context) {
+            val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            isShuffleEnabled = prefs.getBoolean(KEY_SHUFFLE, false)
+            repeatMode = prefs.getInt(KEY_REPEAT, REPEAT_OFF)
+        }
+        
+        private fun saveShuffle(context: Context, enabled: Boolean) {
+            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit {
+                putBoolean(KEY_SHUFFLE, enabled)
+            }
+        }
+        
+        private fun saveRepeat(context: Context, mode: Int) {
+            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit {
+                putInt(KEY_REPEAT, mode)
+            }
+        }
+        
+        fun updatePlaylist(newTracks: List<Track>, startingIndex: Int) {
+            synchronized(playlist) {
+                originalPlaylist.clear()
+                originalPlaylist.addAll(newTracks)
+                
+                playlist.clear()
+                if (isShuffleEnabled) {
+                    val shuffled = newTracks.toMutableList()
+                    if (startingIndex in shuffled.indices) {
+                        val startTrack = shuffled.removeAt(startingIndex)
+                        shuffled.shuffle()
+                        shuffled.add(0, startTrack)
+                        currentIndex = 0
+                    } else {
+                        shuffled.shuffle()
+                        currentIndex = 0
+                    }
+                    playlist.addAll(shuffled)
+                } else {
+                    playlist.addAll(newTracks)
+                    currentIndex = startingIndex
+                }
+            }
+        }
     }
 
     private val noisyReceiver = object : android.content.BroadcastReceiver() {
@@ -74,6 +124,24 @@ class MusicService : Service() {
                     pause()
                 }
             }
+        }
+    }
+
+    private val standardPreparedListener = android.media.MediaPlayer.OnPreparedListener { mp ->
+        mp.start()
+        updateNotification()
+        updateMediaSessionMetadata()
+        updateMediaSessionState()
+        saveState() // Save state when track starts
+        
+        // Broadcast Change
+        val track = getCurrentTrack()
+        if (track != null) {
+            sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
+                putExtra("IS_PLAYING", true)
+                putExtra("TITLE", track.title)
+                putExtra("ARTIST", track.artist)
+            })
         }
     }
 
@@ -90,9 +158,17 @@ class MusicService : Service() {
                          val wasPlaying = (index == currentIndex)
                          mutableList.removeAt(index)
                          
-                         // Update the synchronized list
+                         // Update synchronized lists
                          playlist.clear()
                          playlist.addAll(mutableList)
+                         
+                         // Also remove from original if it exists
+                         synchronized(originalPlaylist) {
+                             val origMutable = originalPlaylist.toMutableList()
+                             origMutable.removeIf { it.uri == deletedUri }
+                             originalPlaylist.clear()
+                             originalPlaylist.addAll(origMutable)
+                         }
                          
                          if (wasPlaying) {
                              if (currentIndex >= playlist.size) {
@@ -123,6 +199,7 @@ class MusicService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        initPrefs(this) // Load persistent settings
         createNotificationChannel()
         mediaSession = MediaSessionCompat(this, "MusicBoxMediaSession")
         placeholderBitmap = BitmapFactory.decodeResource(resources, R.drawable.ic_album)
@@ -171,38 +248,23 @@ class MusicService : Service() {
 
         // Initialize MediaPlayer
         initMediaPlayer()
+        
+        // Restore State (Queue and Position)
+        restoreState()
     }
 
     private fun initMediaPlayer() {
         mediaPlayer?.release()
         mediaPlayer = android.media.MediaPlayer().apply {
             setOnCompletionListener {
+                saveState() // Save state on completion (track change)
                 if (repeatMode == REPEAT_ONE) {
                     playTrack(currentIndex)
-                } else if (repeatMode == REPEAT_ALL) {
-                    playNext()
                 } else {
-                    if (currentIndex < playlist.size - 1) {
-                         playNext()
-                    }
+                    playNext(autoPlay = true)
                 }
             }
-            setOnPreparedListener {
-                it.start()
-                updateNotification()
-                updateMediaSessionMetadata()
-                updateMediaSessionState()
-                
-                // Broadcast Change
-                val track = getCurrentTrack()
-                if (track != null) {
-                    sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
-                        putExtra("IS_PLAYING", true)
-                        putExtra("TITLE", track.title)
-                        putExtra("ARTIST", track.artist)
-                    })
-                }
-            }
+            setOnPreparedListener(standardPreparedListener)
             setOnErrorListener { mp, what, extra ->
                 mp.reset()
                 false
@@ -229,14 +291,35 @@ class MusicService : Service() {
              val uri = intent?.getStringExtra("URI")
              if (uri != null) {
                  if (uri == currentTrackUri) {
-                      val index = playlist.indexOfFirst { it.uri == uri }
-                      if (index != -1) currentIndex = index
+                      // Just re-sync index if needed, but it should be correct
                       if (!isPlaying()) play()
                  } else {
+                      // Playing a specific track from a list context (usually TracksActivity)
+                      // This usually implies a new playlist context or jumping to a track in current.
+                      // NOTE: We assume 'playlist' is already updated by caller BEFORE calling service,
+                      // OR the caller set the playlist static variable.
+                      // Since playlist is static in Companion, it is already set.
+                      
+                      // If shuffle is ON, we should probably reshuffle but keep this track first?
+                      // Or if the user just clicked a song, we might want to respect that.
+                      // For simplicity, if user clicks a song, we find it in current playlist.
+                      
                       val index = playlist.indexOfFirst { it.uri == uri }
                       if (index != -1) {
                           currentIndex = index
                           playTrack(index)
+                      } else {
+                          // Track not in current shuffled list? 
+                          // It might be in original. If so, and we are shuffled, what to do?
+                          // Ideally, the caller (TracksActivity) sets the playlist.
+                          // If TracksActivity loaded a NEW list, it overwrote 'playlist'.
+                          
+                          // We need to ensure originalPlaylist is also set when a new list is loaded.
+                          // This logic isn't here, it's where playlist is assigned.
+                          // Assuming TracksActivity assigns playlist directly.
+                          
+                          // If playlist was just assigned, we should sync originalPlaylist.
+                          // We'll add a helper for setting playlist properly.
                       }
                  }
              }
@@ -245,6 +328,8 @@ class MusicService : Service() {
         updateNotification()
         return START_NOT_STICKY
     }
+    
+
 
     private fun startForegroundWithPlaceholder() {
         val track = getCurrentTrack()
@@ -307,6 +392,7 @@ class MusicService : Service() {
                     it.pause()
                     updateNotification()
                     updateMediaSessionState()
+                    saveState() // Save specific position on pause
                     sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
                 }
             }
@@ -315,37 +401,108 @@ class MusicService : Service() {
         }
     }
     
-    fun playNext() {
+    fun playNext(autoPlay: Boolean = false) {
         synchronized(playlist) {
             if (playlist.isEmpty()) return
-            val nextIndex = if (isShuffleEnabled) {
-                 (playlist.indices).random()
+            
+            // Standard Next Logic: currentIndex + 1
+            if (currentIndex < playlist.size - 1) {
+                playTrack(currentIndex + 1)
             } else {
-                 (currentIndex + 1) % playlist.size
+                // End of list
+                if (repeatMode == REPEAT_ALL || repeatMode == REPEAT_ONE) { 
+                    // If Repeat One, Next button still goes next (wrapping), unlike auto-completion
+                    playTrack(0)
+                } else {
+                    // Stop or go to start paused?
+                    // Typically 'Next' at end wraps to start or stops. 
+                    // If autoPlay (natural end), we stop.
+                    // If forced by user (Next Button), we wrap? Let's wrap to 0.
+                    if (!autoPlay) {
+                         playTrack(0)
+                    } else {
+                         // Stop playback
+                         pause()
+                         mediaPlayer?.seekTo(0)
+                         currentIndex = 0 // Reset to 0 but don't play
+                         // We might want to just stop
+                    }
+                }
             }
-            playTrack(nextIndex)
         }
     }
     
     fun playPrev() {
         synchronized(playlist) {
             if (playlist.isEmpty()) return
-            val prevIndex = if (isShuffleEnabled) {
-                 (playlist.indices).random()
-            } else {
-                 if (currentIndex <= 0) playlist.size - 1 else currentIndex - 1
+            
+            // If more than 3 sec played, restart song
+            if (getCurrentPosition() > 3000) {
+                seekTo(0)
+                return
             }
-            playTrack(prevIndex)
+            
+            if (currentIndex > 0) {
+                playTrack(currentIndex - 1)
+            } else {
+                 playTrack(playlist.size - 1)
+            }
         }
     }
     
     fun toggleRepeat() {
         repeatMode = (repeatMode + 1) % 3
+        saveRepeat(this, repeatMode) // Persist change
         sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("REPEAT_MODE", repeatMode) })
     }
 
     fun toggleShuffle() {
         isShuffleEnabled = !isShuffleEnabled
+        saveShuffle(this, isShuffleEnabled) // Persist change
+        
+        synchronized(playlist) {
+            val currentTrack = getCurrentTrack()
+            
+            if (isShuffleEnabled) {
+                // Shuffle ON
+                // 1. Sync original if empty (recovery)
+                if (originalPlaylist.isEmpty()) { 
+                    originalPlaylist.addAll(playlist)
+                }
+                
+                // 2. Create shuffled list
+                val newOrder = ArrayList(originalPlaylist)
+                // Remove current playing to prevent duplicate issues or just to put it at top
+                if (currentTrack != null) {
+                    newOrder.removeIf { it.uri == currentTrack.uri }
+                    newOrder.shuffle()
+                    newOrder.add(0, currentTrack)
+                } else {
+                    newOrder.shuffle()
+                }
+                
+                playlist.clear()
+                playlist.addAll(newOrder)
+                currentIndex = 0 // Because we put current track at 0
+                
+            } else {
+                // Shuffle OFF
+                // Restore original order
+                if (originalPlaylist.isNotEmpty()) {
+                    playlist.clear()
+                    playlist.addAll(originalPlaylist)
+                    
+                    // Find current track in original list
+                    if (currentTrack != null) {
+                        val index = playlist.indexOfFirst { it.uri == currentTrack.uri }
+                        currentIndex = if (index != -1) index else 0
+                    } else {
+                        currentIndex = 0
+                    }
+                }
+            }
+        }
+        
         sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("SHUFFLE_STATE", isShuffleEnabled) })
     }
     
@@ -449,6 +606,8 @@ class MusicService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        saveState()
+        
         try {
             unregisterReceiver(noisyReceiver)
         } catch (_: Exception) { }
@@ -460,6 +619,126 @@ class MusicService : Service() {
         mediaPlayer?.release()
         mediaPlayer = null
         mediaSession.release()
+    }
+
+    private fun saveState() {
+        val prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        
+        synchronized(playlist) {
+            editor.putInt("current_index", currentIndex)
+            editor.putInt("current_position", getCurrentPosition())
+            editor.putString("current_track_uri", currentTrackUri)
+            
+            // Serialize Playlist
+            // Only save if not empty to avoid overwriting with empty on bad state
+            if (playlist.isNotEmpty()) {
+                val jsonArray = org.json.JSONArray()
+                for (track in playlist) {
+                    val jsonObj = org.json.JSONObject()
+                    jsonObj.put("id", track.id)
+                    jsonObj.put("title", track.title)
+                    jsonObj.put("artist", track.artist)
+                    jsonObj.put("uri", track.uri)
+                    jsonObj.put("album", track.album ?: "")
+                    jsonObj.put("albumId", track.albumId)
+                    jsonArray.put(jsonObj)
+                }
+                editor.putString("saved_playlist", jsonArray.toString())
+            }
+            
+            // Serialize Original Playlist if Shuffle is ON
+            if (isShuffleEnabled && originalPlaylist.isNotEmpty()) {
+                 val jsonArrayComp = org.json.JSONArray()
+                 for (track in originalPlaylist) {
+                    val jsonObj = org.json.JSONObject()
+                    jsonObj.put("id", track.id)
+                    jsonObj.put("title", track.title)
+                    jsonObj.put("artist", track.artist)
+                    jsonObj.put("uri", track.uri)
+                    jsonObj.put("album", track.album ?: "")
+                    jsonObj.put("albumId", track.albumId)
+                    jsonArrayComp.put(jsonObj)
+                 }
+                 editor.putString("saved_original_playlist", jsonArrayComp.toString())
+            }
+        }
+        editor.apply()
+    }
+    
+    private fun restoreState() {
+        val prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val idx = prefs.getInt("current_index", -1)
+        val pos = prefs.getInt("current_position", 0)
+        val savedPlaylist = prefs.getString("saved_playlist", null)
+        val savedOriginal = prefs.getString("saved_original_playlist", null)
+        
+        if (savedPlaylist != null) {
+            try {
+                val list = mutableListOf<Track>()
+                val jsonArray = org.json.JSONArray(savedPlaylist)
+                for (i in 0 until jsonArray.length()) {
+                    val obj = jsonArray.getJSONObject(i)
+                    list.add(Track(
+                        obj.getLong("id"),
+                        obj.getString("title"),
+                        obj.getString("artist"),
+                        obj.getString("uri"),
+                        obj.optString("album").ifEmpty { null },
+                        obj.optLong("albumId", -1L)
+                    ))
+                }
+                
+                synchronized(playlist) {
+                    playlist.clear()
+                    playlist.addAll(list)
+                }
+            } catch (e: Exception) { e.printStackTrace() }
+        }
+        
+        if (savedOriginal != null) {
+             try {
+                val list = mutableListOf<Track>()
+                val jsonArray = org.json.JSONArray(savedOriginal)
+                for (i in 0 until jsonArray.length()) {
+                    val obj = jsonArray.getJSONObject(i)
+                    list.add(Track(
+                        obj.getLong("id"),
+                        obj.getString("title"),
+                        obj.getString("artist"),
+                        obj.getString("uri"),
+                        obj.optString("album").ifEmpty { null },
+                        obj.optLong("albumId", -1L)
+                    ))
+                }
+                
+                synchronized(playlist) {
+                    originalPlaylist.clear()
+                    originalPlaylist.addAll(list)
+                }
+            } catch (e: Exception) { e.printStackTrace() }
+        }
+        
+        // Restore Index and Prepare Player
+        if (idx != -1 && idx < playlist.size) {
+            currentIndex = idx
+            currentTrackUri = playlist[idx].uri
+            
+            // Init player but DO NOT START
+            try {
+                mediaPlayer?.reset()
+                mediaPlayer?.setDataSource(applicationContext, currentTrackUri!!.toUri())
+                mediaPlayer?.setOnPreparedListener { 
+                    it.seekTo(pos)
+                    updateNotification()
+                    updateMediaSessionMetadata()
+                    updateMediaSessionState()
+                    // Re-set listener for normal playback
+                    it.setOnPreparedListener(standardPreparedListener)
+                }
+                mediaPlayer?.prepareAsync()
+            } catch (e: Exception) { e.printStackTrace() }
+        }
     }
 
     private fun updateMediaSessionState() {
