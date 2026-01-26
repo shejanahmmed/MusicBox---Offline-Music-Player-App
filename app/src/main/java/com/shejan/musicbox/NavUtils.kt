@@ -104,8 +104,8 @@ object NavUtils {
         
         // Highlight logic for fixed items
         if (view is LinearLayout) {
-             val icon = view.getChildAt(0) as ImageView
-             val text = view.getChildAt(1) as TextView
+             val icon = view.getChildAt(0) as? ImageView ?: return
+             val text = view.getChildAt(1) as? TextView ?: return
              if (id == activeId) {
                  icon.setColorFilter(activity.getColor(R.color.white))
                  text.setTextColor(activity.getColor(R.color.white))

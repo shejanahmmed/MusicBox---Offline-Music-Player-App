@@ -198,7 +198,8 @@ class NowPlayingActivity : AppCompatActivity() {
 
     @SuppressLint("DiscouragedApi")
     private fun showQueueDialog() {
-        if (MusicService.playlist.isEmpty()) return
+        if (MusicService.playlist.isEmpty() || MusicService.currentIndex < 0 || 
+            MusicService.currentIndex >= MusicService.playlist.size) return
 
         val dialog = BottomSheetDialog(this)
         @SuppressLint("InflateParams")
@@ -210,7 +211,10 @@ class NowPlayingActivity : AppCompatActivity() {
         val rvQueue = view.findViewById<RecyclerView>(R.id.rv_queue)
         rvQueue.layoutManager = LinearLayoutManager(this)
         
-        val adapter = QueueAdapter(MusicService.playlist, MusicService.playlist[MusicService.currentIndex].id) { index ->
+        val currentTrackId = if (MusicService.currentIndex in MusicService.playlist.indices)
+            MusicService.playlist[MusicService.currentIndex].id else -1L
+        
+        val adapter = QueueAdapter(MusicService.playlist, currentTrackId) { index ->
              musicService?.playTrack(index)
              updateUI()
              dialog.dismiss()
@@ -218,7 +222,9 @@ class NowPlayingActivity : AppCompatActivity() {
         rvQueue.adapter = adapter
         
         // Scroll to current
-        rvQueue.scrollToPosition(MusicService.currentIndex)
+        if (MusicService.currentIndex in MusicService.playlist.indices) {
+            rvQueue.scrollToPosition(MusicService.currentIndex)
+        }
 
         dialog.setOnShowListener { dialogInterface ->
             val bottomSheetDialog = dialogInterface as BottomSheetDialog

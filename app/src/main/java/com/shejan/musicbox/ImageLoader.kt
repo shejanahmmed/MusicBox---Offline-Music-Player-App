@@ -60,20 +60,32 @@ object ImageLoader {
         // Tag for recycling
         imageView.tag = cacheKey
         
+        // Use weak reference to prevent memory leak if imageView is GC'd
+        val weakView = java.lang.ref.WeakReference(imageView)
+        
         // Background Load
         executor.execute {
-            val bitmap = MusicUtils.getTrackArtworkBitmap(context, trackId, albumId)
-            
-            if (bitmap != null) {
+            try {
+                val bitmap = MusicUtils.getTrackArtworkBitmap(context, trackId, albumId)
+                    ?: return@execute
+                
                 memoryCache.put(cacheKey, bitmap)
                 
-                // Post to Main Thread
-                handler.post {
-                    if (imageView.tag == cacheKey) {
-                        imageView.setImageBitmap(bitmap)
-                        imageView.clearColorFilter()
+                // Get view from weak reference
+                weakView.get()?.let { view ->
+                    // Double-check: ensure view hasn't been reused
+                    if (view.tag == cacheKey) {
+                        handler.post {
+                            // Final check before setting image
+                            if (view.tag == cacheKey) {
+                                view.setImageBitmap(bitmap)
+                                view.clearColorFilter()
+                            }
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

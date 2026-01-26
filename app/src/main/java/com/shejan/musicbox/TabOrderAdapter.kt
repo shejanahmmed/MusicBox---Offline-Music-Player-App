@@ -92,13 +92,21 @@ class TabOrderAdapter(
     override fun getItemCount(): Int = tabs.size
 
     fun onItemMove(fromPosition: Int, toPosition: Int) {
+        // Bounds checking to prevent IndexOutOfBoundsException
+        if (tabs.isEmpty() || fromPosition < 0 || toPosition < 0 || 
+            fromPosition >= tabs.size || toPosition >= tabs.size) return
+        
         if (fromPosition < toPosition) {
             for (i in fromPosition until toPosition) {
-                Collections.swap(tabs, i, i + 1)
+                if (i + 1 < tabs.size) {
+                    Collections.swap(tabs, i, i + 1)
+                }
             }
         } else {
             for (i in fromPosition downTo toPosition + 1) {
-                Collections.swap(tabs, i, i - 1)
+                if (i - 1 >= 0) {
+                    Collections.swap(tabs, i, i - 1)
+                }
             }
         }
         notifyItemMoved(fromPosition, toPosition)

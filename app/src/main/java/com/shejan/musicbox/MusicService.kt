@@ -33,6 +33,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
 import androidx.media.app.NotificationCompat.MediaStyle
 import android.content.pm.ServiceInfo
+import java.util.Collections
 
 class MusicService : Service() {
 
@@ -49,8 +50,8 @@ class MusicService : Service() {
         const val ACTION_NEXT = "action_next"
         const val ACTION_PREV = "action_prev"
         
-        // Static playlist for simplicity in this demo
-        var playlist: List<Track> = emptyList()
+        // Thread-safe playlist to prevent race conditions
+        var playlist: MutableList<Track> = Collections.synchronizedList(mutableListOf())
         var currentIndex: Int = -1
         var isShuffleEnabled = false
         
@@ -78,26 +79,31 @@ class MusicService : Service() {
              if (intent?.action == "com.shejan.musicbox.TRACK_DELETED") {
                  val deletedUri = intent.getStringExtra("DELETED_TRACK_URI") ?: return
                  
-                 val mutableList = playlist.toMutableList()
-                 val index = mutableList.indexOfFirst { it.uri == deletedUri }
-                 
-                 if (index != -1) {
-                     val wasPlaying = (index == currentIndex)
-                     mutableList.removeAt(index)
-                     playlist = mutableList
+                 synchronized(playlist) {
+                     val mutableList = playlist.toMutableList()
+                     val index = mutableList.indexOfFirst { it.uri == deletedUri }
                      
-                     if (wasPlaying) {
-                         if (currentIndex >= playlist.size) {
-                             currentIndex = 0 
-                         }
-                         if (playlist.isNotEmpty()) {
-                             playTrack(currentIndex)
+                     if (index != -1) {
+                         val wasPlaying = (index == currentIndex)
+                         mutableList.removeAt(index)
+                         
+                         // Update the synchronized list
+                         playlist.clear()
+                         playlist.addAll(mutableList)
+                         
+                         if (wasPlaying) {
+                             if (currentIndex >= playlist.size) {
+                                 currentIndex = 0 
+                             }
+                             if (playlist.isNotEmpty()) {
+                                 playTrack(currentIndex)
+                             } else {
+                                 stopSelf()
+                             }
                          } else {
-                             stopSelf()
-                         }
-                     } else {
-                         if (index < currentIndex) {
-                             currentIndex--
+                             if (index < currentIndex) {
+                                 currentIndex--
+                             }
                          }
                      }
                  }
@@ -221,54 +227,74 @@ class MusicService : Service() {
     }
 
     fun playTrack(index: Int) {
-        if (index < 0 || index >= playlist.size) return
-        
-        val track = playlist[index]
-        currentIndex = index
-        currentTrackUri = track.uri
-        
-        try {
-            mediaPlayer?.reset()
-            mediaPlayer?.setDataSource(applicationContext, track.uri.toUri())
-            mediaPlayer?.prepare()
-            mediaPlayer?.start()
+        synchronized(playlist) {
+            if (index < 0 || index >= playlist.size) return
             
-            updateNotification()
+            val track = playlist.getOrNull(index) ?: return
+            currentIndex = index
+            currentTrackUri = track.uri
             
-            // Broadcast Change
-            sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
-                putExtra("IS_PLAYING", true)
-                putExtra("TITLE", track.title)
-                putExtra("ARTIST", track.artist)
-            })
+            try {
+                mediaPlayer?.reset()
+                mediaPlayer?.setDataSource(applicationContext, track.uri.toUri())
+                mediaPlayer?.prepare()
+                mediaPlayer?.start()
+                
+                updateNotification()
+                
+                // Broadcast Change
+                sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
+                    putExtra("IS_PLAYING", true)
+                    putExtra("TITLE", track.title)
+                    putExtra("ARTIST", track.artist)
+                })
 
-            updateMediaSessionMetadata()
-            updateMediaSessionState()
+                updateMediaSessionMetadata()
+                updateMediaSessionState()
 
-        } catch (e: Exception) {
-            e.printStackTrace()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     fun play() {
-        mediaPlayer?.let {
-            if (!it.isPlaying) {
-                it.start()
-                updateNotification()
-                updateMediaSessionState() // State changed to Playing
-                sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
+        try {
+            mediaPlayer?.let {
+                if (!it.isPlaying) {
+                    it.start()
+                    updateNotification()
+                    updateMediaSessionState() // State changed to Playing
+                    sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
+                }
             }
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+            // MediaPlayer in invalid state, attempt recovery
+            try {
+                mediaPlayer?.reset()
+                mediaPlayer = android.media.MediaPlayer()
+            } catch (_: Exception) { }
         }
     }
 
     fun pause() {
-        mediaPlayer?.let {
-            if (it.isPlaying) {
-                it.pause()
-                updateNotification()
-                updateMediaSessionState() // State changed to Paused
-                sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
+        try {
+            mediaPlayer?.let {
+                if (it.isPlaying) {
+                    it.pause()
+                    updateNotification()
+                    updateMediaSessionState() // State changed to Paused
+                    sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
+                }
             }
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+            // MediaPlayer in invalid state, attempt recovery
+            try {
+                mediaPlayer?.reset()
+                mediaPlayer = android.media.MediaPlayer()
+            } catch (_: Exception) { }
         }
     }
     
@@ -340,7 +366,10 @@ class MusicService : Service() {
     }
 
     private fun updateNotification() {
-        val track = getCurrentTrack() ?: return
+        val track = getCurrentTrack() ?: run {
+            try { stopForeground(true) } catch (_: Exception) { }
+            return
+        }
         val isPlaying = isPlaying()
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

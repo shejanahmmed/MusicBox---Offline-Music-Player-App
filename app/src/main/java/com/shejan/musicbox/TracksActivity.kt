@@ -449,9 +449,9 @@ class TracksActivity : AppCompatActivity() {
 
                  while (it.moveToNext()) {
                      val id = it.getLong(idColumn)
-                     val title = it.getString(titleColumn)
+                     val title = it.getString(titleColumn) ?: "Unknown"
                      val artist = it.getString(artistColumn) ?: "Unknown Artist"
-                     val path = it.getString(dataColumn)
+                     val path = it.getString(dataColumn) ?: continue  // Skip null paths
                      val album = it.getString(albumColumn)
                      val albumId = it.getLong(albumIdColumn)
                      

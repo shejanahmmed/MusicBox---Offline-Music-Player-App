@@ -59,8 +59,9 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         // Click listener to open Now Playing and Start Service
         holder.root.setOnClickListener {
             
-            // Set Playlist in Service
-            MusicService.playlist = tracks
+            // Set Playlist in Service (clear and add all to maintain synchronization)
+            MusicService.playlist.clear()
+            MusicService.playlist.addAll(tracks)
             // Use title/uri to find index if needed, but since we are clicking an item, 
             // we really should pass the index. However, we have the track object.
             // Let's iterate to find index to be safe (or pass position if we change adapter signature).

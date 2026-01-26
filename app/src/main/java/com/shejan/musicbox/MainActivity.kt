@@ -223,6 +223,7 @@ class MainActivity : AppCompatActivity() {
     private var isBound = false
     private val typingHandler = Handler(Looper.getMainLooper())
     private var typingRunnable: Runnable? = null
+    private var isReceiverRegistered = false
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -252,8 +253,18 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         val intent = Intent(this, MusicService::class.java)
         bindService(intent, connection, BIND_AUTO_CREATE)
-        ContextCompat.registerReceiver(this, updateReceiver, IntentFilter("UPDATE_MAIN_ACTIVITY"), ContextCompat.RECEIVER_NOT_EXPORTED)
-        ContextCompat.registerReceiver(this, updateReceiver, IntentFilter("MUSIC_BOX_UPDATE"), ContextCompat.RECEIVER_NOT_EXPORTED)
+        
+        // Register receiver only if not already registered
+        if (!isReceiverRegistered) {
+            try {
+                ContextCompat.registerReceiver(this, updateReceiver, IntentFilter("UPDATE_MAIN_ACTIVITY"), ContextCompat.RECEIVER_NOT_EXPORTED)
+                ContextCompat.registerReceiver(this, updateReceiver, IntentFilter("MUSIC_BOX_UPDATE"), ContextCompat.RECEIVER_NOT_EXPORTED)
+                isReceiverRegistered = true
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        
         setupHomeBoxes() // Refresh boxes with latest data
         updateGreeting()
         NavUtils.setupNavigation(this, R.id.nav_home) // Refresh Navigation in case Settings changed
@@ -275,9 +286,14 @@ class MainActivity : AppCompatActivity() {
             unbindService(connection)
             isBound = false
         }
-        try {
-            unregisterReceiver(updateReceiver)
-        } catch (_: IllegalArgumentException) {}
+        
+        // Only unregister if it was registered
+        if (isReceiverRegistered) {
+            try {
+                unregisterReceiver(updateReceiver)
+                isReceiverRegistered = false
+            } catch (_: IllegalArgumentException) {}
+        }
     }
 
     override fun onPause() {
