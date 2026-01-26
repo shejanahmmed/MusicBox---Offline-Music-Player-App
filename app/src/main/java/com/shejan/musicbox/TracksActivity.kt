@@ -65,21 +65,9 @@ class TracksActivity : AppCompatActivity() {
     // Artwork Picker
     private val pickArtworkLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
-            // We need to know which track was being edited. 
-            // Since launcher is async, we need a standard way to track the 'pending' track ID.
-            // Or, we can use a simpler approach: The Dialog holds the track. 
-            // But the dialog dismisses.
-            // Actually, we can store 'trackIdForArtwork' in a var.
             if (currentEditingTrackId != -1L) {
                 TrackArtworkManager.saveArtwork(this, currentEditingTrackId, uri.toString())
-                // Refresh specific item or whole list? 
-                // loadTracks() might be heavy. Adapter notifyItemChanged would be better if we had position.
-                // For now, loadTracks() or finding ViewHolder.
-                
-                // Also update Mini Player if it matches
                 updateMiniPlayer() 
-                
-                // Refresh list to show new art
                 loadTracks()
             }
         }
@@ -94,7 +82,6 @@ class TracksActivity : AppCompatActivity() {
             if (intent?.action == "MUSIC_BOX_UPDATE") {
                 updateMiniPlayer()
             } else if (intent?.action == "com.shejan.musicbox.TRACK_DELETED") {
-                // Refresh list if track deleted elsewhere
                 loadTracks()
             }
         }
@@ -118,44 +105,36 @@ class TracksActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tracks)
         
-        // Apply WindowInsets to handle Navigation Bar overlap
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, systemBars.bottom)
             insets
         }
         
-        // Restore Sort State from SharedPreferences
         val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
         sortColumn = prefs.getString("sort_column", MediaStore.Audio.Media.TITLE) ?: MediaStore.Audio.Media.TITLE
         isAscending = prefs.getBoolean("is_ascending", true)
 
-        // Setup RecyclerView
         val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
         rvTracks.layoutManager = LinearLayoutManager(this)
 
-        // Mini Player Click
         findViewById<View>(R.id.cl_mini_player).setOnClickListener {
-             // Do nothing if no track is loaded, or show toast
              if (musicService?.getCurrentTrack() != null) {
                   val track = musicService!!.getCurrentTrack()!!
                   NowPlayingActivity.start(this, track.title, track.artist)
              }
         }
 
-        // Check and Load Tracks
         if (checkPermission()) {
             loadTracks()
         } else {
             requestPermission()
         }
         
-        // Sort Button
         findViewById<View>(R.id.btn_sort).setOnClickListener {
             showSortDialog()
         }
         
-        // Header Controls
         findViewById<View>(R.id.btn_header_shuffle).setOnClickListener {
              if (isBound && musicService != null) {
                  musicService?.toggleShuffle()
@@ -176,9 +155,7 @@ class TracksActivity : AppCompatActivity() {
                  }
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
              }
-    }
-        
-
+        }
 
         findViewById<View>(R.id.btn_mini_next)?.setOnClickListener {
             val intent = Intent(this, MusicService::class.java)
@@ -192,12 +169,8 @@ class TracksActivity : AppCompatActivity() {
             startService(intent)
         }
         
-
-
-        // Navigation Logic
         NavUtils.setupNavigation(this, getNavId())
         
-        // Register Receiver
         val filter = IntentFilter("MUSIC_BOX_UPDATE")
         filter.addAction("com.shejan.musicbox.TRACK_DELETED")
         ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
@@ -247,54 +220,37 @@ class TracksActivity : AppCompatActivity() {
             loadTracks()
         }
         updateMiniPlayer()
-        // Refresh Navigation in case Settings changed
         NavUtils.setupNavigation(this, getNavId())
         
-        // Reload if coming back from edit
         if (isEditingPlaylist) {
              loadTracks()
              isEditingPlaylist = false
         }
-        
-        // Register Receiver
-        // Receiver Moved to onCreate/onDestroy
     }
     
-    override fun onPause() {
-        super.onPause()
-        // Receiver Unregister Moved
-    }
-
     private fun updateMiniPlayer() {
         updateUI()
     }
 
     private fun updateUI() {
-        // Update Header Controls
         val shuffleBtn = findViewById<ImageButton>(R.id.btn_header_shuffle)
         val repeatBtn = findViewById<ImageButton>(R.id.btn_header_repeat)
         
         if (MusicService.isShuffleEnabled) {
             shuffleBtn.setColorFilter(getColor(R.color.primary_red))
-            shuffleBtn.alpha = 1.0f
         } else {
             shuffleBtn.setColorFilter(getColor(R.color.text_white_opacity_40))
-            shuffleBtn.alpha = 1.0f
         }
         
         if (MusicService.repeatMode != MusicService.REPEAT_OFF) {
             repeatBtn.setColorFilter(getColor(R.color.primary_red))
-            repeatBtn.alpha = 1.0f
         } else {
             repeatBtn.setColorFilter(getColor(R.color.text_white_opacity_40))
-            repeatBtn.alpha = 1.0f
         }
         
-        // Update Mini Player
         MiniPlayerManager.update(this, musicService)
         MiniPlayerManager.setup(this) { musicService }
 
-        // Update List Active State
         var track: Track? = null
         if (isBound && musicService != null) {
             track = musicService?.getCurrentTrack()
@@ -331,7 +287,6 @@ class TracksActivity : AppCompatActivity() {
                 loadTracks()
             } else {
                 Toast.makeText(this, getString(R.string.msg_storage_permission), Toast.LENGTH_LONG).show()
-                // loadDummyData() - Removed
             }
         }
     }
@@ -344,21 +299,16 @@ class TracksActivity : AppCompatActivity() {
         val albumName = intent.getStringExtra("ALBUM_NAME")
 
         localContentVersion = MusicUtils.contentVersion
-        val trackList = mutableListOf<Track>()
-
-        if (showFavoritesOnly) {
+        val trackList: List<Track> = if (showFavoritesOnly) {
              findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.title_favorites)
              val favorites = FavoritesManager.getFavorites(this)
-             trackList.addAll(getAllTracks().filter { favorites.contains(it.uri) })
+             // Favorites still requires filtering the full list since they are URIs in prefs
+             getTracks(null, null).filter { favorites.contains(it.uri) }
         } else if (playlistId != -1L) {
-             // Fetch latest name from manager, fallback to intent
              val playlist = AppPlaylistManager.getPlaylist(this, playlistId)
              val displayName = playlist?.name ?: playlistName ?: "PLAYLIST"
-             
              findViewById<TextView>(R.id.tv_header_title)?.text = displayName.uppercase()
-             trackList.addAll(getPlaylistTracks(playlistId))
              
-             // Show Edit Button
              val btnEdit = findViewById<View>(R.id.btn_edit)
              btnEdit.visibility = View.VISIBLE
              btnEdit.setOnClickListener {
@@ -368,36 +318,30 @@ class TracksActivity : AppCompatActivity() {
                  isEditingPlaylist = true
                  startActivity(intent)
              }
+             getPlaylistTracks(playlistId)
         } else if (artistName != null) {
              findViewById<TextView>(R.id.tv_header_title)?.text = artistName.uppercase()
-             trackList.addAll(getAllTracks().filter { it.artist.equals(artistName, ignoreCase = true) })
+             // Optimized: Filter at DB level
+             getTracks("${MediaStore.Audio.Media.ARTIST} = ?", arrayOf(artistName))
         } else if (albumName != null) {
              findViewById<TextView>(R.id.tv_header_title)?.text = albumName.uppercase()
-             // Use regex or contains for looser matching if needed, but exact is safet from MediaStore
-             trackList.addAll(getAllTracks().filter { it.album?.equals(albumName, ignoreCase = true) == true }) // Need album logic in Track or query
-             // Wait, Track model doesn't have album field yet? Let's check.
-             // If not, we need to add it or load it.
-             // Optimization: We load AllTracks then filter. Check getAllTracks() to see if it fetches Album.
-             // It fetches: ID, TITLE, ARTIST, DATA. No Album.
-             // We need to update getAllTracks to fetch Album too.
+             // Optimized: Filter at DB level
+             getTracks("${MediaStore.Audio.Media.ALBUM} = ?", arrayOf(albumName))
         } else {
-             // Load All
-             trackList.addAll(getAllTracks())
+             findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.tab_tracks).uppercase()
+             getTracks(null, null)
         }
 
         if (trackList.isEmpty()) {
-            if (showFavoritesOnly) {
-                 Toast.makeText(this, getString(R.string.msg_no_favorites), Toast.LENGTH_LONG).show()
-            } else if (playlistId != -1L) {
-                 Toast.makeText(this, getString(R.string.msg_playlist_empty), Toast.LENGTH_LONG).show()
-            } else if (artistName != null) {
-                 Toast.makeText(this, getString(R.string.msg_no_artist_tracks), Toast.LENGTH_LONG).show()
-            } else {
-                 Toast.makeText(this, getString(R.string.msg_no_music), Toast.LENGTH_LONG).show()
+            val msg = when {
+                showFavoritesOnly -> getString(R.string.msg_no_favorites)
+                playlistId != -1L -> getString(R.string.msg_playlist_empty)
+                artistName != null -> getString(R.string.msg_no_artist_tracks)
+                else -> getString(R.string.msg_no_music)
             }
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
         }
         
-        // Update Count
         findViewById<TextView>(R.id.tv_tracks_count)?.text = if (trackList.size == 1) "1 Song" else "${trackList.size} Songs"
 
         val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
@@ -411,7 +355,7 @@ class TracksActivity : AppCompatActivity() {
         }
     }
 
-    private fun getAllTracks(): List<Track> {
+    private fun getTracks(selection: String?, selectionArgs: Array<String>?): List<Track> {
         val list = mutableListOf<Track>()
         try {
              val projection = arrayOf(
@@ -427,15 +371,18 @@ class TracksActivity : AppCompatActivity() {
              val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
              val minDurationMillis = minDurationSec * 1000
              
-             val selection = "${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
+             // Base criteria: is_music and minimum duration
+             val baseSelection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
+             val finalSelection = if (selection != null) "($baseSelection) AND ($selection)" else baseSelection
+             
              val order = if (isAscending) "ASC" else "DESC"
              val sortOrder = "$sortColumn $order"
 
              val cursor = contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 projection,
-                selection,
-                null, // selectionArgs not needed for simple integer comparison in string
+                finalSelection,
+                selectionArgs,
                 sortOrder
              )
 
@@ -451,12 +398,13 @@ class TracksActivity : AppCompatActivity() {
                      val id = it.getLong(idColumn)
                      val title = it.getString(titleColumn) ?: "Unknown"
                      val artist = it.getString(artistColumn) ?: "Unknown Artist"
-                     val path = it.getString(dataColumn) ?: continue  // Skip null paths
+                     val path = it.getString(dataColumn) ?: continue
                      val album = it.getString(albumColumn)
                      val albumId = it.getLong(albumIdColumn)
                      
-                     val hidden = HiddenTracksManager.isHidden(this, path)
-                     if (!hidden && !path.lowercase().contains("ringtone") && !path.lowercase().contains("notification")) {
+                     if (!HiddenTracksManager.isHidden(this, path) && 
+                         !path.lowercase().contains("ringtone") && 
+                         !path.lowercase().contains("notification")) {
                         list.add(TrackMetadataManager.applyMetadata(this, Track(id, title, artist, path, album, albumId)))
                      }
                  }
@@ -465,20 +413,13 @@ class TracksActivity : AppCompatActivity() {
         return list
     }
 
-    @Suppress("DEPRECATION")
     private fun getPlaylistTracks(playlistId: Long): List<Track> {
         val playlist = AppPlaylistManager.getPlaylist(this, playlistId) ?: return emptyList()
-        val allTracks = getAllTracks()
-        
-        // Map paths to tracks to preserve order and get metadata
+        val allTracks = getTracks(null, null)
         val trackMap = allTracks.associateBy { it.uri }
         return playlist.trackPaths.mapNotNull { trackMap[it] }
     }
 
-    // private fun loadDummyData() { removed }
-
-    // private fun setupNavClick(id: Int, name: String, isHome: Boolean = false) { }
-    
     @SuppressLint("InflateParams")
     private fun showSortDialog() {
         val dialog = BottomSheetDialog(this)
@@ -490,7 +431,6 @@ class TracksActivity : AppCompatActivity() {
         }
         
         val switchAsc = view.findViewById<SwitchMaterial>(R.id.switch_ascending)
-        
         val containerTitle = view.findViewById<View>(R.id.container_title)
         val containerDateAdded = view.findViewById<View>(R.id.container_date_added)
         val containerDateModified = view.findViewById<View>(R.id.container_date_modified)
@@ -499,7 +439,6 @@ class TracksActivity : AppCompatActivity() {
         val rbDateAdded = view.findViewById<RadioButton>(R.id.rb_date_added)
         val rbDateModified = view.findViewById<RadioButton>(R.id.rb_date_modified)
         
-        // Helper to update UI
         fun updateSelection(selectedRb: RadioButton) {
             rbTitle.isChecked = false
             rbDateAdded.isChecked = false
@@ -507,7 +446,6 @@ class TracksActivity : AppCompatActivity() {
             selectedRb.isChecked = true
         }
 
-        // Set current state
         switchAsc.isChecked = isAscending
         when (sortColumn) {
             MediaStore.Audio.Media.TITLE -> updateSelection(rbTitle)
@@ -515,61 +453,56 @@ class TracksActivity : AppCompatActivity() {
             MediaStore.Audio.Media.DATE_MODIFIED -> updateSelection(rbDateModified)
         }
         
-        // Helper to save prefs
-    fun saveSortPrefs() {
-        val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
-        prefs.edit {
-            putString("sort_column", sortColumn)
-            putBoolean("is_ascending", isAscending)
+        fun saveSortPrefs() {
+            val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
+            prefs.edit {
+                putString("sort_column", sortColumn)
+                putBoolean("is_ascending", isAscending)
+            }
         }
-    }
     
-    // Listeners
-    switchAsc.setOnCheckedChangeListener { _, isChecked ->
-        isAscending = isChecked
-        saveSortPrefs()
-        loadTracks()
-    }
+        switchAsc.setOnCheckedChangeListener { _, isChecked ->
+            isAscending = isChecked
+            saveSortPrefs()
+            loadTracks()
+        }
     
-    containerTitle.setOnClickListener {
-        updateSelection(rbTitle)
-        sortColumn = MediaStore.Audio.Media.TITLE
-        saveSortPrefs()
-        loadTracks()
-        dialog.dismiss()
-    }
+        containerTitle.setOnClickListener {
+            updateSelection(rbTitle)
+            sortColumn = MediaStore.Audio.Media.TITLE
+            saveSortPrefs()
+            loadTracks()
+            dialog.dismiss()
+        }
     
-    containerDateAdded.setOnClickListener {
-        updateSelection(rbDateAdded)
-        sortColumn = MediaStore.Audio.Media.DATE_ADDED
-        saveSortPrefs()
-        loadTracks()
-        dialog.dismiss()
-    }
+        containerDateAdded.setOnClickListener {
+            updateSelection(rbDateAdded)
+            sortColumn = MediaStore.Audio.Media.DATE_ADDED
+            saveSortPrefs()
+            loadTracks()
+            dialog.dismiss()
+        }
     
-    containerDateModified.setOnClickListener {
-        updateSelection(rbDateModified)
-        sortColumn = MediaStore.Audio.Media.DATE_MODIFIED
-        saveSortPrefs()
-        loadTracks()
-        dialog.dismiss()
+        containerDateModified.setOnClickListener {
+            updateSelection(rbDateModified)
+            sortColumn = MediaStore.Audio.Media.DATE_MODIFIED
+            saveSortPrefs()
+            loadTracks()
+            dialog.dismiss()
+        }
+            
+        dialog.show()
     }
-        
-    dialog.show()
-}
-
-
 
     private fun showTrackOptionsDialog(track: Track) {
-        currentEditingTrackId = track.id // Helper for result launcher
-        
+        currentEditingTrackId = track.id
         TrackMenuManager.showTrackOptionsDialog(this, track, pickArtworkLauncher, object : TrackMenuManager.Callback {
             override fun onArtworkChanged() {
                 loadTracks()
                 updateMiniPlayer()
             }
             override fun onTrackUpdated() {
-               loadTracks() // Refresh for favorites
+               loadTracks()
             }
             override fun onTrackDeleted() {
                 loadTracks()
