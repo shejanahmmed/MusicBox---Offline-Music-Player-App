@@ -67,7 +67,21 @@ object ImageLoader {
         executor.execute {
             try {
                 val bitmap = MusicUtils.getTrackArtworkBitmap(context, trackId, albumId, trackUri)
-                    ?: return@execute
+                
+                if (bitmap == null) {
+                    weakView.get()?.let { view ->
+                        if (view.tag == cacheKey) {
+                            handler.post {
+                                if (view.tag == cacheKey) {
+                                    view.setImageResource(R.drawable.ic_cd_placeholder)
+                                    view.scaleType = ImageView.ScaleType.FIT_CENTER
+                                    view.clearColorFilter()
+                                }
+                            }
+                        }
+                    }
+                    return@execute
+                }
                 
                 memoryCache.put(cacheKey, bitmap)
                 

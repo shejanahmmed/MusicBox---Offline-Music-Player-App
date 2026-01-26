@@ -82,10 +82,6 @@
         <activity
             android:name=".AlbumsActivity"
             android:exported="false" />
-        <activity
-            android:name=".FoldersActivity"
-            android:exported="false"
-            android:theme="@style/Theme.MusicBox" />
 
         <activity
             android:name=".SettingsActivity"

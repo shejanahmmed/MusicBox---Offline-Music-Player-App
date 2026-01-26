@@ -42,7 +42,7 @@ object TabManager {
         TabItem("home", "Home", R.drawable.ic_home, true, R.id.nav_home),
         TabItem("tracks", "Tracks", R.drawable.ic_library_music, true, R.id.nav_tracks),
         TabItem("albums", "Albums", R.drawable.ic_album, true, R.id.nav_albums),
-        TabItem("folders", "Folders", R.drawable.ic_folder, true, R.id.nav_folders),
+
         TabItem("artists", "Artists", R.drawable.ic_person, true, R.id.nav_artists),
         TabItem("playlist", "Playlist", R.drawable.ic_queue_music, true, R.id.nav_playlist)
     )
@@ -118,7 +118,7 @@ object TabManager {
             "home" -> MainActivity::class.java
             "tracks" -> TracksActivity::class.java
             "albums" -> AlbumsActivity::class.java
-            "folders" -> FoldersActivity::class.java
+
             "artists" -> ArtistsActivity::class.java
             "playlist" -> PlaylistActivity::class.java
             else -> MainActivity::class.java

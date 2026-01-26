@@ -35,7 +35,7 @@
     <string name="text_with_cursor">%1$s|</string>
     <string name="fgs_media_playback_explanation">MusicBox needs to play media in the background.</string>
     <string name="artist_track_count">%1$d Tracks</string>
-    <string name="breadcrumb_storage">Internal Storage</string>
+
     <string name="artwork_updated">Artwork updated</string>
     <string name="repeat_all">Repeat All</string>
     <string name="repeat_one">Repeat One</string>

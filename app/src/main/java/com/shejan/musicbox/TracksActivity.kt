@@ -66,6 +66,10 @@ class TracksActivity : AppCompatActivity() {
     private val pickArtworkLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             if (currentEditingTrackUri != null) {
+                try {
+                    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                } catch (e: Exception) { e.printStackTrace() }
+                
                 TrackArtworkManager.saveArtwork(this, currentEditingTrackUri!!, uri.toString())
                 updateMiniPlayer() 
                 loadTracks()

@@ -48,7 +48,9 @@ class AlbumAdapter(private val albums: List<Album>, private val onClick: (Album)
         holder.artist.text = album.artist
         
         // Load Art
-        MusicUtils.loadAlbumArt(holder.itemView.context, album.id, holder.art)
+        // Use loadTrackArt to leverage robust fallback logic (MediaStore -> File Fallback)
+        // We pass -1 for trackId since this is an album view, but provide the representative file URI.
+        MusicUtils.loadTrackArt(holder.itemView.context, -1, album.id, album.artUri ?: "", holder.art)
         
         // Use a simple art loader if possible later, for now static + filter
         // If we had a load function in Context extension:

@@ -139,7 +139,8 @@ class AlbumsActivity : AppCompatActivity() {
                     if (!albumMap.containsKey(albumId)) {
                         val title = it.getString(albumCol)
                         val artist = it.getString(artistCol)
-                        albumMap[albumId] = Album(albumId, title, artist, null)
+                        // Use the path of the first track found as the representative URI for artwork
+                        albumMap[albumId] = Album(albumId, title, artist, path)
                     }
                 }
             }

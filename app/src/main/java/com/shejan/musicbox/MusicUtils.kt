@@ -79,7 +79,9 @@ object MusicUtils {
     }
     
     fun loadTrackArt(context: Context, trackId: Long, albumId: Long, trackUri: String, imageView: ImageView) {
-        if (trackId <= 0L) {
+        // Guard checking: Fail only if BOTH ID is invalid AND trackUri is empty.
+        // This allows Folder Browser to pass -1 ID but a valid URI.
+        if (trackId <= 0L && trackUri.isEmpty()) {
             setDefaultArt(imageView)
             return
         }
@@ -154,20 +156,71 @@ object MusicUtils {
              }
          }
          
-         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-             val uri = ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackId)
-              try {
-                  val size = android.util.Size(300, 300)
-                  return context.contentResolver.loadThumbnail(uri, size, null)
-              } catch (_: Exception) {
-                  // Fallback
-              }
+          // If we don't have IDs but have a path, try to find them in MediaStore first
+          // This allows us to use efficient system thumbnails for library files
+          var resolvedTrackId = trackId
+          var resolvedAlbumId = albumId
+          
+          if (resolvedTrackId <= 0L && trackUri.isNotEmpty() && !trackUri.startsWith("content://")) {
+               try {
+                   val projection = arrayOf(
+                       android.provider.MediaStore.Audio.Media._ID,
+                       android.provider.MediaStore.Audio.Media.ALBUM_ID
+                   )
+                   context.contentResolver.query(
+                       android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                       projection,
+                       "${android.provider.MediaStore.Audio.Media.DATA} = ?",
+                       arrayOf(trackUri),
+                       null
+                   )?.use { cursor ->
+                       if (cursor.moveToFirst()) {
+                           resolvedTrackId = cursor.getLong(0)
+                           resolvedAlbumId = cursor.getLong(1)
+                       }
+                   }
+               } catch (_: Exception) {}
+          }
+
+          if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q && resolvedTrackId > 0) {
+              val uri = ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, resolvedTrackId)
+               try {
+                   val size = android.util.Size(300, 300)
+                   return context.contentResolver.loadThumbnail(uri, size, null)
+               } catch (_: Exception) {
+                   // Fallback
+               }
           }
           
           // Fallback to Album Art if available
-          if (albumId != -1L) {
-              return getAlbumArtBitmap(context, albumId)
+          if (resolvedAlbumId != -1L && resolvedAlbumId > 0) {
+              val bitmap = getAlbumArtBitmap(context, resolvedAlbumId)
+              if (bitmap != null) return bitmap
           }
+
+           // Fallback: Use MediaMetadataRetriever for raw file paths (Folder Browser)
+           if (trackUri.isNotEmpty() && !trackUri.startsWith("content://")) {
+               try {
+                   val mmr = android.media.MediaMetadataRetriever()
+                   // Use setDataSource(Context, Uri) for better compatibility
+                   // Note: We use Uri.fromFile as we are dealing with raw paths here
+                   mmr.setDataSource(context, android.net.Uri.fromFile(java.io.File(trackUri)))
+                   val rawArt = mmr.embeddedPicture
+                   mmr.release()
+
+                   if (rawArt != null) {
+                       val options = android.graphics.BitmapFactory.Options()
+                       options.inJustDecodeBounds = true
+                       android.graphics.BitmapFactory.decodeByteArray(rawArt, 0, rawArt.size, options)
+                       options.inSampleSize = calculateInSampleSize(options, 300, 300)
+                       options.inJustDecodeBounds = false
+                       
+                       return android.graphics.BitmapFactory.decodeByteArray(rawArt, 0, rawArt.size, options)
+                   }
+               } catch (e: Exception) {
+                   e.printStackTrace()
+               }
+           }
           
           return null
     }
