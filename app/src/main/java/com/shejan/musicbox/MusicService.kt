@@ -363,7 +363,7 @@ class MusicService : Service() {
             try {
                 mediaPlayer?.reset()
                 mediaPlayer?.setDataSource(applicationContext, track.uri.toUri())
-                mediaPlayer?.prepareAsync() // FIXED: Non-blocking
+                mediaPlayer?.prepareAsync() // This triggers onPrepared, which sends the ONE update
             } catch (e: Exception) {
                 e.printStackTrace()
             }

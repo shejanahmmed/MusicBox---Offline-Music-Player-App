@@ -289,7 +289,6 @@ class NowPlayingActivity : AppCompatActivity() {
              } else {
                  musicService?.play()
              }
-             updateUI()
         }
 
         btnPlayPause.setOnClickListener {
@@ -298,29 +297,30 @@ class NowPlayingActivity : AppCompatActivity() {
              } else {
                  musicService?.play()
              }
-             updateUI()
         }
         
         btnNext.setOnClickListener {
             musicService?.playNext()
-            updateUI()
         }
         
         btnPrev.setOnClickListener {
             musicService?.playPrev()
-            updateUI()
         }
 
         val btnShuffle = findViewById<ImageButton>(R.id.btn_shuffle_large)
         btnShuffle.setOnClickListener {
             musicService?.toggleShuffle()
-            updateUI()
+            // We can keep specific updateUI here if toggleShuffle doesn't broadcast immediately, 
+            // but MusicService.toggleShuffle DOES broadcast.
+            // However, the broadcast sends "SHUFFLE_STATE", not "MUSIC_BOX_UPDATE" in some versions?
+            // Let's check MusicService.toggleShuffle broadcast.
+            // It sends "MUSIC_BOX_UPDATE" with extra "SHUFFLE_STATE".
+            // The receiver calls updateUI(). So we can remove this too.
         }
 
         val btnRepeat = findViewById<ImageButton>(R.id.btn_repeat_large)
         btnRepeat.setOnClickListener {
             musicService?.toggleRepeat()
-            updateUI()
             
             val mode = MusicService.repeatMode
             val msg = when (mode) {
