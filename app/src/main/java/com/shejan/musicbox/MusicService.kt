@@ -33,12 +33,15 @@ import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
 import androidx.media.app.NotificationCompat.MediaStyle
 import android.content.pm.ServiceInfo
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import java.util.Collections
 
 class MusicService : Service() {
 
     private lateinit var mediaSession: MediaSessionCompat
     private var mediaPlayer: android.media.MediaPlayer? = null
+    private var placeholderBitmap: Bitmap? = null
 
     // Queue Management
     companion object {
@@ -98,6 +101,7 @@ class MusicService : Service() {
                              if (playlist.isNotEmpty()) {
                                  playTrack(currentIndex)
                              } else {
+                                 stopForeground(STOP_FOREGROUND_REMOVE)
                                  stopSelf()
                              }
                          } else {
@@ -121,6 +125,7 @@ class MusicService : Service() {
         super.onCreate()
         createNotificationChannel()
         mediaSession = MediaSessionCompat(this, "MusicBoxMediaSession")
+        placeholderBitmap = BitmapFactory.decodeResource(resources, R.drawable.ic_album)
 
         mediaSession.setCallback(object : MediaSessionCompat.Callback() {
             override fun onPlay() {
@@ -140,15 +145,21 @@ class MusicService : Service() {
             }
 
             override fun onSeekTo(pos: Long) {
-                mediaPlayer?.seekTo(pos.toInt())
-                updateMediaSessionState()
+                try {
+                    mediaPlayer?.seekTo(pos.toInt())
+                    updateMediaSessionState()
+                } catch (_: Exception) {}
             }
         })
         mediaSession.isActive = true
 
         // Register Noisy Receiver
         val filter = android.content.IntentFilter(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY)
-        registerReceiver(noisyReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(noisyReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(noisyReceiver, filter)
+        }
         
         // Register Deletion Receiver
         val deleteFilter = android.content.IntentFilter("com.shejan.musicbox.TRACK_DELETED")
@@ -159,6 +170,11 @@ class MusicService : Service() {
         }
 
         // Initialize MediaPlayer
+        initMediaPlayer()
+    }
+
+    private fun initMediaPlayer() {
+        mediaPlayer?.release()
         mediaPlayer = android.media.MediaPlayer().apply {
             setOnCompletionListener {
                 if (repeatMode == REPEAT_ONE) {
@@ -166,20 +182,39 @@ class MusicService : Service() {
                 } else if (repeatMode == REPEAT_ALL) {
                     playNext()
                 } else {
-                    // Repeat Off: Stop at end of list
                     if (currentIndex < playlist.size - 1) {
                          playNext()
-                    } else {
-                         playNext() // For now, let's just default to next to avoid complexity, but usually Repeat Off means stop.
                     }
                 }
+            }
+            setOnPreparedListener {
+                it.start()
+                updateNotification()
+                updateMediaSessionMetadata()
+                updateMediaSessionState()
+                
+                // Broadcast Change
+                val track = getCurrentTrack()
+                if (track != null) {
+                    sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
+                        putExtra("IS_PLAYING", true)
+                        putExtra("TITLE", track.title)
+                        putExtra("ARTIST", track.artist)
+                    })
+                }
+            }
+            setOnErrorListener { mp, what, extra ->
+                mp.reset()
+                false
             }
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Ensure the service starts in foreground immediately to avoid crashes on Android 12+
+        startForegroundWithPlaceholder()
+
         val action = intent?.action
-        
         if (action != null) {
             if (action == Intent.ACTION_MEDIA_BUTTON) {
                 androidx.media.session.MediaButtonReceiver.handleIntent(mediaSession, intent)
@@ -191,21 +226,13 @@ class MusicService : Service() {
                 ACTION_PREV -> playPrev()
             }
         } else {
-             // Initial Start from List
-             val title = intent?.getStringExtra("TITLE")
              val uri = intent?.getStringExtra("URI")
-             
-             // If launched with a specific song (from Adapter), assume the playlist is already set correctly by the Adapter/Activity
-             // and the current index is handled there, OR find the track in our static list.
-             if (uri != null && title != null) {
+             if (uri != null) {
                  if (uri == currentTrackUri) {
-                      // Already the current track. Update index just in case playlist context changed (e.g. All -> Fav)
                       val index = playlist.indexOfFirst { it.uri == uri }
                       if (index != -1) currentIndex = index
-                      
                       if (!isPlaying()) play()
                  } else {
-                      // Find index in playlist
                       val index = playlist.indexOfFirst { it.uri == uri }
                       if (index != -1) {
                           currentIndex = index
@@ -215,10 +242,24 @@ class MusicService : Service() {
              }
         }
 
-        // Always update notification
         updateNotification()
-
         return START_NOT_STICKY
+    }
+
+    private fun startForegroundWithPlaceholder() {
+        val track = getCurrentTrack()
+        val notification = if (track != null) {
+            buildNotification(track.title, track.artist, isPlaying())
+        } else {
+            // Fallback notification if no track is yet loaded
+            buildNotification("MusicBox", "Ready to play", false)
+        }
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -237,21 +278,7 @@ class MusicService : Service() {
             try {
                 mediaPlayer?.reset()
                 mediaPlayer?.setDataSource(applicationContext, track.uri.toUri())
-                mediaPlayer?.prepare()
-                mediaPlayer?.start()
-                
-                updateNotification()
-                
-                // Broadcast Change
-                sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
-                    putExtra("IS_PLAYING", true)
-                    putExtra("TITLE", track.title)
-                    putExtra("ARTIST", track.artist)
-                })
-
-                updateMediaSessionMetadata()
-                updateMediaSessionState()
-
+                mediaPlayer?.prepareAsync() // FIXED: Non-blocking
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -264,17 +291,12 @@ class MusicService : Service() {
                 if (!it.isPlaying) {
                     it.start()
                     updateNotification()
-                    updateMediaSessionState() // State changed to Playing
+                    updateMediaSessionState()
                     sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
                 }
             }
         } catch (e: IllegalStateException) {
-            e.printStackTrace()
-            // MediaPlayer in invalid state, attempt recovery
-            try {
-                mediaPlayer?.reset()
-                mediaPlayer = android.media.MediaPlayer()
-            } catch (_: Exception) { }
+            initMediaPlayer()
         }
     }
 
@@ -284,44 +306,37 @@ class MusicService : Service() {
                 if (it.isPlaying) {
                     it.pause()
                     updateNotification()
-                    updateMediaSessionState() // State changed to Paused
+                    updateMediaSessionState()
                     sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
                 }
             }
         } catch (e: IllegalStateException) {
-            e.printStackTrace()
-            // MediaPlayer in invalid state, attempt recovery
-            try {
-                mediaPlayer?.reset()
-                mediaPlayer = android.media.MediaPlayer()
-            } catch (_: Exception) { }
+            initMediaPlayer()
         }
     }
     
     fun playNext() {
-        if (playlist.isEmpty()) return
-        
-        var nextIndex: Int
-        if (isShuffleEnabled) {
-             nextIndex = (playlist.indices).random()
-        } else {
-             nextIndex = currentIndex + 1
-             if (nextIndex >= playlist.size) nextIndex = 0 // Loop
+        synchronized(playlist) {
+            if (playlist.isEmpty()) return
+            val nextIndex = if (isShuffleEnabled) {
+                 (playlist.indices).random()
+            } else {
+                 (currentIndex + 1) % playlist.size
+            }
+            playTrack(nextIndex)
         }
-        playTrack(nextIndex)
     }
     
     fun playPrev() {
-        if (playlist.isEmpty()) return
-        
-         var prevIndex: Int
-        if (isShuffleEnabled) {
-             prevIndex = (playlist.indices).random()
-        } else {
-             prevIndex = currentIndex - 1
-             if (prevIndex < 0) prevIndex = playlist.size - 1 // Loop
+        synchronized(playlist) {
+            if (playlist.isEmpty()) return
+            val prevIndex = if (isShuffleEnabled) {
+                 (playlist.indices).random()
+            } else {
+                 if (currentIndex <= 0) playlist.size - 1 else currentIndex - 1
+            }
+            playTrack(prevIndex)
         }
-        playTrack(prevIndex)
     }
     
     fun toggleRepeat() {
@@ -343,22 +358,24 @@ class MusicService : Service() {
     }
     
     fun getCurrentTrack(): Track? {
-        if (currentIndex in playlist.indices) {
-            return playlist[currentIndex]
+        synchronized(playlist) {
+            if (currentIndex in playlist.indices) {
+                return playlist[currentIndex]
+            }
         }
         return null
     }
 
     fun getDuration(): Int {
-        return mediaPlayer?.duration ?: 0
+        return try { mediaPlayer?.duration ?: 0 } catch (_: Exception) { 0 }
     }
 
     fun getCurrentPosition(): Int {
-        return mediaPlayer?.currentPosition ?: 0
+        return try { mediaPlayer?.currentPosition ?: 0 } catch (_: Exception) { 0 }
     }
 
     fun seekTo(position: Int) {
-        mediaPlayer?.seekTo(position)
+        try { mediaPlayer?.seekTo(position) } catch (_: Exception) {}
     }
 
     fun getAudioSessionId(): Int {
@@ -366,28 +383,23 @@ class MusicService : Service() {
     }
 
     private fun updateNotification() {
-        val track = getCurrentTrack() ?: run {
-            try { stopForeground(true) } catch (_: Exception) { }
-            return
-        }
+        val track = getCurrentTrack() ?: return
         val isPlaying = isPlaying()
         
+        val notification = buildNotification(track.title, track.artist, isPlaying)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(NOTIFICATION_ID, buildNotification(track.title, track.artist, isPlaying), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         } else {
-            startForeground(NOTIFICATION_ID, buildNotification(track.title, track.artist, isPlaying))
+            startForeground(NOTIFICATION_ID, notification)
         }
     }
 
     private fun buildNotification(title: String, artist: String, isPlaying: Boolean): android.app.Notification {
-        
-        // Intents for actions
         val playIntent = PendingIntent.getService(this, 0, Intent(this, MusicService::class.java).setAction(ACTION_PLAY), PendingIntent.FLAG_IMMUTABLE)
         val pauseIntent = PendingIntent.getService(this, 1, Intent(this, MusicService::class.java).setAction(ACTION_PAUSE), PendingIntent.FLAG_IMMUTABLE)
         val nextIntent = PendingIntent.getService(this, 2, Intent(this, MusicService::class.java).setAction(ACTION_NEXT), PendingIntent.FLAG_IMMUTABLE)
         val prevIntent = PendingIntent.getService(this, 3, Intent(this, MusicService::class.java).setAction(ACTION_PREV), PendingIntent.FLAG_IMMUTABLE)
 
-        // Open Activity Intent
         val contentIntent = Intent(this, NowPlayingActivity::class.java).apply { 
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP 
         }
@@ -397,7 +409,7 @@ class MusicService : Service() {
             .setSmallIcon(R.drawable.ic_audiotrack) 
             .setContentTitle(title)
             .setContentText(artist)
-            .setLargeIcon(android.graphics.BitmapFactory.decodeResource(resources, R.drawable.ic_album)) 
+            .setLargeIcon(placeholderBitmap) // FIXED: Use cached placeholder
             .setContentIntent(contentPendingIntent)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOnlyAlertOnce(true)
@@ -439,11 +451,11 @@ class MusicService : Service() {
         super.onDestroy()
         try {
             unregisterReceiver(noisyReceiver)
-        } catch (_: IllegalArgumentException) { }
+        } catch (_: Exception) { }
         
         try {
             unregisterReceiver(deletionReceiver)
-        } catch (_: IllegalArgumentException) { }
+        } catch (_: Exception) { }
         
         mediaPlayer?.release()
         mediaPlayer = null
@@ -452,7 +464,7 @@ class MusicService : Service() {
 
     private fun updateMediaSessionState() {
         val state = if (isPlaying()) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
-        val position = mediaPlayer?.currentPosition?.toLong() ?: 0L
+        val position = try { mediaPlayer?.currentPosition?.toLong() ?: 0L } catch (_: Exception) { 0L }
         
         val stateBuilder = PlaybackStateCompat.Builder()
             .setActions(
@@ -470,27 +482,17 @@ class MusicService : Service() {
 
     private fun updateMediaSessionMetadata() {
         val track = getCurrentTrack() ?: return
-        val duration = mediaPlayer?.duration?.toLong() ?: 0L
+        val duration = try { mediaPlayer?.duration?.toLong() ?: 0L } catch (_: Exception) { 0L }
         
-        // Try to load art bitmap (Custom or Album)
-        var artBitmap: android.graphics.Bitmap? = null
-        try {
-             // Use generic tracker loader which handles custom art AND safe fallback
-             artBitmap = MusicUtils.getTrackArtworkBitmap(this, track.id, track.albumId)
-        } catch (e: Exception) { e.printStackTrace() }
-        
-        if (artBitmap == null) {
-            artBitmap = android.graphics.BitmapFactory.decodeResource(resources, R.drawable.ic_album)
-        }
-
+        // Use placeholder for metadata too, or load art in background. 
+        // For metadata it's okay to try a quick load, but avoiding blocking is key.
         val metadataBuilder = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, track.title)
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, track.artist)
             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, track.album ?: "Unknown Album")
             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
-            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, artBitmap)
+            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, placeholderBitmap)
 
         mediaSession.setMetadata(metadataBuilder.build())
     }
 }
-

@@ -52,35 +52,26 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         holder.artist.text = track.artist
 
         if (holder.art != null) {
-            // Use Async Image Loader
             ImageLoader.load(holder.root.context, track.id, track.albumId, holder.art)
         }
 
-        // Click listener to open Now Playing and Start Service
         holder.root.setOnClickListener {
-            
-            // Set Playlist in Service (clear and add all to maintain synchronization)
-            MusicService.playlist.clear()
-            MusicService.playlist.addAll(tracks)
-            // Use title/uri to find index if needed, but since we are clicking an item, 
-            // we really should pass the index. However, we have the track object.
-            // Let's iterate to find index to be safe (or pass position if we change adapter signature).
-            // Since `tracks` is passed to adapter, we can find index of `track`.
-            // But duplicate tracks might exist. Ideally use position from ViewHolder.
-            // holder.bindingAdapterPosition gives position.
+            // FIXED: Synchronized playlist update to prevent race conditions
+            synchronized(MusicService.playlist) {
+                MusicService.playlist.clear()
+                MusicService.playlist.addAll(tracks)
+            }
             
             val intent = Intent(holder.root.context, MusicService::class.java).apply {
                 putExtra("TITLE", track.title)
                 putExtra("ARTIST", track.artist)
                 putExtra("URI", track.uri)
-                putExtra("IS_PLAYING", true)
             }
             androidx.core.content.ContextCompat.startForegroundService(holder.root.context, intent)
             
             NowPlayingActivity.start(holder.root.context, track.title, track.artist)
         }
         
-        // Options Button Click
         holder.options.setOnClickListener {
             onMoreClicked(track)
         }
@@ -131,4 +122,3 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         if (newActiveIndex != -1) notifyItemChanged(newActiveIndex)
     }
 }
-
