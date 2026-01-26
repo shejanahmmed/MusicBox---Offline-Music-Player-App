@@ -145,8 +145,9 @@ class NowPlayingActivity : AppCompatActivity() {
             showTrackOptionsDialog()
         }
         
-        // Enable marquee scrolling for title
+        // Enable marquee scrolling
         findViewById<TextView>(R.id.tv_now_playing_title).isSelected = true
+        findViewById<TextView>(R.id.tv_now_playing_artist).isSelected = true
         
         setupControls()
 

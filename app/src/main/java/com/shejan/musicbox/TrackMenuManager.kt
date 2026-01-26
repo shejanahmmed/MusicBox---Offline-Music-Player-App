@@ -64,8 +64,15 @@ object TrackMenuManager {
         val unknownAlbum = activity.getString(R.string.unknown_album)
         val displayAlbum = customMetadata?.album ?: track.album ?: unknownAlbum
         
-        view.findViewById<TextView>(R.id.tv_track_title).text = displayTitle
-        view.findViewById<TextView>(R.id.tv_track_artist).text = activity.getString(R.string.track_artist_album_format, displayArtist, displayAlbum)
+        val tvTitle = view.findViewById<TextView>(R.id.tv_track_title)
+        val tvArtist = view.findViewById<TextView>(R.id.tv_track_artist)
+        
+        tvTitle.text = displayTitle
+        tvArtist.text = activity.getString(R.string.track_artist_album_format, displayArtist, displayAlbum)
+        
+        // Enable Marquee
+        tvTitle.isSelected = true
+        tvArtist.isSelected = true
         
         val ivArt = view.findViewById<ImageView>(R.id.iv_track_art)
         MusicUtils.loadTrackArt(activity, track.id, track.albumId, track.uri, ivArt)
@@ -76,27 +83,43 @@ object TrackMenuManager {
         
         var durationStr = "--:--"
         var bitrate = activity.getString(R.string.na_placeholder)
+        var format = "AUDIO" // Default
+        
         try {
             val retriever = android.media.MediaMetadataRetriever()
             retriever.setDataSource(track.uri)
             val durMs = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0L
             val minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(durMs)
             val seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(durMs) - java.util.concurrent.TimeUnit.MINUTES.toSeconds(minutes)
-            durationStr = String.format(Locale.getDefault(), activity.getString(R.string.time_format_mm_ss), minutes, seconds)
+            durationStr = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
             
-            // Also get bitrate here to avoid double retrieval if possible, but keep existing logic for safety
-            // actually reusing retriever is better
             bitrate = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_BITRATE)?.let {
                  activity.getString(R.string.bitrate_kbits, (it.toLong() / 1000).toString())
             } ?: activity.getString(R.string.na_placeholder)
             
+            val mimetype = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
+            if (mimetype != null) {
+                // e.g. audio/mpeg -> MPEG or MP3
+                val subtype = mimetype.substringAfter("/")
+                format = when(subtype.lowercase()) {
+                    "mpeg" -> "MP3"
+                    "flac" -> "FLAC"
+                    "mp4" -> "M4A"
+                    "wav" -> "WAV"
+                    "ogg" -> "OGG"
+                    "x-matroska" -> "MKA"
+                    else -> subtype.uppercase()
+                }
+            }
+            
             retriever.release()
         } catch (_: Exception) { }
 
-        view.findViewById<TextView>(R.id.tv_track_info).text = activity.getString(R.string.track_info_format, bitrate, fileSize)
+        view.findViewById<TextView>(R.id.tv_file_size_badge).text = fileSize
+        view.findViewById<TextView>(R.id.tv_stat_format).text = format
+        view.findViewById<TextView>(R.id.tv_stat_bitrate).text = bitrate
+        view.findViewById<TextView>(R.id.tv_stat_duration).text = durationStr
         view.findViewById<TextView>(R.id.tv_track_path).text = track.uri
-        view.findViewById<TextView>(R.id.tv_format_badge).text = activity.getString(R.string.audio_mpeg)
-        view.findViewById<TextView>(R.id.tv_duration_badge).text = activity.getString(R.string.duration_badge, durationStr)
         
         // Favorite
         val btnFavorite = view.findViewById<ImageButton>(R.id.btn_favorite)

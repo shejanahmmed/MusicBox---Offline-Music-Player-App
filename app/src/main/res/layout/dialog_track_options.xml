@@ -1,40 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/bg_bottom_sheet"
-    android:clipToPadding="false"
-    android:clipChildren="false"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    android:layout_marginTop="8dp"
     android:padding="24dp">
 
     <!-- Drag Handle -->
     <ImageView
-        android:layout_width="32dp"
+        android:layout_width="40dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="0dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="24dp"
         android:background="#33FFFFFF"
         android:src="@drawable/thumb_null" />
 
-    <!-- Header with Album Art and Track Info -->
-    <LinearLayout
+    <!-- "METADATA" Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="METADATA"
+        android:textColor="#88FFFFFF"
+        android:textSize="12sp"
+        android:letterSpacing="0.15"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Main Track Card -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="16dp">
+        android:background="@drawable/bg_track_card_outlined"
+        android:padding="16dp">
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/cv_art"
             android:layout_width="80dp"
             android:layout_height="80dp"
             app:cardCornerRadius="8dp"
-            app:cardElevation="0dp">
+            app:cardElevation="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <ImageView
                 android:id="@+id/iv_track_art"
@@ -44,114 +53,189 @@
                 android:src="@color/background_dark" />
         </androidx.cardview.widget.CardView>
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tv_track_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp">
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            tools:text="XTAL"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:fadingEdge="horizontal"
+            app:layout_constraintStart_toEndOf="@id/cv_art"
+            app:layout_constraintEnd_toStartOf="@+id/tv_file_size_badge"
+            app:layout_constraintTop_toTopOf="@id/cv_art"
+            app:layout_constraintBottom_toTopOf="@+id/tv_track_artist"
+            app:layout_constraintVertical_chainStyle="packed" />
 
-            <TextView
-                android:id="@+id/tv_track_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Track Title"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textAllCaps="true"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <TextView
-                android:id="@+id/tv_track_artist"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Artist • Album"
-                android:textColor="@color/primary_red"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:layout_marginTop="4dp"
-                android:maxLines="1"
-                android:ellipsize="end" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Track Technical Info -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/bg_card_section"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp">
-
-        <!-- First Row: Bitrate, Sample Rate, Size -->
         <TextView
-            android:id="@+id/tv_track_info"
+            android:id="@+id/tv_track_artist"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            tools:text="APHEX TWIN"
+            android:textColor="#88FFFFFF"
+            android:textSize="12sp"
+            android:letterSpacing="0.1"
+            android:textAllCaps="true"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:fadingEdge="horizontal"
+            app:layout_constraintStart_toEndOf="@id/cv_art"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_track_title"
+            app:layout_constraintBottom_toBottomOf="@id/cv_art" />
+
+        <TextView
+            android:id="@+id/tv_file_size_badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="320 kbit/s    48000 Hz    12.93 MB"
-            android:textColor="#888888"
-            android:textSize="11sp"
+            tools:text="12.4 MB"
+            android:textColor="#000000"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:background="#CCCCCC"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-            android:layout_marginBottom="8dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Second Row: Path and Badges -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/tv_track_path"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="/storage/emulated/0/Music/..."
-                android:textColor="#666666"
-                android:textSize="10sp"
-                android:maxLines="1"
-                android:ellipsize="middle"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:id="@+id/tv_format_badge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="AUDIO/MPEG"
-                android:textColor="#000000"
-                android:textSize="9sp"
-                android:textStyle="bold"
-                android:background="#CCCCCC"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:id="@+id/tv_duration_badge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="⏱ 5:23"
-                android:textColor="#000000"
-                android:textSize="9sp"
-                android:textStyle="bold"
-                android:background="#CCCCCC"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Action Buttons -->
+    <!-- Stats Row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:baselineAligned="false">
+
+        <!-- Format -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_track_card_outlined"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="16dp"
+            android:layout_marginEnd="8dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_music_note"
+                app:tint="#88FFFFFF"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tv_stat_format"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="FLAC"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FORMAT"
+                android:textColor="#66FFFFFF"
+                android:textSize="8sp"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Bitrate -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_track_card_outlined"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="16dp"
+            android:layout_marginEnd="8dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_equalizer"
+                app:tint="#88FFFFFF"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tv_stat_bitrate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="942 KBPS"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BITRATE"
+                android:textColor="#66FFFFFF"
+                android:textSize="8sp"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Duration -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_track_card_outlined"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_timer"
+                app:tint="#88FFFFFF"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tv_stat_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="03:45"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DURATION"
+                android:textColor="#66FFFFFF"
+                android:textSize="8sp"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Action Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_track_card_outlined"
+        android:orientation="horizontal"
         android:gravity="center"
-        android:background="@drawable/bg_card_section"
-        android:padding="16dp"
-        android:layout_marginBottom="16dp">
+        android:layout_marginTop="16dp"
+        android:paddingVertical="12dp">
 
         <ImageButton
             android:id="@+id/btn_favorite"
@@ -188,6 +272,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_image"
             app:tint="@color/white" />
+
         <ImageButton
             android:id="@+id/btn_share"
             android:layout_width="0dp"
@@ -196,7 +281,6 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_share"
             app:tint="@color/white" />
-
 
         <ImageButton
             android:id="@+id/btn_delete"
@@ -208,5 +292,49 @@
             app:tint="@color/white" />
     </LinearLayout>
 
+    <!-- File Path Card -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_track_card_outlined"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="16dp"
+        android:padding="16dp">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_folder"
+            app:tint="#66FFFFFF" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+
+            <TextView
+                android:id="@+id/tv_track_path"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="/storage/MusicBox/Albums/Aphex_Twin/SAW/..."
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:textColor="#CCFFFFFF"
+                android:maxLines="2"
+                android:ellipsize="middle" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FILE PATH"
+                android:textColor="#66FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>
