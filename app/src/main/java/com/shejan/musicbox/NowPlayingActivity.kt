@@ -117,7 +117,7 @@ class NowPlayingActivity : AppCompatActivity() {
             } catch (e: Exception) { e.printStackTrace() }
             
              // Save custom artwork
-             TrackArtworkManager.saveArtwork(this, track.id, uri.toString())
+             TrackArtworkManager.saveArtwork(this, track.uri, uri.toString())
 
             // Refresh UI
             updateUI()
@@ -400,14 +400,14 @@ class NowPlayingActivity : AppCompatActivity() {
         val track = musicService?.getCurrentTrack() ?: return
         
         // Check for custom metadata
-        val customMetadata = TrackMetadataManager.getMetadata(this, track.id)
+        val customMetadata = TrackMetadataManager.getMetadata(this, track.uri)
         
         findViewById<TextView>(R.id.tv_now_playing_title).text = customMetadata?.title ?: track.title
         findViewById<TextView>(R.id.tv_now_playing_artist).text = customMetadata?.artist ?: track.artist
         
         // Load Album Art
         val ivAlbumArt = findViewById<ImageView>(R.id.iv_album_art_large)
-        MusicUtils.loadTrackArt(this, track.id, track.albumId, ivAlbumArt)
+        MusicUtils.loadTrackArt(this, track.id, track.albumId, track.uri, ivAlbumArt)
         
         // Update Duration FIRST to avoid progress clamping
         val duration = musicService!!.getDuration()

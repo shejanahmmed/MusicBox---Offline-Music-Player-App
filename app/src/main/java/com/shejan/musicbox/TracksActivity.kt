@@ -65,15 +65,15 @@ class TracksActivity : AppCompatActivity() {
     // Artwork Picker
     private val pickArtworkLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
-            if (currentEditingTrackId != -1L) {
-                TrackArtworkManager.saveArtwork(this, currentEditingTrackId, uri.toString())
+            if (currentEditingTrackUri != null) {
+                TrackArtworkManager.saveArtwork(this, currentEditingTrackUri!!, uri.toString())
                 updateMiniPlayer() 
                 loadTracks()
             }
         }
     }
     
-    private var currentEditingTrackId: Long = -1L
+    private var currentEditingTrackUri: String? = null
     private var isEditingPlaylist = false
     private var adapter: TrackAdapter? = null
 
@@ -118,12 +118,7 @@ class TracksActivity : AppCompatActivity() {
         val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
         rvTracks.layoutManager = LinearLayoutManager(this)
 
-        findViewById<View>(R.id.cl_mini_player).setOnClickListener {
-             if (musicService?.getCurrentTrack() != null) {
-                  val track = musicService!!.getCurrentTrack()!!
-                  NowPlayingActivity.start(this, track.title, track.artist)
-             }
-        }
+
 
         if (checkPermission()) {
             loadTracks()
@@ -495,7 +490,7 @@ class TracksActivity : AppCompatActivity() {
     }
 
     private fun showTrackOptionsDialog(track: Track) {
-        currentEditingTrackId = track.id
+        currentEditingTrackUri = track.uri
         TrackMenuManager.showTrackOptionsDialog(this, track, pickArtworkLauncher, object : TrackMenuManager.Callback {
             override fun onArtworkChanged() {
                 loadTracks()

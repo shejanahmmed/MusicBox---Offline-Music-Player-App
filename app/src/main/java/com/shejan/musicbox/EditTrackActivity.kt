@@ -48,6 +48,7 @@ class EditTrackActivity : AppCompatActivity() {
         const val EXTRA_FILE_TITLE = "file_title"
         const val EXTRA_FILE_ARTIST = "file_artist"
         const val EXTRA_FILE_ALBUM = "file_album"
+        const val EXTRA_TRACK_URI = "track_uri"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +72,7 @@ class EditTrackActivity : AppCompatActivity() {
         fileArtist = intent.getStringExtra(EXTRA_FILE_ARTIST) ?: currentArtist
         fileAlbum = intent.getStringExtra(EXTRA_FILE_ALBUM) ?: currentAlbum
         val albumId = intent.getLongExtra(EXTRA_ALBUM_ID, -1)
+        val trackUri = intent.getStringExtra(EXTRA_TRACK_URI) ?: ""
 
         if (trackId == -1L) {
             Toast.makeText(this, "Error loading track", Toast.LENGTH_SHORT).show()
@@ -79,7 +81,7 @@ class EditTrackActivity : AppCompatActivity() {
         }
 
         // Create track object (id, title, artist, uri, album, albumId, isActive)
-        track = Track(trackId, currentTitle, currentArtist, "", currentAlbum, albumId, false)
+        track = Track(trackId, currentTitle, currentArtist, trackUri, currentAlbum, albumId, false)
 
         // Load album art
         val ivAlbumArt = findViewById<android.widget.ImageView>(R.id.iv_album_art)
@@ -128,7 +130,7 @@ class EditTrackActivity : AppCompatActivity() {
             // Save metadata
             TrackMetadataManager.saveMetadata(
                 this,
-                trackId,
+                track.uri,
                 newTitle,
                 newArtist.takeIf { it.isNotEmpty() },
                 newAlbum.takeIf { it.isNotEmpty() },

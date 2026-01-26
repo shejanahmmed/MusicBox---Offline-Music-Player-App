@@ -32,7 +32,7 @@ object TrackMetadataManager {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
     
-    fun saveMetadata(context: Context, trackId: Long, title: String?, artist: String?, album: String?, year: String?) {
+    fun saveMetadata(context: Context, uri: String, title: String?, artist: String?, album: String?, year: String?) {
         val prefs = getPrefs(context)
         val allMetadata = getAllMetadata(context).toMutableMap()
         
@@ -43,19 +43,19 @@ object TrackMetadataManager {
         metadata.put("year", year ?: "")
         
         
-        allMetadata[trackId.toString()] = metadata.toString()
+        allMetadata[uri] = metadata.toString()
         
         prefs.edit { putString(KEY_METADATA, JSONObject(allMetadata as Map<*, *>).toString()) }
     }
     
-    fun getMetadata(context: Context, trackId: Long): CustomTrackMetadata? {
+    fun getMetadata(context: Context, uri: String): CustomTrackMetadata? {
         val allMetadata = getAllMetadata(context)
-        val metadataStr = allMetadata[trackId.toString()] ?: return null
+        val metadataStr = allMetadata[uri] ?: return null
         
         return try {
             val json = JSONObject(metadataStr)
             CustomTrackMetadata(
-                trackId = trackId,
+                uri = uri,
                 title = json.optString("title").takeIf { it.isNotEmpty() },
                 artist = json.optString("artist").takeIf { it.isNotEmpty() },
                 album = json.optString("album").takeIf { it.isNotEmpty() },
@@ -95,7 +95,7 @@ object TrackMetadataManager {
         }
     }
     fun applyMetadata(context: Context, track: Track): Track {
-        val metadata = getMetadata(context, track.id) ?: return track
+        val metadata = getMetadata(context, track.uri) ?: return track
         
         return track.copy(
             title = metadata.title ?: track.title,
@@ -108,10 +108,9 @@ object TrackMetadataManager {
 }
 
 data class CustomTrackMetadata(
-    val trackId: Long,
+    val uri: String,
     val title: String?,
     val artist: String?,
     val album: String?,
     val year: String?
 )
-

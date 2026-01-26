@@ -52,7 +52,7 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         holder.artist.text = track.artist
 
         if (holder.art != null) {
-            ImageLoader.load(holder.root.context, track.id, track.albumId, holder.art)
+            ImageLoader.load(holder.root.context, track.id, track.albumId, track.uri, holder.art)
         }
 
         holder.root.setOnClickListener {

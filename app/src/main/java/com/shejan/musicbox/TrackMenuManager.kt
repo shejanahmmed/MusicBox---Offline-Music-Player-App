@@ -58,7 +58,7 @@ object TrackMenuManager {
         }
         
         // Track Info
-        val customMetadata = TrackMetadataManager.getMetadata(activity, track.id)
+        val customMetadata = TrackMetadataManager.getMetadata(activity, track.uri)
         val displayTitle = customMetadata?.title ?: track.title
         val displayArtist = customMetadata?.artist ?: track.artist
         val unknownAlbum = activity.getString(R.string.unknown_album)
@@ -68,7 +68,7 @@ object TrackMenuManager {
         view.findViewById<TextView>(R.id.tv_track_artist).text = activity.getString(R.string.track_artist_album_format, displayArtist, displayAlbum)
         
         val ivArt = view.findViewById<ImageView>(R.id.iv_track_art)
-        MusicUtils.loadTrackArt(activity, track.id, track.albumId, ivArt)
+        MusicUtils.loadTrackArt(activity, track.id, track.albumId, track.uri, ivArt)
         
         // File Info
         val file = java.io.File(track.uri)
@@ -197,16 +197,16 @@ object TrackMenuManager {
         }
         
         val ivPreview = view.findViewById<ImageView>(R.id.iv_artwork_preview)
-        MusicUtils.loadTrackArt(activity, track.id, track.albumId, ivPreview)
+        MusicUtils.loadTrackArt(activity, track.id, track.albumId, track.uri, ivPreview)
         
         view.findViewById<View>(R.id.btn_default_artwork).setOnClickListener {
-            TrackArtworkManager.resetArtwork(activity, track.id)
+            TrackArtworkManager.resetArtwork(activity, track.uri)
             callback?.onArtworkChanged()
             dialog.dismiss()
         }
         
         view.findViewById<View>(R.id.btn_remove_artwork).setOnClickListener {
-            TrackArtworkManager.removeArtwork(activity, track.id)
+            TrackArtworkManager.removeArtwork(activity, track.uri)
             callback?.onArtworkChanged()
             dialog.dismiss()
         }
@@ -318,7 +318,7 @@ object TrackMenuManager {
         }
 
         // Get current metadata
-        val customMetadata = TrackMetadataManager.getMetadata(activity, track.id)
+        val customMetadata = TrackMetadataManager.getMetadata(activity, track.uri)
         val currentTitle = customMetadata?.title ?: track.title
         val currentArtist = customMetadata?.artist ?: track.artist
         val currentAlbum = customMetadata?.album ?: track.album ?: ""
@@ -362,7 +362,7 @@ object TrackMenuManager {
 
             TrackMetadataManager.saveMetadata(
                 activity,
-                track.id,
+                track.uri,
                 newTitle,
                 newArtist.takeIf { it.isNotEmpty() },
                 newAlbum.takeIf { it.isNotEmpty() },

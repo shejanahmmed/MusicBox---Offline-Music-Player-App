@@ -42,8 +42,8 @@ object ImageLoader {
         }
     }
 
-    fun load(context: Context, trackId: Long, albumId: Long, imageView: ImageView) {
-        val cacheKey = "$trackId-$albumId"
+    fun load(context: Context, trackId: Long, albumId: Long, trackUri: String, imageView: ImageView) {
+        val cacheKey = "$trackId-$albumId-$trackUri"
         
         // Check Memory Cache
         val cachedBitmap = memoryCache.get(cacheKey)
@@ -66,7 +66,7 @@ object ImageLoader {
         // Background Load
         executor.execute {
             try {
-                val bitmap = MusicUtils.getTrackArtworkBitmap(context, trackId, albumId)
+                val bitmap = MusicUtils.getTrackArtworkBitmap(context, trackId, albumId, trackUri)
                     ?: return@execute
                 
                 memoryCache.put(cacheKey, bitmap)

@@ -34,24 +34,24 @@ object TrackArtworkManager {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
     
-    fun saveArtwork(context: Context, trackId: Long, uri: String) {
-        getPrefs(context).edit().putString(trackId.toString(), uri).apply()
+    fun saveArtwork(context: Context, uri: String, artworkUri: String) {
+        getPrefs(context).edit().putString(uri, artworkUri).apply()
     }
     
-    fun removeArtwork(context: Context, trackId: Long) {
-        saveArtwork(context, trackId, "REMOVED")
+    fun removeArtwork(context: Context, uri: String) {
+        saveArtwork(context, uri, "REMOVED")
     }
     
-    fun resetArtwork(context: Context, trackId: Long) {
-        getPrefs(context).edit().remove(trackId.toString()).apply()
+    fun resetArtwork(context: Context, uri: String) {
+        getPrefs(context).edit().remove(uri).apply()
     }
     
-    fun getArtworkUri(context: Context, trackId: Long): String? {
-        return getPrefs(context).getString(trackId.toString(), null)
+    fun getArtworkUri(context: Context, uri: String): String? {
+        return getPrefs(context).getString(uri, null)
     }
     
-    fun hasCustomArtwork(context: Context, trackId: Long): Boolean {
-        return getPrefs(context).contains(trackId.toString())
+    fun hasCustomArtwork(context: Context, uri: String): Boolean {
+        return getPrefs(context).contains(uri)
     }
 }
 

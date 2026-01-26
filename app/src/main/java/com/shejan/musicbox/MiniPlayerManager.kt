@@ -150,7 +150,7 @@ object MiniPlayerManager {
             artistView.text = safeTrack.artist
             playButton.setImageResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play_arrow)
             
-            MusicUtils.loadTrackArt(activity, safeTrack.id, safeTrack.albumId, miniArt)
+            MusicUtils.loadTrackArt(activity, safeTrack.id, safeTrack.albumId, safeTrack.uri, miniArt)
             
             activity.findViewById<View>(R.id.cl_mini_player)?.visibility = View.VISIBLE
         } else {

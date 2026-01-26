@@ -78,15 +78,14 @@ object MusicUtils {
         setDefaultArt(imageView)
     }
     
-    fun loadTrackArt(context: Context, trackId: Long, albumId: Long, imageView: ImageView) {
+    fun loadTrackArt(context: Context, trackId: Long, albumId: Long, trackUri: String, imageView: ImageView) {
         if (trackId <= 0L) {
             setDefaultArt(imageView)
             return
         }
 
         // Direct Load (Old way, blocking)
-        // We will keep this for now but it should ideally be used via ImageLoader
-        val bitmap = getTrackArtworkBitmap(context, trackId, albumId)
+        val bitmap = getTrackArtworkBitmap(context, trackId, albumId, trackUri)
         if (bitmap != null) {
             imageView.scaleType = ImageView.ScaleType.CENTER_CROP
             imageView.setImageBitmap(bitmap)
@@ -96,10 +95,10 @@ object MusicUtils {
         }
     }
 
-    fun getTrackArtworkBitmap(context: Context, trackId: Long, albumId: Long): android.graphics.Bitmap? {
+    fun getTrackArtworkBitmap(context: Context, trackId: Long, albumId: Long, trackUri: String): android.graphics.Bitmap? {
          // Check for custom artwork
-         if (TrackArtworkManager.hasCustomArtwork(context, trackId)) {
-             val customUri = TrackArtworkManager.getArtworkUri(context, trackId)
+         if (TrackArtworkManager.hasCustomArtwork(context, trackUri)) {
+             val customUri = TrackArtworkManager.getArtworkUri(context, trackUri)
              if (customUri == "REMOVED") {
                  return null
              } else if (customUri != null) {

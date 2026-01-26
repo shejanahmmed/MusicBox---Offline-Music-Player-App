@@ -48,7 +48,7 @@ class QueueAdapter(
         holder.title.text = track.title
         holder.artist.text = track.artist
         
-        MusicUtils.loadTrackArt(holder.itemView.context, track.id, track.albumId, holder.albumArt)
+        MusicUtils.loadTrackArt(holder.itemView.context, track.id, track.albumId, track.uri, holder.albumArt)
         
         if (track.id == currentTrackId) {
             holder.title.setTextColor(holder.itemView.context.getColor(R.color.primary_red))

@@ -37,10 +37,10 @@ class SearchActivity : AppCompatActivity() {
     private var currentSearchQuery: String = ""
 
     // Result Launcher for Artwork
-    private var currentEditingTrackId: Long = -1L
+    private var currentEditingTrackUri: String? = null
     private val pickArtworkLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri: android.net.Uri? ->
-        if (uri != null && currentEditingTrackId != -1L) {
-             TrackArtworkManager.saveArtwork(this, currentEditingTrackId, uri.toString())
+        if (uri != null && currentEditingTrackUri != null) {
+             TrackArtworkManager.saveArtwork(this, currentEditingTrackUri!!, uri.toString())
              performSearch(currentSearchQuery)
         }
     }
@@ -58,7 +58,7 @@ class SearchActivity : AppCompatActivity() {
         val rvResults = findViewById<RecyclerView>(R.id.rv_search_results)
         rvResults.layoutManager = LinearLayoutManager(this)
         adapter = TrackAdapter(emptyList()) { track ->
-            currentEditingTrackId = track.id
+            currentEditingTrackUri = track.uri
             TrackMenuManager.showTrackOptionsDialog(this, track, pickArtworkLauncher, object : TrackMenuManager.Callback {
                 override fun onArtworkChanged() {
                     performSearch(currentSearchQuery)
