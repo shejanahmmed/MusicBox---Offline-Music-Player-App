@@ -17,6 +17,7 @@
  * along with MusicBox.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
 package com.shejan.musicbox
 
 import android.content.Context
@@ -110,5 +111,16 @@ object AppPlaylistManager {
     fun getPlaylist(context: Context, playlistId: Long): AppPlaylist? {
         return getAllPlaylists(context).find { it.id == playlistId }
     }
-}
 
+    fun addTrackToPlaylist(context: Context, playlistId: Long, trackUri: String) {
+        val playlists = getAllPlaylists(context).toMutableList()
+        val index = playlists.indexOfFirst { it.id == playlistId }
+        if (index != -1) {
+            val playlist = playlists[index]
+            if (!playlist.trackPaths.contains(trackUri)) {
+                playlist.trackPaths.add(trackUri)
+                savePlaylists(context, playlists)
+            }
+        }
+    }
+}

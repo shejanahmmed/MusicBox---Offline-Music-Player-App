@@ -224,21 +224,8 @@ object TrackMenuManager {
     }
 
     private fun showAddToPlaylistDialog(context: Context, track: Track) {
-        val playlists = mutableListOf<Pair<Long, String>>()
-        try {
-            @Suppress("DEPRECATION")
-            context.contentResolver.query(
-                MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Audio.Playlists._ID, MediaStore.Audio.Playlists.NAME),
-                null, null, null
-            )?.use { cursor ->
-                val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Playlists._ID)
-                val nameCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Playlists.NAME)
-                while (cursor.moveToNext()) {
-                    playlists.add(Pair(cursor.getLong(idCol), cursor.getString(nameCol)))
-                }
-            }
-        } catch (_: Exception) { }
+
+        val playlists = AppPlaylistManager.getAllPlaylists(context).map { Pair(it.id, it.name) }.toMutableList()
         
         val options = mutableListOf<String>()
         options.add(context.getString(R.string.create_new_playlist_option))
@@ -280,27 +267,14 @@ object TrackMenuManager {
     
     private fun createPlaylistAndAddTrack(context: Context, name: String, track: Track) {
         try {
-             @Suppress("DEPRECATION")
-            val values = android.content.ContentValues().apply {
-                put(MediaStore.Audio.Playlists.NAME, name)
-                put(MediaStore.Audio.Playlists.DATE_ADDED, System.currentTimeMillis())
-            }
-            @Suppress("DEPRECATION")
-            val uri = context.contentResolver.insert(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, values)
-            uri?.lastPathSegment?.toLongOrNull()?.let { addTrackToPlaylist(context, track, it, name) }
+            AppPlaylistManager.createPlaylist(context, name, listOf(track.uri))
+            Toast.makeText(context, context.getString(R.string.playlist_created), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) { e.printStackTrace() }
     }
     
     private fun addTrackToPlaylist(context: Context, track: Track, playlistId: Long, playlistName: String) {
         try {
-             @Suppress("DEPRECATION")
-            val uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId)
-             @Suppress("DEPRECATION")
-            val values = android.content.ContentValues().apply {
-                put(MediaStore.Audio.Playlists.Members.AUDIO_ID, track.id)
-                put(MediaStore.Audio.Playlists.Members.PLAY_ORDER, System.currentTimeMillis())
-            }
-            context.contentResolver.insert(uri, values)
+            AppPlaylistManager.addTrackToPlaylist(context, playlistId, track.uri)
             Toast.makeText(context, context.getString(R.string.added_to_playlist, playlistName), Toast.LENGTH_SHORT).show()
         } catch (_: Exception) {
             Toast.makeText(context, context.getString(R.string.failed_add_playlist), Toast.LENGTH_SHORT).show() 
