@@ -262,7 +262,11 @@ class NowPlayingActivity : AppCompatActivity() {
         volumeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0)
+                    try {
+                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0)
+                    } catch (e: SecurityException) {
+                        Toast.makeText(this@NowPlayingActivity, getString(R.string.error_volume_restricted), Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -272,16 +276,24 @@ class NowPlayingActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.btn_volume_down).setOnClickListener {
              val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
              val newVol = (currentVol - 1).coerceAtLeast(0)
-             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
-             volumeSeekBar.progress = newVol
+             try {
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
+                volumeSeekBar.progress = newVol
+             } catch (e: SecurityException) {
+                Toast.makeText(this, getString(R.string.error_volume_restricted), Toast.LENGTH_SHORT).show()
+             }
         }
 
         findViewById<ImageButton>(R.id.btn_volume_up).setOnClickListener {
              val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
              val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
              val newVol = (currentVol + 1).coerceAtMost(maxVol)
-             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
-             volumeSeekBar.progress = newVol
+             try {
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
+                volumeSeekBar.progress = newVol
+             } catch (e: SecurityException) {
+                Toast.makeText(this, getString(R.string.error_volume_restricted), Toast.LENGTH_SHORT).show()
+             }
         }
 
         findViewById<ImageView>(R.id.iv_album_art_large).setOnClickListener {

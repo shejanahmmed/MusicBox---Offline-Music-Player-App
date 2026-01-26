@@ -19,6 +19,11 @@
 
 package com.shejan.musicbox
 
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 import android.content.Intent
 import android.os.Bundle
 import android.provider.MediaStore
@@ -114,53 +119,58 @@ class ArtistsActivity : AppCompatActivity() {
 
     private fun loadArtists() {
         localContentVersion = MusicUtils.contentVersion
-        val list = mutableListOf<Artist>()
-        try {
-            val projection = arrayOf(
-                MediaStore.Audio.Artists._ID,
-                MediaStore.Audio.Artists.ARTIST,
-                MediaStore.Audio.Artists.NUMBER_OF_TRACKS
-            )
-            
-            val cursor = contentResolver.query(
-                MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                projection,
-                null,
-                null,
-                MediaStore.Audio.Artists.ARTIST + " ASC"
-            )
-
-            cursor?.use {
-                val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Artists._ID)
-                val nameCol = it.getColumnIndexOrThrow(MediaStore.Audio.Artists.ARTIST)
-                val countCol = it.getColumnIndexOrThrow(MediaStore.Audio.Artists.NUMBER_OF_TRACKS)
-
-                while (it.moveToNext()) {
-                    val id = it.getLong(idCol)
-                    val name = it.getString(nameCol)
-                    val count = it.getInt(countCol)
-                    list.add(Artist(id, name, count))
+        
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val list = mutableListOf<Artist>()
+            try {
+                val projection = arrayOf(
+                    MediaStore.Audio.Artists._ID,
+                    MediaStore.Audio.Artists.ARTIST,
+                    MediaStore.Audio.Artists.NUMBER_OF_TRACKS
+                )
+                
+                val cursor = contentResolver.query(
+                    MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
+                    projection,
+                    null,
+                    null,
+                    MediaStore.Audio.Artists.ARTIST + " ASC"
+                )
+    
+                cursor?.use {
+                    val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Artists._ID)
+                    val nameCol = it.getColumnIndexOrThrow(MediaStore.Audio.Artists.ARTIST)
+                    val countCol = it.getColumnIndexOrThrow(MediaStore.Audio.Artists.NUMBER_OF_TRACKS)
+    
+                    while (it.moveToNext()) {
+                        val id = it.getLong(idCol)
+                        val name = it.getString(nameCol)
+                        val count = it.getInt(countCol)
+                        list.add(Artist(id, name, count))
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                     Toast.makeText(this@ArtistsActivity, "Error loading artists", Toast.LENGTH_SHORT).show()
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(this, "Error loading artists", Toast.LENGTH_SHORT).show()
-        }
-
-        // Update Count
-        val countView = findViewById<android.widget.TextView>(R.id.tv_artists_count)
-        val countText = if (list.size == 1) "1 Artist" else "${list.size} Artists"
-        countView.text = countText
-
-        val rv = findViewById<RecyclerView>(R.id.rv_artists)
-        rv.layoutManager = LinearLayoutManager(this)
-        rv.adapter = ArtistAdapter(list) { artist ->
-             // On Click: Open TracksActivity with Artist Filter (implement later if needed, mostly requested UI for now)
-             // For now just toast or open Tracks with filter if supported
-             // We can pass ARTIST_NAME to TracksActivity to filter
-             val intent = Intent(this, TracksActivity::class.java)
-             intent.putExtra("ARTIST_NAME", artist.name) // need to handle this in TracksActivity
-             startActivity(intent)
+            
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                // Update Count
+                val countView = findViewById<android.widget.TextView>(R.id.tv_artists_count)
+                val countText = if (list.size == 1) "1 Artist" else "${list.size} Artists"
+                countView.text = countText
+        
+                val rv = findViewById<RecyclerView>(R.id.rv_artists)
+                rv.layoutManager = LinearLayoutManager(this@ArtistsActivity)
+                rv.adapter = ArtistAdapter(list) { artist ->
+                     // On Click: Open TracksActivity with Artist Filter (implement later if needed, mostly requested UI for now)
+                     val intent = Intent(this@ArtistsActivity, TracksActivity::class.java)
+                     intent.putExtra("ARTIST_NAME", artist.name)
+                     startActivity(intent)
+                }
+            }
         }
     }
 

@@ -371,6 +371,16 @@ class MusicService : Service() {
                 mediaPlayer?.prepareAsync() // This triggers onPrepared, which sends the ONE update
             } catch (e: Exception) {
                 e.printStackTrace()
+                // Fallback for race conditions ensuring player is reset
+                if (e is IllegalStateException) {
+                    initMediaPlayer()
+                    try {
+                        mediaPlayer?.setDataSource(applicationContext, track.uri.toUri())
+                        mediaPlayer?.prepareAsync()
+                    } catch (e2: Exception) {
+                        e2.printStackTrace()
+                    }
+                }
             }
         }
     }
@@ -611,7 +621,10 @@ class MusicService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        cancelSleepTimer() // Clean up runnables
+        
         saveState()
+        saveStateExecutor.shutdown() // Prevent thread leaks
         
         try {
             unregisterReceiver(noisyReceiver)
@@ -626,6 +639,9 @@ class MusicService : Service() {
         mediaSession.release()
     }
 
+    // SingleThreadExecutor for saving state sequentially to prevent race conditions
+    private val saveStateExecutor = java.util.concurrent.Executors.newSingleThreadExecutor()
+
     private fun saveState() {
         val prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val editor = prefs.edit()
@@ -637,13 +653,8 @@ class MusicService : Service() {
         val currentPosCopy = getCurrentPosition()
         val currentUriCopy = currentTrackUri
 
-        // Run Serialization in Background Thread
-        Thread {
-            synchronized(playlist) { 
-               // Note: We already copied, so we don't strictly need synchronized here 
-               // BUT prefs edit is thread safe usually.
-            }
-            
+        // Run Serialization in Background Thread Sequentially
+        saveStateExecutor.execute {
             val jsonArray = org.json.JSONArray()
             if (currentPlaylistCopy.isNotEmpty()) {
                 for (track in currentPlaylistCopy) {
@@ -680,8 +691,7 @@ class MusicService : Service() {
             if (isShuffleEnabled && originalPlaylistCopy.isNotEmpty()) editor.putString("saved_original_playlist", jsonArrayComp.toString())
             
             editor.apply()
-        }.start()
-        editor.apply()
+        }
     }
     
     private fun restoreState() {
@@ -739,22 +749,25 @@ class MusicService : Service() {
         
         // Restore Index and Prepare Player
         if (idx != -1 && idx < playlist.size) {
+            val track = playlist[idx]
             currentIndex = idx
-            currentTrackUri = playlist[idx].uri
+            currentTrackUri = track.uri
             
             // Init player but DO NOT START
             try {
                 mediaPlayer?.reset()
-                mediaPlayer?.setDataSource(applicationContext, currentTrackUri!!.toUri())
-                mediaPlayer?.setOnPreparedListener { 
-                    it.seekTo(pos)
-                    updateNotification()
-                    updateMediaSessionMetadata()
-                    updateMediaSessionState()
-                    // Re-set listener for normal playback
-                    it.setOnPreparedListener(standardPreparedListener)
+                currentTrackUri?.let { uri ->
+                    mediaPlayer?.setDataSource(applicationContext, uri.toUri())
+                    mediaPlayer?.setOnPreparedListener { 
+                        it.seekTo(pos)
+                        updateNotification()
+                        updateMediaSessionMetadata()
+                        updateMediaSessionState()
+                        // Re-set listener for normal playback
+                        it.setOnPreparedListener(standardPreparedListener)
+                    }
+                    mediaPlayer?.prepareAsync()
                 }
-                mediaPlayer?.prepareAsync()
             } catch (e: Exception) { e.printStackTrace() }
         }
     }

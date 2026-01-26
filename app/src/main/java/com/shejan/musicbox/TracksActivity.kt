@@ -19,6 +19,11 @@
 
 package com.shejan.musicbox
 
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -290,9 +295,9 @@ class TracksActivity : AppCompatActivity() {
         
         // Show loading state if needed (optional)
         
-        Thread {
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val trackList: List<Track> = if (showFavoritesOnly) {
-                 val favorites = FavoritesManager.getFavorites(this)
+                 val favorites = FavoritesManager.getFavorites(this@TracksActivity)
                  getTracks(null, null).filter { favorites.contains(it.uri) }
             } else if (playlistId != -1L) {
                  getPlaylistTracks(playlistId)
@@ -304,17 +309,19 @@ class TracksActivity : AppCompatActivity() {
                  getTracks(null, null)
             }
             
-            runOnUiThread {
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                if (isFinishing || isDestroyed) return@withContext
+
                 if (showFavoritesOnly) findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.title_favorites)
                 else if (playlistId != -1L) {
-                     val playlist = AppPlaylistManager.getPlaylist(this, playlistId)
+                     val playlist = AppPlaylistManager.getPlaylist(this@TracksActivity, playlistId)
                      val displayName = playlist?.name ?: playlistName ?: "PLAYLIST"
                      findViewById<TextView>(R.id.tv_header_title)?.text = displayName.uppercase()
                      
                      val btnEdit = findViewById<View>(R.id.btn_edit)
                      btnEdit.visibility = View.VISIBLE
                      btnEdit.setOnClickListener {
-                         val intent = Intent(this, CreatePlaylistActivity::class.java)
+                         val intent = Intent(this@TracksActivity, CreatePlaylistActivity::class.java)
                          intent.putExtra("EDIT_PLAYLIST_ID", playlistId)
                          intent.putExtra("PLAYLIST_NAME", playlistName)
                          isEditingPlaylist = true
@@ -331,7 +338,7 @@ class TracksActivity : AppCompatActivity() {
                         artistName != null -> getString(R.string.msg_no_artist_tracks)
                         else -> getString(R.string.msg_no_music)
                     }
-                    Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@TracksActivity, msg, Toast.LENGTH_LONG).show()
                 }
                 
                 findViewById<TextView>(R.id.tv_tracks_count)?.text = if (trackList.size == 1) "1 Song" else "${trackList.size} Songs"
@@ -346,7 +353,7 @@ class TracksActivity : AppCompatActivity() {
                     adapter?.updateData(trackList)
                 }
             }
-        }.start()
+        }
     }
 
     private fun getTracks(selection: String?, selectionArgs: Array<String>?): List<Track> {

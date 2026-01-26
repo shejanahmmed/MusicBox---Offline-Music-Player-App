@@ -19,6 +19,11 @@
 
 package com.shejan.musicbox
 
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 import android.content.Intent
 import android.os.Bundle
 import android.provider.MediaStore
@@ -104,68 +109,72 @@ class AlbumsActivity : AppCompatActivity() {
 
     private fun loadAlbums() {
         localContentVersion = MusicUtils.contentVersion
-        val albumMap = mutableMapOf<Long, Album>()
-        try {
-            val projection = arrayOf(
-                MediaStore.Audio.Media.ALBUM_ID,
-                MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.DATA
-            )
-            
-            // Querying Media to get individual tracks so we can filter hidden ones
-            val cursor = contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                "${MediaStore.Audio.Media.IS_MUSIC} != 0",
-                null,
-                "${MediaStore.Audio.Media.ALBUM} ASC"
-            )
-
-            cursor?.use {
-                val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
-                val albumCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-                val artistCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                val pathCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+        
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val albumMap = mutableMapOf<Long, Album>()
+            try {
+                val projection = arrayOf(
+                    MediaStore.Audio.Media.ALBUM_ID,
+                    MediaStore.Audio.Media.ALBUM,
+                    MediaStore.Audio.Media.ARTIST,
+                    MediaStore.Audio.Media.DATA
+                )
                 
-                while (it.moveToNext()) {
-                    val path = it.getString(pathCol)
-                    // Check if this specific track is hidden
-                    if (HiddenTracksManager.isHidden(this, path)) continue
+                // Querying Media to get individual tracks so we can filter hidden ones
+                val cursor = contentResolver.query(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    projection,
+                    "${MediaStore.Audio.Media.IS_MUSIC} != 0",
+                    null,
+                    "${MediaStore.Audio.Media.ALBUM} ASC"
+                )
+    
+                cursor?.use {
+                    val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+                    val albumCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+                    val artistCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+                    val pathCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
                     
-                    val albumId = it.getLong(idCol)
-                    
-                    // If we haven't seen this album yet, add it
-                    if (!albumMap.containsKey(albumId)) {
-                        val title = it.getString(albumCol)
-                        val artist = it.getString(artistCol)
-                        // Use the path of the first track found as the representative URI for artwork
-                        albumMap[albumId] = Album(albumId, title, artist, path)
+                    while (it.moveToNext()) {
+                        val path = it.getString(pathCol)
+                        // Check if this specific track is hidden
+                        if (HiddenTracksManager.isHidden(this@AlbumsActivity, path)) continue
+                        
+                        val albumId = it.getLong(idCol)
+                        
+                        // If we haven't seen this album yet, add it
+                        if (!albumMap.containsKey(albumId)) {
+                            val title = it.getString(albumCol)
+                            val artist = it.getString(artistCol)
+                            // Use the path of the first track found as the representative URI for artwork
+                            albumMap[albumId] = Album(albumId, title, artist, path)
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    Toast.makeText(this@AlbumsActivity, "Error loading albums", Toast.LENGTH_SHORT).show()
+                }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(this, "Error loading albums", Toast.LENGTH_SHORT).show()
-        }
-
-        val list = albumMap.values.toList().sortedBy { it.title }
+            
+            val list = albumMap.values.toList().sortedBy { it.title }
+            
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                // Update Count
+                val countView = findViewById<android.widget.TextView>(R.id.tv_albums_count)
+                val countText = if (list.size == 1) "1 Album" else "${list.size} Albums"
+                countView.text = countText
         
-        // Update Header
-        // findViewById<TextView>(R.id.tv_header_title).text = "ALBUMS" // Already set in XML
-        
-        // Update Count
-        val countView = findViewById<android.widget.TextView>(R.id.tv_albums_count)
-        val countText = if (list.size == 1) "1 Album" else "${list.size} Albums"
-        countView.text = countText
-
-        val rv = findViewById<RecyclerView>(R.id.rv_albums)
-        rv.layoutManager = GridLayoutManager(this, 2)
-        rv.adapter = AlbumAdapter(list) { album ->
-             // Open TracksActivity with Album Filter
-             val intent = Intent(this, TracksActivity::class.java)
-             intent.putExtra("ALBUM_NAME", album.title) 
-             startActivity(intent)
+                val rv = findViewById<RecyclerView>(R.id.rv_albums)
+                rv.layoutManager = GridLayoutManager(this@AlbumsActivity, 2)
+                rv.adapter = AlbumAdapter(list) { album ->
+                     // Open TracksActivity with Album Filter
+                     val intent = Intent(this@AlbumsActivity, TracksActivity::class.java)
+                     intent.putExtra("ALBUM_NAME", album.title) 
+                     startActivity(intent)
+                }
+            }
         }
     }
 

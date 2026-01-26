@@ -64,9 +64,10 @@ object ImageLoader {
         val weakView = java.lang.ref.WeakReference(imageView)
         
         // Background Load
+        val appContext = context.applicationContext
         executor.execute {
             try {
-                val bitmap = MusicUtils.getTrackArtworkBitmap(context, trackId, albumId, trackUri)
+                val bitmap = MusicUtils.getTrackArtworkBitmap(appContext, trackId, albumId, trackUri)
                 
                 if (bitmap == null) {
                     weakView.get()?.let { view ->

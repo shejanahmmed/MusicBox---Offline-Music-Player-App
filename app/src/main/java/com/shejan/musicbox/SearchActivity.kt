@@ -19,6 +19,11 @@
 
 package com.shejan.musicbox
 
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -110,7 +115,7 @@ class SearchActivity : AppCompatActivity() {
 
     private fun loadAllTracks() {
         // Run DB Query in Background
-        Thread {
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val tempList = mutableListOf<Track>()
             try {
                 val projection = arrayOf(
@@ -144,7 +149,7 @@ class SearchActivity : AppCompatActivity() {
     
                     while (cursor.moveToNext()) {
                         val path = cursor.getString(dataCol)
-                        if (!HiddenTracksManager.isHidden(this, path) &&
+                        if (!HiddenTracksManager.isHidden(this@SearchActivity, path) &&
                             !path.lowercase().contains("ringtone") &&
                             !path.lowercase().contains("notification")) {
     
@@ -157,14 +162,14 @@ class SearchActivity : AppCompatActivity() {
                                 cursor.getLong(albumIdCol)
                             )
                             // Apply metadata immediately so search works on custom names
-                            tempList.add(TrackMetadataManager.applyMetadata(this, track))
+                            tempList.add(TrackMetadataManager.applyMetadata(this@SearchActivity, track))
                         }
                     }
                 }
             } catch (e: Exception) { e.printStackTrace() }
             
             // Update Data on Main Thread
-            runOnUiThread {
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                 allTracks.clear()
                 allTracks.addAll(tempList)
                 // If user already typed something, re-filter
@@ -172,7 +177,7 @@ class SearchActivity : AppCompatActivity() {
                     performSearch(currentSearchQuery)
                 }
             }
-        }.start()
+        }
     }
 
     private fun performSearch(query: String) {

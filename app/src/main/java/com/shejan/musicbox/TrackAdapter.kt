@@ -33,6 +33,9 @@ data class Track(val id: Long, val title: String, val artist: String, val uri: S
 
 class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (Track) -> Unit) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
 
+    // Store active ID internally to avoid inefficient list copying
+    private var currentActiveTrackId: Long = -1L
+
     class TrackViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView = view.findViewById(R.id.tv_track_title)
         val artist: TextView = view.findViewById(R.id.tv_track_artist)
@@ -73,7 +76,8 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
             onMoreClicked(track)
         }
 
-        if (track.isActive) {
+        // Optimized Highlight Logic
+        if (track.id == currentActiveTrackId) {
             holder.title.setTextColor(holder.root.context.getColor(R.color.primary_red))
             holder.root.setBackgroundResource(R.drawable.bg_track_card_active)
         } else {
@@ -91,31 +95,16 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
     }
 
     fun updateActiveTrack(activeId: Long) {
-        val newTracks = ArrayList<Track>(tracks.size)
-        var oldActiveIndex = -1
-        var newActiveIndex = -1
-        
-        tracks.forEachIndexed { index, track ->
-            if (track.id == activeId) {
-                if (!track.isActive) {
-                    newTracks.add(track.copy(isActive = true))
-                    newActiveIndex = index
-                } else {
-                    newTracks.add(track)
-                }
-            } else {
-                if (track.isActive) {
-                    newTracks.add(track.copy(isActive = false))
-                    oldActiveIndex = index
-                } else {
-                    newTracks.add(track)
-                }
-            }
-        }
-        
-        this.tracks = newTracks
-        
-        if (oldActiveIndex != -1) notifyItemChanged(oldActiveIndex)
-        if (newActiveIndex != -1) notifyItemChanged(newActiveIndex)
+        if (currentActiveTrackId == activeId) return // No change
+
+        val oldActiveId = currentActiveTrackId
+        currentActiveTrackId = activeId
+
+        // Find positions to update
+        val oldPos = tracks.indexOfFirst { it.id == oldActiveId }
+        val newPos = tracks.indexOfFirst { it.id == activeId }
+
+        if (oldPos != -1) notifyItemChanged(oldPos)
+        if (newPos != -1) notifyItemChanged(newPos)
     }
 }

@@ -287,6 +287,9 @@ class MainActivity : AppCompatActivity() {
             isBound = false
         }
         
+        // Remove typing callbacks to prevent leaks
+        typingRunnable?.let { typingHandler.removeCallbacks(it) }
+        
         // Only unregister if it was registered
         if (isReceiverRegistered) {
             try {
