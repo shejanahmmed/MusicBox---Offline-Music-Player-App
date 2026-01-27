@@ -118,6 +118,8 @@ class NowPlayingActivity : AppCompatActivity() {
             
              // Save custom artwork
              TrackArtworkManager.saveArtwork(this, track.uri, uri.toString())
+             ImageLoader.clearCacheForTrack(track.uri)
+             MusicUtils.contentVersion++
 
             // Refresh UI
             updateUI()
@@ -620,6 +622,7 @@ class NowPlayingActivity : AppCompatActivity() {
             Toast.makeText(this, "Sleep timer cancelled", Toast.LENGTH_SHORT).show()
             updateTimerView.run() // Refresh view immediately
             updateUI()
+            dialog.dismiss()
         }
         
         val setTime = { min: Int ->

@@ -65,6 +65,18 @@ class PlaylistActivity : AppCompatActivity() {
             startActivity(Intent(this, CreatePlaylistActivity::class.java))
         }
 
+        // Initial Setup to prevent "No adapter attached" error
+        val rv = findViewById<RecyclerView>(R.id.rv_playlists)
+        rv.layoutManager = LinearLayoutManager(this)
+        rv.adapter = PlaylistAdapter(emptyList(), onClick = { item ->
+             val intent = Intent(this@PlaylistActivity, TracksActivity::class.java)
+             intent.putExtra("PLAYLIST_ID", item.id)
+             intent.putExtra("PLAYLIST_NAME", item.name)
+             startActivity(intent)
+        }, onLongClick = { item ->
+            showDeleteDialog(item)
+        })
+
         // Initial Load
         loadPlaylists()
         

@@ -103,6 +103,16 @@ class AlbumsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_albums)
 
         setupNav()
+        
+        // Initialize RecyclerView to prevent "No adapter attached" error
+        val rv = findViewById<RecyclerView>(R.id.rv_albums)
+        rv.layoutManager = GridLayoutManager(this, 2)
+        rv.adapter = AlbumAdapter(emptyList()) { album ->
+             val intent = Intent(this@AlbumsActivity, TracksActivity::class.java)
+             intent.putExtra("ALBUM_NAME", album.title)
+             startActivity(intent)
+        }
+
         loadAlbums()
         
     }

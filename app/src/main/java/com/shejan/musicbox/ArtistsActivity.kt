@@ -115,6 +115,15 @@ class ArtistsActivity : AppCompatActivity() {
             view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, systemBars.bottom)
             insets
         }
+        // Initialize RecyclerView to prevent "No adapter attached" error
+        val rv = findViewById<RecyclerView>(R.id.rv_artists)
+        rv.layoutManager = LinearLayoutManager(this)
+        rv.adapter = ArtistAdapter(emptyList()) { artist ->
+             val intent = Intent(this@ArtistsActivity, TracksActivity::class.java)
+             intent.putExtra("ARTIST_NAME", artist.name)
+             startActivity(intent)
+        }
+
         loadArtists()
         
     }

@@ -77,6 +77,8 @@ class TracksActivity : AppCompatActivity() {
                 } catch (e: Exception) { e.printStackTrace() }
                 
                 TrackArtworkManager.saveArtwork(this, trackUri, uri.toString())
+                ImageLoader.clearCacheForTrack(trackUri)
+                MusicUtils.contentVersion++
                 updateMiniPlayer() 
                 loadTracks()
             } else {
@@ -133,6 +135,12 @@ class TracksActivity : AppCompatActivity() {
 
         val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
         rvTracks.layoutManager = LinearLayoutManager(this)
+        
+        // Initialize with empty adapter to prevent "No adapter attached" error
+        adapter = TrackAdapter(emptyList()) { track ->
+            showTrackOptionsDialog(track)
+        }
+        rvTracks.adapter = adapter
 
 
 

@@ -235,22 +235,24 @@ object TrackMenuManager {
         
         view.post { (view.parent as? View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT) }
         
-        // Force 85% Height
+        // Force 90% Height and Expanded State
         dialog.setOnShowListener {
-            @SuppressLint("DiscouragedApi")
-            val bottomSheetId = activity.resources.getIdentifier("design_bottom_sheet", "id", "com.google.android.material")
-            val bottomSheet = dialog.findViewById<View>(bottomSheetId)
+            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
                 val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
+                
                 val displayMetrics = activity.resources.displayMetrics
                 val height = displayMetrics.heightPixels
-                val maxHeight = (height * 0.90).toInt()
+                val maxHeight = (height * 0.80).toInt()
                 
                 bottomSheet.layoutParams.height = maxHeight
-                bottomSheet.requestLayout()
-                behavior.peekHeight = maxHeight
-                behavior.skipCollapsed = true
-                behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+                
+                // Critical: Post the state change to ensure it applies after layout
+                bottomSheet.post {
+                    behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+                    behavior.peekHeight = maxHeight
+                    behavior.skipCollapsed = true
+                }
             }
         }
         
@@ -259,12 +261,16 @@ object TrackMenuManager {
         
         view.findViewById<View>(R.id.btn_default_artwork).setOnClickListener {
             TrackArtworkManager.resetArtwork(activity, track.uri)
+            ImageLoader.clearCacheForTrack(track.uri)
+            MusicUtils.contentVersion++
             callback?.onArtworkChanged()
             dialog.dismiss()
         }
         
         view.findViewById<View>(R.id.btn_remove_artwork).setOnClickListener {
             TrackArtworkManager.removeArtwork(activity, track.uri)
+            ImageLoader.clearCacheForTrack(track.uri)
+            MusicUtils.contentVersion++
             callback?.onArtworkChanged()
             dialog.dismiss()
         }
@@ -390,6 +396,7 @@ object TrackMenuManager {
         view.findViewById<ImageButton>(R.id.btn_reset).setOnClickListener {
              TrackMetadataManager.removeMetadata(activity, track.uri)
              Toast.makeText(activity, activity.getString(R.string.reset_original_values), Toast.LENGTH_SHORT).show()
+             MusicUtils.contentVersion++
              callback?.onTrackUpdated()
              dialog.dismiss()
         }
@@ -421,6 +428,7 @@ object TrackMenuManager {
             )
 
             Toast.makeText(activity, activity.getString(R.string.metadata_saved), Toast.LENGTH_SHORT).show()
+            MusicUtils.contentVersion++
             callback?.onTrackUpdated()
             dialog.dismiss()
         }

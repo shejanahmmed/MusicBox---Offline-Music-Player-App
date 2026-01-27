@@ -104,5 +104,15 @@ object ImageLoader {
             }
         }
     }
+    fun clearCacheForTrack(trackUri: String) {
+        // Iterate through cache keys to find matches (since key contains trackUri)
+        // Key format: "$trackId-$albumId-$trackUri"
+        val snapshot = memoryCache.snapshot()
+        for ((key, _) in snapshot) {
+            if (key.endsWith("-$trackUri")) {
+                memoryCache.remove(key)
+            }
+        }
+    }
 }
 
