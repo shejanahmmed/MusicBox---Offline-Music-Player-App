@@ -32,17 +32,34 @@ object NavUtils {
     fun setupNavigation(activity: Activity, activeNavId: Int) {
         val bottomNav = activity.findViewById<View>(R.id.bottom_nav) ?: return
         
-        // 1. Render Tabs Dynamically based on Order
-        renderTabs(activity, bottomNav, activeNavId)
+        // 0. Disable Activity Transition Animation immediately
+        @Suppress("DEPRECATION")
+        activity.overridePendingTransition(0, 0)
 
-        // 2. Calculate and Apply Widths
-        adjustItemWidths(activity, bottomNav)
+        // 1. Calculate Layout Dimensions Synchronously
+        val displayMetrics = activity.resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val density = displayMetrics.density
         
-        // 3. Highlight Active Item (handled in render but good to double check)
-        // highlightActiveItem(activity, bottomNav, activeNavId) 
+        // Account for:
+        // 1. BottomNav internal padding (4dp start + 4dp end = 8dp)
+        // 2. BottomNav external layout margin (16dp * 2 = 32dp) - Common across activities
+        val totalHorizontalDeduction = ((8 + 32) * density).toInt() 
+        val utilizableWidth = screenWidth - totalHorizontalDeduction
+        
+        val itemWidth = if (utilizableWidth > 0) (utilizableWidth / 5.0).toInt() else 0
+
+        // 2. Render Tabs Dynamically based on Order
+        renderTabs(activity, bottomNav, activeNavId, itemWidth)
+        
+        // 3. Setup Fixed Items (Search/Settings)
+        setupFixedItems(activity, bottomNav, activeNavId, itemWidth)
+        
+        // 4. Restore Scroll
+        restoreScrollPosition(activity, bottomNav)
     }
 
-    private fun renderTabs(activity: Activity, root: View, activeNavId: Int) {
+    private fun renderTabs(activity: Activity, root: View, activeNavId: Int, itemWidth: Int) {
         val scrollContainer = root.findViewById<LinearLayout>(R.id.ll_nav_scroll_container) ?: return
         scrollContainer.removeAllViews()
         
@@ -53,6 +70,12 @@ object NavUtils {
             if (tab.isVisible) {
                 val itemView = inflater.inflate(R.layout.item_nav_tab, scrollContainer, false) as LinearLayout
                 itemView.id = tab.viewId
+                
+                // Apply Width Immediately
+                if (itemWidth > 0) {
+                    val params = LinearLayout.LayoutParams(itemWidth, LinearLayout.LayoutParams.MATCH_PARENT)
+                    itemView.layoutParams = params
+                }
                 
                 val icon = itemView.getChildAt(0) as ImageView
                 val text = itemView.getChildAt(1) as TextView
@@ -90,17 +113,25 @@ object NavUtils {
                 scrollContainer.addView(itemView)
             }
         }
-        
-        // Fixed Listeners (Search and Settings are static in XML)
+    }
+    
+    private fun setupFixedItems(activity: Activity, root: View, activeNavId: Int, itemWidth: Int) {
         val search = root.findViewById<View>(R.id.nav_search)
         val settings = root.findViewById<View>(R.id.nav_settings)
         
-        setupFixedListener(activity, search, SearchActivity::class.java, R.id.nav_search, activeNavId)
-        setupFixedListener(activity, settings, SettingsActivity::class.java, R.id.nav_settings, activeNavId)
+        setupFixedListener(activity, search, SearchActivity::class.java, R.id.nav_search, activeNavId, itemWidth)
+        setupFixedListener(activity, settings, SettingsActivity::class.java, R.id.nav_settings, activeNavId, itemWidth)
     }
     
-    private fun setupFixedListener(activity: Activity, view: View?, targetClass: Class<*>, id: Int, activeId: Int) {
+    private fun setupFixedListener(activity: Activity, view: View?, targetClass: Class<*>, id: Int, activeId: Int, itemWidth: Int) {
         if (view == null) return
+        
+        // Apply Width Immediately
+        if (itemWidth > 0) {
+            val params = view.layoutParams
+            params.width = itemWidth
+            view.layoutParams = params
+        }
         
         // Highlight logic for fixed items
         if (view is LinearLayout) {
@@ -126,43 +157,6 @@ object NavUtils {
         }
     }
 
-    private fun adjustItemWidths(activity: Activity, root: View) {
-        val scrollContainer = root.findViewById<LinearLayout>(R.id.ll_nav_scroll_container) ?: return
-        val fixedContainer = root.findViewById<LinearLayout>(R.id.ll_nav_fixed_container) ?: return
-        
-        root.post {
-            var measuredWidth = root.width
-            if (measuredWidth == 0) {
-                // Fallback to display metrics if view isn't laid out yet
-                measuredWidth = activity.resources.displayMetrics.widthPixels
-            }
-            
-            val padding = root.paddingStart + root.paddingEnd
-            val utilizableWidth = measuredWidth - padding
-            
-            // Safety check
-            if (utilizableWidth > 0) {
-                val itemWidth = (utilizableWidth / 5.0).toInt()
-                
-                for (i in 0 until scrollContainer.childCount) {
-                    val child = scrollContainer.getChildAt(i)
-                    val params = child.layoutParams
-                    params.width = itemWidth
-                    child.layoutParams = params
-                }
-
-                for (i in 0 until fixedContainer.childCount) {
-                    val child = fixedContainer.getChildAt(i)
-                    val params = child.layoutParams
-                    params.width = itemWidth
-                    child.layoutParams = params
-                }
-            }
-            
-            restoreScrollPosition(activity, root)
-        }
-    }
-    
     private fun restoreScrollPosition(activity: Activity, root: View) {
          val scrollView = root.findViewById<HorizontalScrollView>(R.id.hsv_nav_scroll) ?: return
          val scrollX = activity.intent.getIntExtra("NAV_SCROLL_X", -1)

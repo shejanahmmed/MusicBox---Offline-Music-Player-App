@@ -37,16 +37,28 @@ import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.core.content.edit
+import androidx.core.content.ContextCompat
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+import android.media.AudioManager
+import android.media.MediaPlayer
+import android.os.Handler
+import android.os.Looper
 import java.util.Collections
+
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.cancel
 
 class MusicService : Service() {
 
     private lateinit var mediaSession: MediaSessionCompat
-    private var mediaPlayer: android.media.MediaPlayer? = null
+
+    private var mediaPlayer: MediaPlayer? = null
     private var placeholderBitmap: Bitmap? = null
     
     // Sleep Timer
-    private val sleepTimerHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val sleepTimerHandler = Handler(Looper.getMainLooper())
     private var sleepTimerRunnable: Runnable? = null
     var sleepTimerEndTime: Long = 0L
 
@@ -122,9 +134,9 @@ class MusicService : Service() {
         }
     }
 
-    private val noisyReceiver = object : android.content.BroadcastReceiver() {
-        override fun onReceive(context: android.content.Context?, intent: Intent?) {
-            if (intent?.action == android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
+    private val noisyReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
                 if (isPlaying()) {
                     pause()
                 }
@@ -132,7 +144,7 @@ class MusicService : Service() {
         }
     }
 
-    private val standardPreparedListener = android.media.MediaPlayer.OnPreparedListener { mp ->
+    private val standardPreparedListener = MediaPlayer.OnPreparedListener { mp ->
         mp.start()
         updateNotification()
         updateMediaSessionMetadata()
@@ -150,8 +162,8 @@ class MusicService : Service() {
         }
     }
 
-    private val deletionReceiver = object : android.content.BroadcastReceiver() {
-        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+    private val deletionReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
              if (intent?.action == "com.shejan.musicbox.TRACK_DELETED") {
                  val deletedUri = intent.getStringExtra("DELETED_TRACK_URI") ?: return
                  
@@ -236,20 +248,12 @@ class MusicService : Service() {
         mediaSession.isActive = true
 
         // Register Noisy Receiver
-        val filter = android.content.IntentFilter(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(noisyReceiver, filter, RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(noisyReceiver, filter)
-        }
+        val filter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+        ContextCompat.registerReceiver(this, noisyReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
         
         // Register Deletion Receiver
-        val deleteFilter = android.content.IntentFilter("com.shejan.musicbox.TRACK_DELETED")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(deletionReceiver, deleteFilter, RECEIVER_EXPORTED)
-        } else {
-            registerReceiver(deletionReceiver, deleteFilter)
-        }
+        val deleteFilter = IntentFilter("com.shejan.musicbox.TRACK_DELETED")
+        ContextCompat.registerReceiver(this, deletionReceiver, deleteFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
 
         // Initialize MediaPlayer
         initMediaPlayer()
@@ -260,7 +264,7 @@ class MusicService : Service() {
 
     private fun initMediaPlayer() {
         mediaPlayer?.release()
-        mediaPlayer = android.media.MediaPlayer().apply {
+        mediaPlayer = MediaPlayer().apply {
             setOnCompletionListener {
                 saveState() // Save state on completion (track change)
                 if (repeatMode == REPEAT_ONE) {
@@ -270,7 +274,7 @@ class MusicService : Service() {
                 }
             }
             setOnPreparedListener(standardPreparedListener)
-            setOnErrorListener { mp, what, extra ->
+            setOnErrorListener { mp, _, _ ->
                 mp.reset()
                 false
             }
@@ -331,18 +335,17 @@ class MusicService : Service() {
         }
 
         updateNotification()
-        return START_NOT_STICKY
+        return START_STICKY
     }
     
-
 
     private fun startForegroundWithPlaceholder() {
         val track = getCurrentTrack()
         val notification = if (track != null) {
-            buildNotification(track.title, track.artist, isPlaying())
+            buildNotification(track.title, track.artist, isPlaying(), placeholderBitmap)
         } else {
             // Fallback notification if no track is yet loaded
-            buildNotification("MusicBox", "Ready to play", false)
+            buildNotification("MusicBox", "Ready to play", false, placeholderBitmap)
         }
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -354,6 +357,8 @@ class MusicService : Service() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
+        // Stop service when user swipes app away from recents
+        stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
@@ -395,7 +400,7 @@ class MusicService : Service() {
                     sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
                 }
             }
-        } catch (e: IllegalStateException) {
+        } catch (_: IllegalStateException) {
             initMediaPlayer()
         }
     }
@@ -411,7 +416,7 @@ class MusicService : Service() {
                     sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
                 }
             }
-        } catch (e: IllegalStateException) {
+        } catch (_: IllegalStateException) {
             initMediaPlayer()
         }
     }
@@ -554,19 +559,39 @@ class MusicService : Service() {
         return mediaPlayer?.audioSessionId ?: 0
     }
 
+    // Scope for UI/Notification updates
+    private val uiScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main + kotlinx.coroutines.Job())
+
     private fun updateNotification() {
         val track = getCurrentTrack() ?: return
         val isPlaying = isPlaying()
         
-        val notification = buildNotification(track.title, track.artist, isPlaying)
+        // 1. Show immediate notification with placeholder to ensure responsiveness
+        var notification = buildNotification(track.title, track.artist, isPlaying, placeholderBitmap)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
+        
+        // 2. Load High-Res Artwork in Background
+        uiScope.launch {
+            val bitmap = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                MusicUtils.getTrackArtworkBitmap(applicationContext, track.id, track.albumId, track.uri)
+            }
+            
+            // Check if track is still the same (prevent race condition)
+            val current = getCurrentTrack()
+            if (current?.uri == track.uri) {
+                // Update notification with real artwork
+                notification = buildNotification(track.title, track.artist, isPlaying, bitmap ?: placeholderBitmap)
+                val manager = getSystemService(NotificationManager::class.java)
+                manager?.notify(NOTIFICATION_ID, notification)
+            }
+        }
     }
 
-    private fun buildNotification(title: String, artist: String, isPlaying: Boolean): android.app.Notification {
+    private fun buildNotification(title: String, artist: String, isPlaying: Boolean, largeIcon: Bitmap?): android.app.Notification {
         val playIntent = PendingIntent.getService(this, 0, Intent(this, MusicService::class.java).setAction(ACTION_PLAY), PendingIntent.FLAG_IMMUTABLE)
         val pauseIntent = PendingIntent.getService(this, 1, Intent(this, MusicService::class.java).setAction(ACTION_PAUSE), PendingIntent.FLAG_IMMUTABLE)
         val nextIntent = PendingIntent.getService(this, 2, Intent(this, MusicService::class.java).setAction(ACTION_NEXT), PendingIntent.FLAG_IMMUTABLE)
@@ -581,7 +606,7 @@ class MusicService : Service() {
             .setSmallIcon(R.drawable.ic_audiotrack) 
             .setContentTitle(title)
             .setContentText(artist)
-            .setLargeIcon(placeholderBitmap) // FIXED: Use cached placeholder
+            .setLargeIcon(largeIcon) 
             .setContentIntent(contentPendingIntent)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOnlyAlertOnce(true)
@@ -621,6 +646,7 @@ class MusicService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        uiScope.cancel() // Cancel all pending UI updates
         cancelSleepTimer() // Clean up runnables
         
         saveState()
@@ -643,7 +669,7 @@ class MusicService : Service() {
     private val saveStateExecutor = java.util.concurrent.Executors.newSingleThreadExecutor()
 
     private fun saveState() {
-        val prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
         val editor = prefs.edit()
         
         // Clone logic to avoid concurrency issues during saving
@@ -695,7 +721,7 @@ class MusicService : Service() {
     }
     
     private fun restoreState() {
-        val prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
         val idx = prefs.getInt("current_index", -1)
         val pos = prefs.getInt("current_position", 0)
         val savedPlaylist = prefs.getString("saved_playlist", null)

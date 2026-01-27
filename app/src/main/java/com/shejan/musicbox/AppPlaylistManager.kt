@@ -82,6 +82,9 @@ object AppPlaylistManager {
             jsonArray.put(obj)
         }
         getFile(context).writeText(jsonArray.toString())
+        
+        // Notify observers that content has changed
+        MusicUtils.contentVersion++
     }
 
     fun createPlaylist(context: Context, name: String, trackPaths: List<String>): Long {

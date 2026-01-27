@@ -430,8 +430,14 @@ class MainActivity : AppCompatActivity() {
                 if (index <= text.length) {
                     // Show cursor while typing
                     val currentText = text.subSequence(0, index).toString()
-                    @Suppress("SetTextI18n")
-                    textView.text = "$currentText|"
+                    var displayText = "$currentText|"
+                    
+                    // Maintain height stability by ensuring 2 lines exist
+                    if (!displayText.contains("\n")) {
+                        displayText += "\n"
+                    }
+                    
+                    textView.text = displayText
                     
                     if (index < text.length) {
                         index++
@@ -445,7 +451,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        typingHandler.post(typingRunnable!!)
+        // Run immediately to set initial state before first frame draw
+        typingRunnable?.run()
     }
     
     private fun openEqualizer() {

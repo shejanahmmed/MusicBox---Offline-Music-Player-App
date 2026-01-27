@@ -50,22 +50,26 @@ class MainHomeBoxAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_main_home_box, parent, false)
+            
+        // Calculate exact width to square the box immediately (preventing layout flash)
+        val displayMetrics = parent.context.resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val density = displayMetrics.density
+        
+        // Padding: 22dp Left + 22dp Right + 8dp Middle Gap = 52dp Total Deduction
+        val totalPadding = (52 * density).toInt()
+        val itemWidth = (screenWidth - totalPadding) / 2
+        
+        val params = view.layoutParams
+        params.width = itemWidth
+        params.height = itemWidth
+        view.layoutParams = params
+            
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val box = boxes[position]
-        
-        // Make box square by setting height = width (accounting for margins)
-        holder.itemView.post {
-            val width = holder.itemView.width
-            val layoutParams = holder.itemView.layoutParams as? RecyclerView.LayoutParams
-            if (layoutParams != null) {
-                // Width includes margins, so height should too
-                layoutParams.height = width
-                holder.itemView.layoutParams = layoutParams
-            }
-        }
         
         holder.icon.setImageResource(box.iconRes)
         holder.icon.setColorFilter(box.iconTint)
