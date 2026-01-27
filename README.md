@@ -8,19 +8,21 @@ MusicBox is a modern, feature-rich offline music player built with Kotlin for An
 ## ✨ Key Features
 
 ### 🎵 Music Library
-*   **Comprehensive Library Management**: Automatically scans and organizes your local audio files into **Tracks**, **Albums**, **Artists**, **Folders**, and **Playlists**.
+*   **Comprehensive Library Management**: Automatically scans and organizes your local audio files into **Tracks**, **Albums**, **Artists** and **Playlists**.
 *   **Smart Filtering**: Filter tracks by minimum duration to hide short audio clips and notifications.
 *   **Hidden Tracks Manager**: Hide unwanted tracks from your library and restore them anytime from the Deleted Tracks page.
-*   **Custom Metadata Editor**: Edit track titles, artists, and album names with persistent custom metadata storage.
+*   **Custom Metadata Editor**: Edit track titles, artists and album names with persistent custom metadata storage. Now includes a "Reset" option to instantly revert to original file tags.
 
 ### 🎨 Personalization
 *   **Customizable Home Screen**: Reorder, show/hide home boxes (Favorites, Tracks, Albums, Artists, Playlists, Equalizer) to create your perfect layout.
+*   **Edit Profile Name**: Personalize the home screen greeting with your own name.
 *   **Custom Artwork Editor**: Set custom album artwork for any track with an 85% screen-height drawer for better visibility.
 *   **Dynamic Greeting**: Personalized time-based greetings (Good Morning, Good Afternoon, Good Evening) with typing animation.
 *   **Flexible Navigation**: Set any page as your default home screen (Home, Tracks, Albums, Artists, Playlists, Search).
 
 ### 🎧 Playback & Organization
 *   **❤️ Favorites & Playlists**: Create unlimited custom playlists with full CRUD operations (Create, Read, Update, Delete).
+*   **zzZ Sleep Timer**: Fall asleep to your favorite tunes with a customizable sleep timer.
 *   **Advanced Sorting**: Sort by Title, Date Added, or Date Modified with persistent preferences per page.
 *   **Shuffle & Repeat Modes**: Full playback control with shuffle and repeat (All/One/Off) modes.
 *   **Headset Support**: Seamlessly control playback (Play/Pause/Next/Previous) using wired or Bluetooth headset buttons.
@@ -29,7 +31,6 @@ MusicBox is a modern, feature-rich offline music player built with Kotlin for An
 
 ### 🔍 Discovery & Navigation
 *   **Smart Search**: Instantly find any song, artist, or album with a powerful search feature.
-*   **📂 Folder Browsing**: Navigate your storage directly to play music from specific folders with breadcrumb navigation.
 *   **🎛️ Dynamic Navigation**: Features a unique **Scrollable Bottom Navigation Bar** that provides quick access to 6+ categories while keeping essential tools like Search and Settings pinned.
 
 ### 📤 Sharing & Integration
@@ -94,7 +95,6 @@ To function correctly, MusicBox requires access to your device's storage to read
 *   **Albums**: Browse music organized by album with hidden track filtering
 *   **Artists**: View all artists with track counts and dynamic navigation
 *   **Playlists**: Create and manage custom playlists stored locally
-*   **Folders**: Navigate your file system to play music from specific directories
 *   **Search**: Global search across tracks, albums, and artists
 *   **Settings**: Customize app behavior, navigation, home layout, and track filtering
 *   **Now Playing**: Full-screen player with artwork, controls, queue, and sharing options
