@@ -59,6 +59,39 @@ class SettingsActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
 
         // Tab Order
+        findViewById<android.view.View>(R.id.card_edit_name).setOnClickListener {
+             val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+             @SuppressLint("InflateParams")
+             val view = layoutInflater.inflate(R.layout.dialog_edit_name, null)
+             dialog.setContentView(view)
+             
+             // Fix corners
+             view.post {
+                (view.parent as? android.view.View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+             }
+             
+             val etName = view.findViewById<android.widget.EditText>(R.id.et_name)
+             val btnSave = view.findViewById<android.widget.Button>(R.id.btn_save)
+             
+             // Load current name
+             val currentName = prefs.getString("USER_NAME", "Listener")
+             etName.setText(currentName)
+             
+             btnSave.setOnClickListener {
+                 val newName = etName.text.toString().trim()
+                 if (newName.isNotEmpty()) {
+                     prefs.edit { putString("USER_NAME", newName) }
+                     Toast.makeText(this, "Name updated to $newName", Toast.LENGTH_SHORT).show()
+                     dialog.dismiss()
+                 } else {
+                     Toast.makeText(this, "Please enter a valid name", Toast.LENGTH_SHORT).show()
+                 }
+             }
+             
+             dialog.show()
+        }
+
+        // Tab Order
         findViewById<android.view.View>(R.id.card_tab_order).setOnClickListener {
              val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
              @SuppressLint("InflateParams")
