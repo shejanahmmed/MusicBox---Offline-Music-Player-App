@@ -53,7 +53,6 @@
     <string name="notifications_enabled">Notifications enabled</string>
     <string name="notifications_disabled">Notifications disabled</string>
     <string name="open_browser_error">Cannot open link</string>
-    <string name="version_text">MusicBox v1.0.0</string>
     <string name="scanning_started">Scanning started...</string>
     <string name="tracks_found">Found %1$d tracks</string>
     <string name="scanning_finished">Scanning finished. Found %1$d tracks.</string>
@@ -117,4 +116,11 @@
     <string name="license_desc">View GPL-3.0 License</string>
     <string name="playlist_created">Playlist created</string>
     <string name="error_volume_restricted">Volume control is restricted (e.g., Do Not Disturb)</string>
+    <string name="timer_15">15</string>
+    <string name="timer_30">30</string>
+    <string name="timer_45">45</string>
+    <string name="timer_60">60</string>
+    <string name="version_fmt">v%1$s</string>
+    <string name="version_full_fmt">Version %1$s</string>
+    <string name="count_with_label">%1$d %2$s</string>
 </resources>

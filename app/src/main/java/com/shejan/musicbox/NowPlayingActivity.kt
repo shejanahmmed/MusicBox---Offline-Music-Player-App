@@ -215,7 +215,13 @@ class NowPlayingActivity : AppCompatActivity() {
         val currentTrackId = if (MusicService.currentIndex in MusicService.playlist.indices)
             MusicService.playlist[MusicService.currentIndex].id else -1L
         
-        val adapter = QueueAdapter(MusicService.playlist, currentTrackId) { index ->
+        // Use a copy to avoid ConcurrentModificationException
+        // Use a copy to avoid ConcurrentModificationException
+        val playlistCopy = synchronized(MusicService.playlist) {
+            ArrayList(MusicService.playlist)
+        }
+        
+        val adapter = QueueAdapter(playlistCopy, currentTrackId) { index ->
              musicService?.playTrack(index)
              updateUI()
              dialog.dismiss()
@@ -264,7 +270,7 @@ class NowPlayingActivity : AppCompatActivity() {
                 if (fromUser) {
                     try {
                         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0)
-                    } catch (e: SecurityException) {
+                    } catch (_: SecurityException) {
                         Toast.makeText(this@NowPlayingActivity, getString(R.string.error_volume_restricted), Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -279,7 +285,7 @@ class NowPlayingActivity : AppCompatActivity() {
              try {
                 audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
                 volumeSeekBar.progress = newVol
-             } catch (e: SecurityException) {
+             } catch (_: SecurityException) {
                 Toast.makeText(this, getString(R.string.error_volume_restricted), Toast.LENGTH_SHORT).show()
              }
         }
@@ -291,7 +297,7 @@ class NowPlayingActivity : AppCompatActivity() {
              try {
                 audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
                 volumeSeekBar.progress = newVol
-             } catch (e: SecurityException) {
+             } catch (_: SecurityException) {
                 Toast.makeText(this, getString(R.string.error_volume_restricted), Toast.LENGTH_SHORT).show()
              }
         }
@@ -530,15 +536,23 @@ class NowPlayingActivity : AppCompatActivity() {
             unbindService(connection)
             isBound = false
         }
-        unregisterReceiver(receiver)
-        unregisterReceiver(volumeReceiver)
+        try {
+            unregisterReceiver(receiver)
+        } catch (_: Exception) {}
+        
+        try {
+            unregisterReceiver(volumeReceiver)
+        } catch (_: Exception) {}
+        
         handler.removeCallbacks(updateProgressAction)
     }
     
     private fun updateVolumeBar() {
-        val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-        val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        findViewById<SeekBar>(R.id.sb_volume)?.progress = currentVolume
+        try {
+            val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+            findViewById<SeekBar>(R.id.sb_volume)?.progress = currentVolume
+        } catch (_: Exception) {}
     }
     
     @SuppressLint("InflateParams")
@@ -561,6 +575,12 @@ class NowPlayingActivity : AppCompatActivity() {
                 val remaining = endTime - System.currentTimeMillis()
                 
                 if (remaining > 0) {
+                     // Leak Check: Stop if activity is gone
+                    if (isFinishing || isDestroyed) {
+                        view.removeCallbacks(this)
+                        return
+                    }
+
                     llSetup.visibility = View.GONE
                     llActive.visibility = View.VISIBLE
                     
@@ -592,8 +612,8 @@ class NowPlayingActivity : AppCompatActivity() {
         }
         
         val etCustom = view.findViewById<android.widget.EditText>(R.id.et_custom_time)
-        val btnStart = view.findViewById<android.view.View>(R.id.btn_start_timer)
-        val btnCancel = view.findViewById<android.view.View>(R.id.btn_cancel_timer)
+        val btnStart = view.findViewById<View>(R.id.btn_start_timer)
+        val btnCancel = view.findViewById<View>(R.id.btn_cancel_timer)
         
         btnCancel.setOnClickListener {
             musicService?.cancelSleepTimer()
@@ -610,10 +630,10 @@ class NowPlayingActivity : AppCompatActivity() {
         }
         
         // Presets now just fill the text box
-        view.findViewById<View>(R.id.btn_15_min).setOnClickListener { etCustom.setText("15"); etCustom.setSelection(2) }
-        view.findViewById<View>(R.id.btn_30_min).setOnClickListener { etCustom.setText("30"); etCustom.setSelection(2) }
-        view.findViewById<View>(R.id.btn_45_min).setOnClickListener { etCustom.setText("45"); etCustom.setSelection(2) }
-        view.findViewById<View>(R.id.btn_60_min).setOnClickListener { etCustom.setText("60"); etCustom.setSelection(2) }
+        view.findViewById<View>(R.id.btn_15_min).setOnClickListener { etCustom.setText(getString(R.string.timer_15)); etCustom.setSelection(2) }
+        view.findViewById<View>(R.id.btn_30_min).setOnClickListener { etCustom.setText(getString(R.string.timer_30)); etCustom.setSelection(2) }
+        view.findViewById<View>(R.id.btn_45_min).setOnClickListener { etCustom.setText(getString(R.string.timer_45)); etCustom.setSelection(2) }
+        view.findViewById<View>(R.id.btn_60_min).setOnClickListener { etCustom.setText(getString(R.string.timer_60)); etCustom.setSelection(2) }
         
         btnStart.setOnClickListener {
             val input = etCustom.text.toString()
@@ -650,21 +670,5 @@ class NowPlayingActivity : AppCompatActivity() {
             }
         })
     }
-    private fun shareTrack(track: Track) {
-        try {
-            val file = java.io.File(track.uri)
-            if (file.exists()) {
-                val uri = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.provider", file)
-                val intent = Intent(Intent.ACTION_SEND)
-                intent.type = "audio/*"
-                intent.putExtra(Intent.EXTRA_STREAM, uri)
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                startActivity(Intent.createChooser(intent, getString(R.string.share_track)))
-            } else {
-                 Toast.makeText(this, getString(R.string.file_not_found), Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: Exception) {
-             Toast.makeText(this, getString(R.string.share_error, e.message), Toast.LENGTH_SHORT).show()
-        }
-    }
+
 }

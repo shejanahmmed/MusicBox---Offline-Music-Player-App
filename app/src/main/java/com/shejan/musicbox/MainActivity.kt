@@ -41,6 +41,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,91 +118,97 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun setupHomeBoxes() {
-        val recyclerView = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_home_boxes)
-        
-        // Get saved box order
-        val savedOrder = HomeBoxPreferences.getBoxOrder(this)
-        val allBoxes = HomeBoxPreferences.getAllBoxes()
-        
-        // Create ordered list of visible boxes
-        val visibleBoxes = savedOrder.mapNotNull { boxId ->
-            if (HomeBoxPreferences.isBoxVisible(this, boxId)) {
-                allBoxes.find { it.id == boxId }
-            } else {
-                null
-            }
-        }
-        
-        // Create MainHomeBox list with counts and click handlers
-        val homeBoxes = visibleBoxes.map { box ->
-            val (count, label, onClick) = when (box.id) {
-                HomeBoxPreferences.BOX_FAVORITES -> {
-                    Triple(getFavoriteCount(), "Favorites") {
-                        val intent = Intent(this, TracksActivity::class.java)
-                        intent.putExtra("SHOW_FAVORITES", true)
-                        startActivity(intent)
-                        @Suppress("DEPRECATION")
-                        overridePendingTransition(0, 0)
-                    }
+        // Move DB/File I/O to Background Thread
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val recyclerView = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_home_boxes)
+            
+            // Get saved box order
+            val savedOrder = HomeBoxPreferences.getBoxOrder(this@MainActivity)
+            val allBoxes = HomeBoxPreferences.getAllBoxes()
+            
+            // Create ordered list of visible boxes
+            val visibleBoxes = savedOrder.mapNotNull { boxId ->
+                if (HomeBoxPreferences.isBoxVisible(this@MainActivity, boxId)) {
+                    allBoxes.find { it.id == boxId }
+                } else {
+                    null
                 }
-                HomeBoxPreferences.BOX_PLAYLISTS -> {
-                    Triple(getPlaylistCount(), "Playlists") {
-                        startActivity(Intent(this, PlaylistActivity::class.java))
-                        @Suppress("DEPRECATION")
-                        overridePendingTransition(0, 0)
-                    }
-                }
-                HomeBoxPreferences.BOX_ALBUMS -> {
-                    Triple(getAlbumCount(), "Albums") {
-                        startActivity(Intent(this, AlbumsActivity::class.java))
-                        @Suppress("DEPRECATION")
-                        overridePendingTransition(0, 0)
-                    }
-                }
-                HomeBoxPreferences.BOX_ARTISTS -> {
-                    Triple(getArtistCount(), "Artists") {
-                        startActivity(Intent(this, ArtistsActivity::class.java))
-                        @Suppress("DEPRECATION")
-                        overridePendingTransition(0, 0)
-                    }
-                }
-                HomeBoxPreferences.BOX_TRACKS -> {
-                    Triple(getTrackCount(), "Tracks") {
-                        startActivity(Intent(this, TracksActivity::class.java))
-                        @Suppress("DEPRECATION")
-                        overridePendingTransition(0, 0)
-                    }
-                }
-                HomeBoxPreferences.BOX_EQUALIZER -> {
-                    Triple(-1, "Tune Sound") {
-                        openEqualizer()
-                    }
-                }
-                else -> Triple(0, "") {}
             }
             
-            MainHomeBox(
-                id = box.id,
-                name = box.name.uppercase(),
-                iconRes = box.iconRes,
-                iconTint = getBoxIconTint(box.id),
-                count = count,
-                countLabel = label,
-                onClick = onClick
-            )
-        }
-        
-        // Setup RecyclerView if not already setup
-        if (recyclerView.layoutManager == null) {
-            val layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 2)
-            recyclerView.layoutManager = layoutManager
+            // Calculate counts (Expensive I/O)
+            val homeBoxes = visibleBoxes.map { box ->
+                val (count, label, onClick) = when (box.id) {
+                    HomeBoxPreferences.BOX_FAVORITES -> {
+                        Triple(getFavoriteCount(), "Favorites") {
+                            val intent = Intent(this@MainActivity, TracksActivity::class.java)
+                            intent.putExtra("SHOW_FAVORITES", true)
+                            startActivity(intent)
+                            @Suppress("DEPRECATION")
+                            overridePendingTransition(0, 0)
+                        }
+                    }
+                    HomeBoxPreferences.BOX_PLAYLISTS -> {
+                        Triple(getPlaylistCount(), "Playlists") {
+                            startActivity(Intent(this@MainActivity, PlaylistActivity::class.java))
+                            @Suppress("DEPRECATION")
+                            overridePendingTransition(0, 0)
+                        }
+                    }
+                    HomeBoxPreferences.BOX_ALBUMS -> {
+                        Triple(getAlbumCount(), "Albums") {
+                            startActivity(Intent(this@MainActivity, AlbumsActivity::class.java))
+                            @Suppress("DEPRECATION")
+                            overridePendingTransition(0, 0)
+                        }
+                    }
+                    HomeBoxPreferences.BOX_ARTISTS -> {
+                        Triple(getArtistCount(), "Artists") {
+                            startActivity(Intent(this@MainActivity, ArtistsActivity::class.java))
+                            @Suppress("DEPRECATION")
+                            overridePendingTransition(0, 0)
+                        }
+                    }
+                    HomeBoxPreferences.BOX_TRACKS -> {
+                        Triple(getTrackCount(), "Tracks") {
+                            startActivity(Intent(this@MainActivity, TracksActivity::class.java))
+                            @Suppress("DEPRECATION")
+                            overridePendingTransition(0, 0)
+                        }
+                    }
+                    HomeBoxPreferences.BOX_EQUALIZER -> {
+                        Triple(-1, "Tune Sound") {
+                            openEqualizer()
+                        }
+                    }
+                    else -> Triple(0, "") {}
+                }
+                
+                MainHomeBox(
+                    id = box.id,
+                    name = box.name.uppercase(),
+                    iconRes = box.iconRes,
+                    iconTint = getBoxIconTint(box.id),
+                    count = count,
+                    countLabel = label,
+                    onClick = onClick
+                )
+            }
             
-            // 8dp spacing both horizontally and vertically (padding reduced to 22dp to keep box size constant)
-            val spacing = (8 * resources.displayMetrics.density).toInt()
-            recyclerView.addItemDecoration(GridSpacingItemDecoration(2, spacing, spacing, false))
+            // Update UI on Main Thread
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                // Setup RecyclerView if not already setup
+                if (recyclerView.layoutManager == null) {
+                    val layoutManager = androidx.recyclerview.widget.GridLayoutManager(this@MainActivity, 2)
+                    recyclerView.layoutManager = layoutManager
+                    
+                    // 8dp spacing both horizontally and vertically (padding reduced to 22dp to keep box size constant)
+                    val spacing = (8 * resources.displayMetrics.density).toInt()
+                    recyclerView.addItemDecoration(GridSpacingItemDecoration(2, spacing, spacing, false))
+                }
+                
+                recyclerView.adapter = MainHomeBoxAdapter(homeBoxes)
+            }
         }
-        
-        recyclerView.adapter = MainHomeBoxAdapter(homeBoxes)
     }
     
     private fun getBoxIconTint(boxId: String): Int {
@@ -215,6 +223,8 @@ class MainActivity : AppCompatActivity() {
             if (intent?.action == "MUSIC_BOX_UPDATE") {
                 val isPlaying = intent.getBooleanExtra("IS_PLAYING", false)
                 updateDot(isPlaying)
+            } else if (intent?.action == "com.shejan.musicbox.REFRESH_DATA") {
+                setupHomeBoxes()
             }
         }
     }
@@ -258,7 +268,9 @@ class MainActivity : AppCompatActivity() {
         if (!isReceiverRegistered) {
             try {
                 ContextCompat.registerReceiver(this, updateReceiver, IntentFilter("UPDATE_MAIN_ACTIVITY"), ContextCompat.RECEIVER_NOT_EXPORTED)
-                ContextCompat.registerReceiver(this, updateReceiver, IntentFilter("MUSIC_BOX_UPDATE"), ContextCompat.RECEIVER_NOT_EXPORTED)
+                val filter = IntentFilter("MUSIC_BOX_UPDATE")
+                filter.addAction("com.shejan.musicbox.REFRESH_DATA")
+                ContextCompat.registerReceiver(this, updateReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
                 isReceiverRegistered = true
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -427,26 +439,35 @@ class MainActivity : AppCompatActivity() {
         typingRunnable = object : Runnable {
             var index = 0
             override fun run() {
+                // Bounds Check: Ensure index is valid for current text
+                if (index > text.length) {
+                    index = text.length
+                }
+                
                 if (index <= text.length) {
-                    // Show cursor while typing
-                    val currentText = text.subSequence(0, index).toString()
-                    var displayText = "$currentText|"
-                    
-                    // Maintain height stability by ensuring 2 lines exist
-                    if (!displayText.contains("\n")) {
-                        displayText += "\n"
-                    }
-                    
-                    textView.text = displayText
-                    
-                    if (index < text.length) {
-                        index++
-                        typingHandler.postDelayed(this, delay)
-                    } else {
-                        // Finished typing, remove cursor after a moment
-                         typingHandler.postDelayed({
-                             textView.text = text
-                         }, 800)
+                    try {
+                        // Show cursor while typing
+                        val currentText = text.subSequence(0, index).toString()
+                        var displayText = "$currentText|"
+                        
+                        // Maintain height stability by ensuring 2 lines exist
+                        if (!displayText.contains("\n")) {
+                            displayText += "\n"
+                        }
+                        
+                        textView.text = displayText
+                        
+                        if (index < text.length) {
+                            index++
+                            typingHandler.postDelayed(this, delay)
+                        } else {
+                            // Finished typing, remove cursor after a moment
+                             typingHandler.postDelayed({
+                                 textView.text = text
+                             }, 800)
+                        }
+                    } catch (e: Exception) {
+                        textView.text = text // Fallback
                     }
                 }
             }

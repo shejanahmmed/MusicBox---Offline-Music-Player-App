@@ -638,9 +638,10 @@
                     app:layout_constraintTop_toBottomOf="@+id/tv_version_title"/>
 
                 <TextView
+                    android:id="@+id/tv_version_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1.0.0-BETA"
+                    android:text="1.0.0"
                     android:textColor="@color/text_white_opacity_60"
                     android:textSize="12sp"
                     android:textStyle="bold"

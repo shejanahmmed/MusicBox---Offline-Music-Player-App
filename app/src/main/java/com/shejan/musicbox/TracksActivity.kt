@@ -70,14 +70,17 @@ class TracksActivity : AppCompatActivity() {
     // Artwork Picker
     private val pickArtworkLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
-            if (currentEditingTrackUri != null) {
+            val trackUri = currentEditingTrackUri
+            if (trackUri != null) {
                 try {
                     contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 } catch (e: Exception) { e.printStackTrace() }
                 
-                TrackArtworkManager.saveArtwork(this, currentEditingTrackUri!!, uri.toString())
+                TrackArtworkManager.saveArtwork(this, trackUri, uri.toString())
                 updateMiniPlayer() 
                 loadTracks()
+            } else {
+                Toast.makeText(this, "Error: Track info lost", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -90,7 +93,7 @@ class TracksActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "MUSIC_BOX_UPDATE") {
                 updateMiniPlayer()
-            } else if (intent?.action == "com.shejan.musicbox.TRACK_DELETED") {
+            } else if (intent?.action == "com.shejan.musicbox.TRACK_DELETED" || intent?.action == "com.shejan.musicbox.REFRESH_DATA") {
                 loadTracks()
             }
         }
@@ -123,6 +126,10 @@ class TracksActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
         sortColumn = prefs.getString("sort_column", MediaStore.Audio.Media.TITLE) ?: MediaStore.Audio.Media.TITLE
         isAscending = prefs.getBoolean("is_ascending", true)
+
+        if (savedInstanceState != null) {
+            currentEditingTrackUri = savedInstanceState.getString("EDITING_TRACK_URI")
+        }
 
         val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
         rvTracks.layoutManager = LinearLayoutManager(this)
@@ -167,6 +174,7 @@ class TracksActivity : AppCompatActivity() {
         
         val filter = IntentFilter("MUSIC_BOX_UPDATE")
         filter.addAction("com.shejan.musicbox.TRACK_DELETED")
+        filter.addAction("com.shejan.musicbox.REFRESH_DATA")
         ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
@@ -196,6 +204,11 @@ class TracksActivity : AppCompatActivity() {
         try {
             unregisterReceiver(receiver)
         } catch (_: IllegalArgumentException) {}
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("EDITING_TRACK_URI", currentEditingTrackUri)
     }
 
     private fun getNavId(): Int {
@@ -295,21 +308,22 @@ class TracksActivity : AppCompatActivity() {
         
         // Show loading state if needed (optional)
         
-        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val appContext = applicationContext
             val trackList: List<Track> = if (showFavoritesOnly) {
-                 val favorites = FavoritesManager.getFavorites(this@TracksActivity)
-                 getTracks(null, null).filter { favorites.contains(it.uri) }
+                 val favorites = FavoritesManager.getFavorites(appContext)
+                 getTracks(appContext, null, null).filter { favorites.contains(it.uri) }
             } else if (playlistId != -1L) {
-                 getPlaylistTracks(playlistId)
+                 getPlaylistTracks(appContext, playlistId)
             } else if (artistName != null) {
-                 getTracks("${MediaStore.Audio.Media.ARTIST} = ?", arrayOf(artistName))
+                 getTracks(appContext, "${MediaStore.Audio.Media.ARTIST} = ?", arrayOf(artistName))
             } else if (albumName != null) {
-                 getTracks("${MediaStore.Audio.Media.ALBUM} = ?", arrayOf(albumName))
+                 getTracks(appContext, "${MediaStore.Audio.Media.ALBUM} = ?", arrayOf(albumName))
             } else {
-                 getTracks(null, null)
+                 getTracks(appContext, null, null)
             }
             
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
                 if (isFinishing || isDestroyed) return@withContext
 
                 if (showFavoritesOnly) findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.title_favorites)
@@ -343,7 +357,7 @@ class TracksActivity : AppCompatActivity() {
                 
                 findViewById<TextView>(R.id.tv_tracks_count)?.text = if (trackList.size == 1) "1 Song" else "${trackList.size} Songs"
 
-                val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks)
+                val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks) ?: return@withContext
                 if (adapter == null) {
                     adapter = TrackAdapter(trackList) { track ->
                         showTrackOptionsDialog(track)
@@ -356,9 +370,7 @@ class TracksActivity : AppCompatActivity() {
         }
     }
 
-    private fun getTracks(selection: String?, selectionArgs: Array<String>?): List<Track> {
-        // This function is now just a helper for reading DB, called by loadTracks background thread.
-        // Or better, we keep getTracks compliant with synchronous if needed, but loadTracks does the threading.
+    private fun getTracks(context: Context, selection: String?, selectionArgs: Array<String>?): List<Track> {
         val list = mutableListOf<Track>()
         try {
              val projection = arrayOf(
@@ -370,7 +382,7 @@ class TracksActivity : AppCompatActivity() {
                 MediaStore.Audio.Media.ALBUM,
                 MediaStore.Audio.Media.ALBUM_ID
              )
-             val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
+             val prefs = context.getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
              val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
              val minDurationMillis = minDurationSec * 1000
              
@@ -381,7 +393,7 @@ class TracksActivity : AppCompatActivity() {
              val order = if (isAscending) "ASC" else "DESC"
              val sortOrder = "$sortColumn $order"
 
-             val cursor = contentResolver.query(
+             val cursor = context.contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 projection,
                 finalSelection,
@@ -405,10 +417,10 @@ class TracksActivity : AppCompatActivity() {
                      val album = it.getString(albumColumn)
                      val albumId = it.getLong(albumIdColumn)
                      
-                     if (!HiddenTracksManager.isHidden(this, path) && 
+                     if (!HiddenTracksManager.isHidden(context, path) && 
                          !path.lowercase().contains("ringtone") && 
                          !path.lowercase().contains("notification")) {
-                        list.add(TrackMetadataManager.applyMetadata(this, Track(id, title, artist, path, album, albumId)))
+                        list.add(TrackMetadataManager.applyMetadata(context, Track(id, title, artist, path, album, albumId)))
                      }
                  }
              }
@@ -416,9 +428,9 @@ class TracksActivity : AppCompatActivity() {
         return list
     }
 
-    private fun getPlaylistTracks(playlistId: Long): List<Track> {
-        val playlist = AppPlaylistManager.getPlaylist(this, playlistId) ?: return emptyList()
-        val allTracks = getTracks(null, null)
+    private fun getPlaylistTracks(context: Context, playlistId: Long): List<Track> {
+        val playlist = AppPlaylistManager.getPlaylist(context, playlistId) ?: return emptyList()
+        val allTracks = getTracks(context, null, null)
         val trackMap = allTracks.associateBy { it.uri }
         return playlist.trackPaths.mapNotNull { trackMap[it] }
     }

@@ -30,6 +30,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 
 class CreatePlaylistActivity : AppCompatActivity() {
 
@@ -138,14 +142,19 @@ class CreatePlaylistActivity : AppCompatActivity() {
         // Get paths
         val selectedPaths = allTracks.filter { selectedIds.contains(it.id) }.map { it.uri }
         
-        if (isEditMode) {
-            AppPlaylistManager.updatePlaylist(this, editPlaylistId, name, selectedPaths)
-            Toast.makeText(this, "Playlist updated!", Toast.LENGTH_SHORT).show()
-        } else {
-            AppPlaylistManager.createPlaylist(this, name, selectedPaths)
-            Toast.makeText(this, "Playlist created!", Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch(Dispatchers.IO) {
+            if (isEditMode) {
+                AppPlaylistManager.updatePlaylist(this@CreatePlaylistActivity, editPlaylistId, name, selectedPaths)
+            } else {
+                AppPlaylistManager.createPlaylist(this@CreatePlaylistActivity, name, selectedPaths)
+            }
+            
+            withContext(Dispatchers.Main) {
+                if (isFinishing || isDestroyed) return@withContext
+                Toast.makeText(this@CreatePlaylistActivity, if (isEditMode) "Playlist updated!" else "Playlist created!", Toast.LENGTH_SHORT).show()
+                finish()
+            }
         }
-        finish()
     }
 
     // MediaStore methods removed

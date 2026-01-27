@@ -70,13 +70,13 @@ class SearchActivity : AppCompatActivity() {
             currentEditingTrackUri = track.uri
             TrackMenuManager.showTrackOptionsDialog(this, track, pickArtworkLauncher, object : TrackMenuManager.Callback {
                 override fun onArtworkChanged() {
-                    performSearch(currentSearchQuery)
+                    loadAllTracks()
                 }
                 override fun onTrackUpdated() {
-                    performSearch(currentSearchQuery)
+                    loadAllTracks()
                 }
                 override fun onTrackDeleted() {
-                    performSearch(currentSearchQuery)
+                    loadAllTracks()
                 }
             })
         }
@@ -114,8 +114,9 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun loadAllTracks() {
+        val appContext = applicationContext
         // Run DB Query in Background
-        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
             val tempList = mutableListOf<Track>()
             try {
                 val projection = arrayOf(
@@ -127,13 +128,13 @@ class SearchActivity : AppCompatActivity() {
                     MediaStore.Audio.Media.ALBUM_ID
                 )
     
-                val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
+                val prefs = appContext.getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
                 val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
                 val minDurationMillis = minDurationSec * 1000
     
                 val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
     
-                contentResolver.query(
+                appContext.contentResolver.query(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     projection,
                     selection,
@@ -149,7 +150,7 @@ class SearchActivity : AppCompatActivity() {
     
                     while (cursor.moveToNext()) {
                         val path = cursor.getString(dataCol)
-                        if (!HiddenTracksManager.isHidden(this@SearchActivity, path) &&
+                        if (!HiddenTracksManager.isHidden(appContext, path) &&
                             !path.lowercase().contains("ringtone") &&
                             !path.lowercase().contains("notification")) {
     
@@ -162,14 +163,14 @@ class SearchActivity : AppCompatActivity() {
                                 cursor.getLong(albumIdCol)
                             )
                             // Apply metadata immediately so search works on custom names
-                            tempList.add(TrackMetadataManager.applyMetadata(this@SearchActivity, track))
+                            tempList.add(TrackMetadataManager.applyMetadata(appContext, track))
                         }
                     }
                 }
             } catch (e: Exception) { e.printStackTrace() }
             
             // Update Data on Main Thread
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
                 allTracks.clear()
                 allTracks.addAll(tempList)
                 // If user already typed something, re-filter
@@ -180,20 +181,28 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
+    private var searchJob: kotlinx.coroutines.Job? = null
+    
     private fun performSearch(query: String) {
+        // Cancel previous search job if active
+        searchJob?.cancel()
+        
         if (query.isEmpty()) {
             adapter.updateData(emptyList())
             return
         }
 
-        val filteredList = allTracks.filter { track ->
-            track.title.contains(query, ignoreCase = true) ||
-            track.artist.contains(query, ignoreCase = true)
+        searchJob = lifecycleScope.launch(Dispatchers.Default) {
+            val filteredList = allTracks.filter { track ->
+                track.title.contains(query, ignoreCase = true) ||
+                track.artist.contains(query, ignoreCase = true)
+            }
+            
+            withContext(Dispatchers.Main) {
+                adapter.updateData(filteredList)
+            }
         }
-
-        adapter.updateData(filteredList)
     }
-
 
 
     private fun setupNav() {

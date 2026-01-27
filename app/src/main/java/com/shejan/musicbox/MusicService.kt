@@ -62,6 +62,76 @@ class MusicService : Service() {
     private var sleepTimerRunnable: Runnable? = null
     var sleepTimerEndTime: Long = 0L
 
+    // Audio Focus
+    private lateinit var audioManager: AudioManager
+    private var audioFocusRequest: android.media.AudioFocusRequest? = null
+    private var resumeOnFocusGain = false
+    
+    private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                if (resumeOnFocusGain) {
+                    resumeOnFocusGain = false
+                    if (!isPlaying()) play() // Resume
+                }
+                setVolume(1.0f) // Restore volume
+            }
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                resumeOnFocusGain = false
+                if (isPlaying()) pause(abandonFocus = true)
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                if (isPlaying()) {
+                    resumeOnFocusGain = true
+                    pause(abandonFocus = false)
+                }
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                if (isPlaying()) setVolume(0.2f)
+            }
+        }
+    }
+    
+    private fun setVolume(vol: Float) {
+        try {
+            mediaPlayer?.setVolume(vol, vol)
+        } catch (_: Exception) {}
+    }
+
+    private fun requestAudioFocus(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val attributes = android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+                
+             val request = android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(attributes)
+                .setAcceptsDelayedFocusGain(true)
+                .setOnAudioFocusChangeListener(audioFocusChangeListener)
+                .build()
+                
+            audioFocusRequest = request
+            audioManager.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        } else {
+            @Suppress("DEPRECATION")
+            audioManager.requestAudioFocus(
+                audioFocusChangeListener, 
+                AudioManager.STREAM_MUSIC, 
+                AudioManager.AUDIOFOCUS_GAIN
+            ) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        }
+    }
+
+    private fun abandonAudioFocus() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
+        } else {
+             @Suppress("DEPRECATION")
+            audioManager.abandonAudioFocus(audioFocusChangeListener)
+        }
+    }
+
     // Queue Management
     companion object {
         const val CHANNEL_ID = "MusicBoxChannel"
@@ -91,19 +161,19 @@ class MusicService : Service() {
         var currentTrackUri: String? = null
 
         fun initPrefs(context: Context) {
-            val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            val prefs = context.getSharedPreferences(PREF_NAME, MODE_PRIVATE)
             isShuffleEnabled = prefs.getBoolean(KEY_SHUFFLE, false)
             repeatMode = prefs.getInt(KEY_REPEAT, REPEAT_OFF)
         }
         
         private fun saveShuffle(context: Context, enabled: Boolean) {
-            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit {
+            context.getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit {
                 putBoolean(KEY_SHUFFLE, enabled)
             }
         }
         
         private fun saveRepeat(context: Context, mode: Int) {
-            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit {
+            context.getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit {
                 putInt(KEY_REPEAT, mode)
             }
         }
@@ -145,7 +215,9 @@ class MusicService : Service() {
     }
 
     private val standardPreparedListener = MediaPlayer.OnPreparedListener { mp ->
-        mp.start()
+        if (requestAudioFocus()) {
+            mp.start()
+        }
         updateNotification()
         updateMediaSessionMetadata()
         updateMediaSessionState()
@@ -217,6 +289,7 @@ class MusicService : Service() {
     override fun onCreate() {
         super.onCreate()
         initPrefs(this) // Load persistent settings
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         createNotificationChannel()
         mediaSession = MediaSessionCompat(this, "MusicBoxMediaSession")
         placeholderBitmap = BitmapFactory.decodeResource(resources, R.drawable.ic_album)
@@ -288,7 +361,9 @@ class MusicService : Service() {
         val action = intent?.action
         if (action != null) {
             if (action == Intent.ACTION_MEDIA_BUTTON) {
-                androidx.media.session.MediaButtonReceiver.handleIntent(mediaSession, intent)
+                if (::mediaSession.isInitialized) {
+                    androidx.media.session.MediaButtonReceiver.handleIntent(mediaSession, intent)
+                }
             }
             when (action) {
                 ACTION_PLAY -> play()
@@ -394,7 +469,10 @@ class MusicService : Service() {
         try {
             mediaPlayer?.let {
                 if (!it.isPlaying) {
+                    if (!requestAudioFocus()) return@let
+                    
                     it.start()
+                    setVolume(1.0f) // Ensure full volume on start
                     updateNotification()
                     updateMediaSessionState()
                     sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
@@ -405,7 +483,9 @@ class MusicService : Service() {
         }
     }
 
-    fun pause() {
+    fun pause(abandonFocus: Boolean = true) {
+        if (abandonFocus) abandonAudioFocus()
+        
         try {
             mediaPlayer?.let {
                 if (it.isPlaying) {
@@ -562,6 +642,8 @@ class MusicService : Service() {
     // Scope for UI/Notification updates
     private val uiScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main + kotlinx.coroutines.Job())
 
+    private var artworkJob: kotlinx.coroutines.Job? = null
+
     private fun updateNotification() {
         val track = getCurrentTrack() ?: return
         val isPlaying = isPlaying()
@@ -575,7 +657,8 @@ class MusicService : Service() {
         }
         
         // 2. Load High-Res Artwork in Background
-        uiScope.launch {
+        artworkJob?.cancel() // Cancel previous load to prevent race condition
+        artworkJob = uiScope.launch {
             val bitmap = withContext(kotlinx.coroutines.Dispatchers.IO) {
                 MusicUtils.getTrackArtworkBitmap(applicationContext, track.id, track.albumId, track.uri)
             }
@@ -640,6 +723,8 @@ class MusicService : Service() {
         }
     }
 
+
+
     override fun onBind(intent: Intent?): IBinder {
         return binder
     }
@@ -648,6 +733,8 @@ class MusicService : Service() {
         super.onDestroy()
         uiScope.cancel() // Cancel all pending UI updates
         cancelSleepTimer() // Clean up runnables
+        sleepTimerHandler.removeCallbacksAndMessages(null) // Detailed cleanup
+        abandonAudioFocus()
         
         saveState()
         saveStateExecutor.shutdown() // Prevent thread leaks
@@ -680,43 +767,58 @@ class MusicService : Service() {
         val currentUriCopy = currentTrackUri
 
         // Run Serialization in Background Thread Sequentially
-        saveStateExecutor.execute {
-            val jsonArray = org.json.JSONArray()
-            if (currentPlaylistCopy.isNotEmpty()) {
-                for (track in currentPlaylistCopy) {
-                    val jsonObj = org.json.JSONObject()
-                    jsonObj.put("id", track.id)
-                    jsonObj.put("title", track.title)
-                    jsonObj.put("artist", track.artist)
-                    jsonObj.put("uri", track.uri)
-                    jsonObj.put("album", track.album ?: "")
-                    jsonObj.put("albumId", track.albumId)
-                    jsonArray.put(jsonObj)
+        try {
+            saveStateExecutor.execute {
+                val jsonArray = org.json.JSONArray()
+                if (currentPlaylistCopy.isNotEmpty()) {
+                    for (track in currentPlaylistCopy) {
+                        val jsonObj = org.json.JSONObject()
+                        jsonObj.put("id", track.id)
+                        jsonObj.put("title", track.title)
+                        jsonObj.put("artist", track.artist)
+                        jsonObj.put("uri", track.uri)
+                        jsonObj.put("album", track.album ?: "")
+                        jsonObj.put("albumId", track.albumId)
+                        jsonArray.put(jsonObj)
+                    }
+                }
+                
+                val jsonArrayComp = org.json.JSONArray()
+                if (isShuffleEnabled && originalPlaylistCopy.isNotEmpty()) {
+                     for (track in originalPlaylistCopy) {
+                        val jsonObj = org.json.JSONObject()
+                        jsonObj.put("id", track.id)
+                        jsonObj.put("title", track.title)
+                        jsonObj.put("artist", track.artist)
+                        jsonObj.put("uri", track.uri)
+                        jsonObj.put("album", track.album ?: "")
+                        jsonObj.put("albumId", track.albumId)
+                        jsonArrayComp.put(jsonObj)
+                     }
+                }
+                
+                // Apply to Prefs (Index/Pos only)
+                editor.putInt("current_index", currentIndexCopy)
+                editor.putInt("current_position", currentPosCopy)
+                editor.putString("current_track_uri", currentUriCopy)
+                // Remove legacy keys to save space
+                editor.remove("saved_playlist")
+                editor.remove("saved_original_playlist")
+                editor.apply()
+                
+                // Save Queue to File (Avoids SharedPrefs size limit)
+                try {
+                    val file = java.io.File(filesDir, "queue_layout.json")
+                    val root = org.json.JSONObject()
+                    if (currentPlaylistCopy.isNotEmpty()) root.put("playlist", jsonArray)
+                    if (isShuffleEnabled && originalPlaylistCopy.isNotEmpty()) root.put("original", jsonArrayComp)
+                    file.writeText(root.toString())
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
-            
-            val jsonArrayComp = org.json.JSONArray()
-            if (isShuffleEnabled && originalPlaylistCopy.isNotEmpty()) {
-                 for (track in originalPlaylistCopy) {
-                    val jsonObj = org.json.JSONObject()
-                    jsonObj.put("id", track.id)
-                    jsonObj.put("title", track.title)
-                    jsonObj.put("artist", track.artist)
-                    jsonObj.put("uri", track.uri)
-                    jsonObj.put("album", track.album ?: "")
-                    jsonObj.put("albumId", track.albumId)
-                    jsonArrayComp.put(jsonObj)
-                 }
-            }
-            
-            // Apply to Prefs
-            editor.putInt("current_index", currentIndexCopy)
-            editor.putInt("current_position", currentPosCopy)
-            editor.putString("current_track_uri", currentUriCopy)
-            if (currentPlaylistCopy.isNotEmpty()) editor.putString("saved_playlist", jsonArray.toString())
-            if (isShuffleEnabled && originalPlaylistCopy.isNotEmpty()) editor.putString("saved_original_playlist", jsonArrayComp.toString())
-            
-            editor.apply()
+        } catch (e: java.util.concurrent.RejectedExecutionException) {
+            e.printStackTrace()
         }
     }
     
@@ -724,56 +826,108 @@ class MusicService : Service() {
         val prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
         val idx = prefs.getInt("current_index", -1)
         val pos = prefs.getInt("current_position", 0)
-        val savedPlaylist = prefs.getString("saved_playlist", null)
-        val savedOriginal = prefs.getString("saved_original_playlist", null)
+        val savedPlaylistLegacy = prefs.getString("saved_playlist", null)
+        val savedOriginalLegacy = prefs.getString("saved_original_playlist", null)
         
-        if (savedPlaylist != null) {
+        // 1. Try Loading from File
+        val file = java.io.File(filesDir, "queue_layout.json")
+        if (file.exists()) {
             try {
-                val list = mutableListOf<Track>()
-                val jsonArray = org.json.JSONArray(savedPlaylist)
-                for (i in 0 until jsonArray.length()) {
-                    val obj = jsonArray.getJSONObject(i)
-                    list.add(Track(
-                        obj.getLong("id"),
-                        obj.getString("title"),
-                        obj.getString("artist"),
-                        obj.getString("uri"),
-                        obj.optString("album").ifEmpty { null },
-                        obj.optLong("albumId", -1L)
-                    ))
+                val content = file.readText()
+                val root = org.json.JSONObject(content)
+                val playlistArray = root.optJSONArray("playlist")
+                val originalArray = root.optJSONArray("original")
+                
+                if (playlistArray != null) {
+                    val list = mutableListOf<Track>()
+                    for (i in 0 until playlistArray.length()) {
+                        val obj = playlistArray.getJSONObject(i)
+                        list.add(Track(
+                            obj.getLong("id"),
+                            obj.getString("title"),
+                            obj.getString("artist"),
+                            obj.getString("uri"),
+                            obj.optString("album").ifEmpty { null },
+                            obj.optLong("albumId", -1L)
+                        ))
+                    }
+                    synchronized(playlist) {
+                        playlist.clear()
+                        playlist.addAll(list)
+                    }
                 }
                 
-                synchronized(playlist) {
-                    playlist.clear()
-                    playlist.addAll(list)
+                if (originalArray != null) {
+                    val list = mutableListOf<Track>()
+                    for (i in 0 until originalArray.length()) {
+                        val obj = originalArray.getJSONObject(i)
+                        list.add(Track(
+                            obj.getLong("id"),
+                            obj.getString("title"),
+                            obj.getString("artist"),
+                            obj.getString("uri"),
+                            obj.optString("album").ifEmpty { null },
+                            obj.optLong("albumId", -1L)
+                        ))
+                    }
+                    synchronized(playlist) {
+                        originalPlaylist.clear()
+                        originalPlaylist.addAll(list)
+                    }
                 }
             } catch (e: Exception) { e.printStackTrace() }
+        } else {
+            // 2. Fallback to Legacy Prefs
+            if (savedPlaylistLegacy != null) {
+                try {
+                    val list = mutableListOf<Track>()
+                    val jsonArray = org.json.JSONArray(savedPlaylistLegacy)
+                    for (i in 0 until jsonArray.length()) {
+                        val obj = jsonArray.getJSONObject(i)
+                        list.add(Track(
+                            obj.getLong("id"),
+                            obj.getString("title"),
+                            obj.getString("artist"),
+                            obj.getString("uri"),
+                            obj.optString("album").ifEmpty { null },
+                            obj.optLong("albumId", -1L)
+                        ))
+                    }
+                    
+                    synchronized(playlist) {
+                        playlist.clear()
+                        playlist.addAll(list)
+                    }
+                } catch (e: Exception) { e.printStackTrace() }
+            }
+            
+            if (savedOriginalLegacy != null) {
+                 try {
+                    val list = mutableListOf<Track>()
+                    val jsonArray = org.json.JSONArray(savedOriginalLegacy)
+                    for (i in 0 until jsonArray.length()) {
+                        val obj = jsonArray.getJSONObject(i)
+                        list.add(Track(
+                            obj.getLong("id"),
+                            obj.getString("title"),
+                            obj.getString("artist"),
+                            obj.getString("uri"),
+                            obj.optString("album").ifEmpty { null },
+                            obj.optLong("albumId", -1L)
+                        ))
+                    }
+                    
+                    synchronized(playlist) {
+                        originalPlaylist.clear()
+                        originalPlaylist.addAll(list)
+                    }
+                 } catch (e: Exception) { e.printStackTrace() }
+            }
         }
-        
-        if (savedOriginal != null) {
-             try {
-                val list = mutableListOf<Track>()
-                val jsonArray = org.json.JSONArray(savedOriginal)
-                for (i in 0 until jsonArray.length()) {
-                    val obj = jsonArray.getJSONObject(i)
-                    list.add(Track(
-                        obj.getLong("id"),
-                        obj.getString("title"),
-                        obj.getString("artist"),
-                        obj.getString("uri"),
-                        obj.optString("album").ifEmpty { null },
-                        obj.optLong("albumId", -1L)
-                    ))
-                }
-                
-                synchronized(playlist) {
-                    originalPlaylist.clear()
-                    originalPlaylist.addAll(list)
-                }
-            } catch (e: Exception) { e.printStackTrace() }
-        }
+
         
         // Restore Index and Prepare Player
+        // Stability check: prevent Out of Bounds if playlist size changed
         if (idx != -1 && idx < playlist.size) {
             val track = playlist[idx]
             currentIndex = idx
@@ -825,9 +979,11 @@ class MusicService : Service() {
         
         sleepTimerRunnable = Runnable {
             if (isPlaying()) {
-                pause()
-                // Optional: Stop service or close app? Pause is safer.
+                pause(abandonFocus = true)
             }
+            // Stop service and remove notification
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
             sleepTimerEndTime = 0L
             sleepTimerRunnable = null
         }

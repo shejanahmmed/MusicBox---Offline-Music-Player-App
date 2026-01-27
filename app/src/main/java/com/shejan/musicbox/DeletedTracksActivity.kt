@@ -24,6 +24,8 @@ import android.provider.MediaStore
 import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -63,65 +65,74 @@ class DeletedTracksActivity : AppCompatActivity() {
     }
 
     private fun loadDeletedTracks() {
-        deletedTracks.clear()
-        
-        val hiddenUris = HiddenTracksManager.getHiddenTracks(this)
-        
-        if (hiddenUris.isEmpty()) {
-            showEmptyState()
-            return
-        }
-
-        // Query MediaStore for hidden tracks
-        try {
-            @Suppress("DEPRECATION")
-            contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                arrayOf(
-                    MediaStore.Audio.Media._ID,
-                    MediaStore.Audio.Media.TITLE,
-                    MediaStore.Audio.Media.ARTIST,
-                    MediaStore.Audio.Media.ALBUM,
-                    MediaStore.Audio.Media.DURATION,
-                    MediaStore.Audio.Media.DATA,
-                    MediaStore.Audio.Media.ALBUM_ID
-                ),
-                "${MediaStore.Audio.Media.IS_MUSIC} != 0",
-                null,
-                null
-            )?.use { cursor ->
-                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-                val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-                val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
-
-                while (cursor.moveToNext()) {
-                    val path = cursor.getString(dataColumn)
-                    
-                    // Only include if it's in the hidden list
-                    if (hiddenUris.contains(path)) {
-                        val track = Track(
-                            id = cursor.getLong(idColumn),
-                            title = cursor.getString(titleColumn) ?: "Unknown",
-                            artist = cursor.getString(artistColumn) ?: "Unknown Artist",
-                            album = cursor.getString(albumColumn) ?: "Unknown Album",
-                            uri = path,
-                            albumId = cursor.getLong(albumIdColumn)
-                        )
-                        deletedTracks.add(track)
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val list = mutableListOf<Track>()
+            val hiddenUris = HiddenTracksManager.getHiddenTracks(this@DeletedTracksActivity)
+            
+            if (hiddenUris.isEmpty()) {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                     showEmptyState()
+                }
+                return@launch
+            }
+    
+            // Query MediaStore for hidden tracks
+            try {
+                @Suppress("DEPRECATION")
+                contentResolver.query(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    arrayOf(
+                        MediaStore.Audio.Media._ID,
+                        MediaStore.Audio.Media.TITLE,
+                        MediaStore.Audio.Media.ARTIST,
+                        MediaStore.Audio.Media.ALBUM,
+                        MediaStore.Audio.Media.DURATION,
+                        MediaStore.Audio.Media.DATA,
+                        MediaStore.Audio.Media.ALBUM_ID
+                    ),
+                    "${MediaStore.Audio.Media.IS_MUSIC} != 0",
+                    null,
+                    null
+                )?.use { cursor ->
+                    val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+                    val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+                    val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+                    val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+                    val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                    val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+    
+                    while (cursor.moveToNext()) {
+                        val path = cursor.getString(dataColumn)
+                        
+                        // Only include if it's in the hidden list
+                        if (hiddenUris.contains(path)) {
+                            val track = Track(
+                                id = cursor.getLong(idColumn),
+                                title = cursor.getString(titleColumn) ?: "Unknown",
+                                artist = cursor.getString(artistColumn) ?: "Unknown Artist",
+                                album = cursor.getString(albumColumn) ?: "Unknown Album",
+                                uri = path,
+                                albumId = cursor.getLong(albumIdColumn)
+                            )
+                            list.add(track)
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+            
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                // Update class-level variable safely
+                deletedTracks.clear()
+                deletedTracks.addAll(list)
 
-        if (deletedTracks.isEmpty()) {
-            showEmptyState()
-        } else {
-            showTrackList()
+                if (deletedTracks.isEmpty()) {
+                    showEmptyState()
+                } else {
+                    showTrackList()
+                }
+            }
         }
     }
 

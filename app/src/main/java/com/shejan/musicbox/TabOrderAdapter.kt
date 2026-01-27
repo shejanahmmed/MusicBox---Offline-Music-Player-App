@@ -47,6 +47,7 @@ class TabOrderAdapter(
         return TabViewHolder(view)
     }
 
+    @android.annotation.SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: TabViewHolder, position: Int) {
         val tab = tabs[position]
         holder.tvName.text = tab.label
@@ -67,15 +68,24 @@ class TabOrderAdapter(
 
         holder.btnHome.setOnClickListener {
              if (currentHomeId != tab.id) {
+                 val oldHomeId = currentHomeId
                  currentHomeId = tab.id
-                 notifyDataSetChanged()
+                 
+                 // Update the old home item
+                 val oldIndex = tabs.indexOfFirst { it.id == oldHomeId }
+                 if (oldIndex != -1) notifyItemChanged(oldIndex)
+                 
+                 // Update the new home item
+                 notifyItemChanged(holder.adapterPosition)
+                 
                  onHomeSelected(currentHomeId)
              }
         }
 
-        holder.handle.setOnTouchListener { _, event ->
+        holder.handle.setOnTouchListener { view, event ->
             if (event.actionMasked == MotionEvent.ACTION_DOWN) {
                 onStartDrag(holder)
+                view.performClick()
             }
             false
         }
@@ -104,9 +114,7 @@ class TabOrderAdapter(
             }
         } else {
             for (i in fromPosition downTo toPosition + 1) {
-                if (i - 1 >= 0) {
-                    Collections.swap(tabs, i, i - 1)
-                }
+                Collections.swap(tabs, i, i - 1)
             }
         }
         notifyItemMoved(fromPosition, toPosition)
@@ -116,4 +124,3 @@ class TabOrderAdapter(
         return currentHomeId
     }
 }
-

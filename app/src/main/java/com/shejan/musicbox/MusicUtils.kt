@@ -21,9 +21,9 @@ package com.shejan.musicbox
 
 import android.content.ContentUris
 import android.content.Context
-import android.media.ExifInterface
 import android.widget.ImageView
 import androidx.core.net.toUri
+import androidx.exifinterface.media.ExifInterface
 
 object MusicUtils {
     @Volatile var contentVersion: Long = 0
@@ -132,7 +132,7 @@ object MusicUtils {
                      if (rotation != 0f) {
                          val matrix = android.graphics.Matrix()
                          matrix.postRotate(rotation)
-                         return android.graphics.Bitmap.createBitmap(bitmap!!, 0, 0, bitmap!!.width, bitmap!!.height, matrix, true)
+                         return android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
                      }
                      
                      return bitmap
@@ -189,20 +189,23 @@ object MusicUtils {
            if (trackUri.isNotEmpty() && !trackUri.startsWith("content://")) {
                try {
                    val mmr = android.media.MediaMetadataRetriever()
-                   // Use setDataSource(Context, Uri) for better compatibility
-                   // Note: We use Uri.fromFile as we are dealing with raw paths here
-                   mmr.setDataSource(context, android.net.Uri.fromFile(java.io.File(trackUri)))
-                   val rawArt = mmr.embeddedPicture
-                   mmr.release()
-
-                   if (rawArt != null) {
-                       val options = android.graphics.BitmapFactory.Options()
-                       options.inJustDecodeBounds = true
-                       android.graphics.BitmapFactory.decodeByteArray(rawArt, 0, rawArt.size, options)
-                       options.inSampleSize = calculateInSampleSize(options, 300, 300)
-                       options.inJustDecodeBounds = false
+                   try {
+                       // Use setDataSource(Context, Uri) for better compatibility
+                       // Note: We use Uri.fromFile as we are dealing with raw paths here
+                       mmr.setDataSource(context, android.net.Uri.fromFile(java.io.File(trackUri)))
+                       val rawArt = mmr.embeddedPicture
                        
-                       return android.graphics.BitmapFactory.decodeByteArray(rawArt, 0, rawArt.size, options)
+                       if (rawArt != null) {
+                           val options = android.graphics.BitmapFactory.Options()
+                           options.inJustDecodeBounds = true
+                           android.graphics.BitmapFactory.decodeByteArray(rawArt, 0, rawArt.size, options)
+                           options.inSampleSize = calculateInSampleSize(options, 300, 300)
+                           options.inJustDecodeBounds = false
+                           
+                           return android.graphics.BitmapFactory.decodeByteArray(rawArt, 0, rawArt.size, options)
+                       }
+                   } finally {
+                       mmr.release()
                    }
                } catch (e: Exception) {
                    e.printStackTrace()

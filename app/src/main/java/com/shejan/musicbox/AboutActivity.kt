@@ -45,6 +45,9 @@ class AboutActivity : AppCompatActivity() {
             finish()
         }
 
+        val tvVersion = findViewById<android.widget.TextView>(R.id.tv_app_version)
+        tvVersion.text = getString(R.string.version_full_fmt, BuildConfig.VERSION_NAME)
+
         findViewById<LinearLayout>(R.id.btn_github).setOnClickListener {
             try {
                 val intent = Intent(Intent.ACTION_VIEW, "https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App".toUri())

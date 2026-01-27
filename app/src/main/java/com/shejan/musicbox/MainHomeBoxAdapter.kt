@@ -19,7 +19,6 @@
 
 package com.shejan.musicbox
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -77,8 +76,7 @@ class MainHomeBoxAdapter(
         if (box.count == -1) {
             holder.count.text = box.countLabel
         } else {
-            @SuppressLint("SetTextI18n")
-            holder.count.text = "${box.count} ${box.countLabel}"
+            holder.count.text = holder.itemView.context.getString(R.string.count_with_label, box.count, box.countLabel)
         }
         
         holder.itemView.setOnClickListener {

@@ -63,7 +63,9 @@ object GitHubReleaseManager {
                             // Check version
                             if (isNewerVersion(tagName)) {
                                 (context as? Activity)?.runOnUiThread {
-                                    showUpdateDialog(context, tagName, body, htmlUrl)
+                                    if (!context.isFinishing && !context.isDestroyed) {
+                                        showUpdateDialog(context, tagName, body, htmlUrl)
+                                    }
                                 }
                                 return@Thread // Found the latest applicable update and returned
                             } else {

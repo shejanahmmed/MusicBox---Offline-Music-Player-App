@@ -267,7 +267,10 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // Version
-         findViewById<android.view.View>(R.id.card_version).setOnClickListener {
+        val tvVersionValue = findViewById<android.widget.TextView>(R.id.tv_version_value)
+        tvVersionValue.text = getString(R.string.version_fmt, BuildConfig.VERSION_NAME)
+        
+        findViewById<android.view.View>(R.id.card_version).setOnClickListener {
             GitHubReleaseManager.checkForUpdates(this, isManualCheck = true)
         }
     }
@@ -320,6 +323,10 @@ class SettingsActivity : AppCompatActivity() {
                     dialog.dismiss()
                     Toast.makeText(this, getString(R.string.scanning_finished, count), Toast.LENGTH_SHORT).show()
                 }
+                
+                // Trigger Refresh
+                MusicUtils.contentVersion++
+                sendBroadcast(Intent("com.shejan.musicbox.REFRESH_DATA").setPackage(packageName))
 
             } catch (e: Exception) {
                 runOnUiThread {

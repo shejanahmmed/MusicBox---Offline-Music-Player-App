@@ -88,7 +88,9 @@ class ArtistsActivity : AppCompatActivity() {
             unbindService(connection)
             isBound = false
         }
-        unregisterReceiver(receiver)
+        try {
+            unregisterReceiver(receiver)
+        } catch (_: Exception) {}
     }
 
     override fun onResume() {

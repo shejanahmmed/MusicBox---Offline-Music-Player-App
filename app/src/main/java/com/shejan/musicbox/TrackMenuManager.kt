@@ -19,6 +19,10 @@
 
 package com.shejan.musicbox
 
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import android.content.Context
 import android.content.Intent
 import android.view.View
@@ -32,7 +36,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.annotation.SuppressLint
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import java.util.Locale
-import android.provider.MediaStore
 
 object TrackMenuManager {
 
@@ -77,48 +80,70 @@ object TrackMenuManager {
         val ivArt = view.findViewById<ImageView>(R.id.iv_track_art)
         MusicUtils.loadTrackArt(activity, track.id, track.albumId, track.uri, ivArt)
         
-        // File Info
-        val file = java.io.File(track.uri)
-        val fileSize = if (file.exists()) String.format(Locale.getDefault(), activity.getString(R.string.file_size_mb), file.length() / (1024.0 * 1024.0)) else activity.getString(R.string.na_placeholder)
-        
-        var durationStr = "--:--"
-        var bitrate = activity.getString(R.string.na_placeholder)
-        var format = "AUDIO" // Default
-        
-        try {
-            val retriever = android.media.MediaMetadataRetriever()
-            retriever.setDataSource(track.uri)
-            val durMs = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0L
-            val minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(durMs)
-            val seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(durMs) - java.util.concurrent.TimeUnit.MINUTES.toSeconds(minutes)
-            durationStr = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
-            
-            bitrate = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_BITRATE)?.let {
-                 activity.getString(R.string.bitrate_kbits, (it.toLong() / 1000).toString())
-            } ?: activity.getString(R.string.na_placeholder)
-            
-            val mimetype = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
-            if (mimetype != null) {
-                // e.g. audio/mpeg -> MPEG or MP3
-                val subtype = mimetype.substringAfter("/")
-                format = when(subtype.lowercase()) {
-                    "mpeg" -> "MP3"
-                    "flac" -> "FLAC"
-                    "mp4" -> "M4A"
-                    "wav" -> "WAV"
-                    "ogg" -> "OGG"
-                    "x-matroska" -> "MKA"
-                    else -> subtype.uppercase()
-                }
-            }
-            
-            retriever.release()
-        } catch (_: Exception) { }
 
-        view.findViewById<TextView>(R.id.tv_file_size_badge).text = fileSize
-        view.findViewById<TextView>(R.id.tv_stat_format).text = format
-        view.findViewById<TextView>(R.id.tv_stat_bitrate).text = bitrate
-        view.findViewById<TextView>(R.id.tv_stat_duration).text = durationStr
+        
+        // File Info (Moved to Background)
+        // val file = java.io.File(track.uri)
+        // val fileSize = ...
+        
+        // Initial placeholders
+        
+        // Initial placeholders
+        view.findViewById<TextView>(R.id.tv_stat_format).text = "..."
+        view.findViewById<TextView>(R.id.tv_stat_bitrate).text = "..."
+        view.findViewById<TextView>(R.id.tv_stat_duration).text = "..."
+        
+        // Background Metadata Load
+        activity.lifecycleScope.launch(Dispatchers.IO) {
+            var durationStr = "--:--"
+            var bitrate = activity.getString(R.string.na_placeholder)
+            var format = "AUDIO" // Default
+            
+            try {
+                val retriever = android.media.MediaMetadataRetriever()
+                try {
+                    retriever.setDataSource(track.uri)
+                    val durMs = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0L
+                    val minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(durMs)
+                    val seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(durMs) - java.util.concurrent.TimeUnit.MINUTES.toSeconds(minutes)
+                    durationStr = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+                    
+                    bitrate = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_BITRATE)?.let {
+                         activity.getString(R.string.bitrate_kbits, (it.toLong() / 1000).toString())
+                    } ?: activity.getString(R.string.na_placeholder)
+                    
+                    val mimetype = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
+                    if (mimetype != null) {
+                        val subtype = mimetype.substringAfter("/")
+                        format = when(subtype.lowercase()) {
+                            "mpeg" -> "MP3"
+                            "flac" -> "FLAC"
+                            "mp4" -> "M4A"
+                            "wav" -> "WAV"
+                            "ogg" -> "OGG"
+                            "x-matroska" -> "MKA"
+                            else -> subtype.uppercase()
+                        }
+                    }
+                } finally {
+                    retriever.release()
+                }
+            } catch (_: Exception) { }
+            
+            // Move File Size Check here (Background I/O)
+            val file = java.io.File(track.uri)
+            val fileSize = if (file.exists()) String.format(Locale.getDefault(), activity.getString(R.string.file_size_mb), file.length() / (1024.0 * 1024.0)) else activity.getString(R.string.na_placeholder)
+            
+            withContext(Dispatchers.Main) {
+                view.findViewById<TextView>(R.id.tv_stat_format).text = format
+                view.findViewById<TextView>(R.id.tv_stat_bitrate).text = bitrate
+                view.findViewById<TextView>(R.id.tv_stat_duration).text = durationStr
+                view.findViewById<TextView>(R.id.tv_file_size_badge).text = fileSize
+            }
+        }
+
+        // view.findViewById<TextView>(R.id.tv_file_size_badge).text = fileSize // Moved to Background block
+
         view.findViewById<TextView>(R.id.tv_track_path).text = track.uri
         
         // Favorite
@@ -169,23 +194,29 @@ object TrackMenuManager {
                 FavoritesManager.removeFavorite(activity, track.uri)
             }
             
-            // Hide Track (Remove from app only)
-            // Hide Track (Remove from app only)
-            HiddenTracksManager.hideTrack(activity, track.uri)
-            
-            // Sync: Remove from all playlists
-            AppPlaylistManager.removeTrackFromAllPlaylists(activity, track.uri)
-            
-            MusicUtils.contentVersion++
-            Toast.makeText(activity, activity.getString(R.string.removed_from_library), Toast.LENGTH_SHORT).show()
-            
-            // Broadcast deletion to update other lists
-            val intent = Intent("com.shejan.musicbox.TRACK_DELETED")
-            intent.putExtra("DELETED_TRACK_URI", track.uri)
-            activity.sendBroadcast(intent)
-            
-            callback?.onTrackDeleted()
             dialog.dismiss()
+            Toast.makeText(activity, "Removing...", Toast.LENGTH_SHORT).show()
+            
+            activity.lifecycleScope.launch(Dispatchers.IO) {
+                // Hide Track (Remove from app only)
+                HiddenTracksManager.hideTrack(activity, track.uri)
+                
+                // Sync: Remove from all playlists
+                AppPlaylistManager.removeTrackFromAllPlaylists(activity, track.uri)
+                
+                MusicUtils.contentVersion++
+                
+                withContext(Dispatchers.Main) {
+                     Toast.makeText(activity, activity.getString(R.string.removed_from_library), Toast.LENGTH_SHORT).show()
+                     
+                     // Broadcast deletion to update other lists
+                     val intent = Intent("com.shejan.musicbox.TRACK_DELETED")
+                     intent.putExtra("DELETED_TRACK_URI", track.uri)
+                     activity.sendBroadcast(intent)
+                     
+                     callback?.onTrackDeleted()
+                }
+            }
         }
         
         dialog.show()
@@ -251,21 +282,27 @@ object TrackMenuManager {
     }
 
     private fun showAddToPlaylistDialog(context: Context, track: Track) {
-
-        val playlists = AppPlaylistManager.getAllPlaylists(context).map { Pair(it.id, it.name) }.toMutableList()
-        
-        val options = mutableListOf<String>()
-        options.add(context.getString(R.string.create_new_playlist_option))
-        options.addAll(playlists.map { it.second })
-        
-        AlertDialog.Builder(context, R.style.CustomAlertDialog)
-            .setTitle(context.getString(R.string.add_to_playlist_title))
-            .setAdapter(android.widget.ArrayAdapter(context, R.layout.item_playlist_dialog_option, android.R.id.text1, options)) { _, which ->
-                if (which == 0) showCreatePlaylistDialog(context, track)
-                else addTrackToPlaylist(context, track, playlists[which - 1].first, playlists[which - 1].second)
+        if (context is AppCompatActivity) {
+            context.lifecycleScope.launch(Dispatchers.IO) {
+                // Fetch playlists in background to prevent UI stutter
+                val playlists = AppPlaylistManager.getAllPlaylists(context).map { Pair(it.id, it.name) }.toMutableList()
+                
+                withContext(Dispatchers.Main) {
+                    val options = mutableListOf<String>()
+                    options.add(context.getString(R.string.create_new_playlist_option))
+                    options.addAll(playlists.map { it.second })
+                    
+                    AlertDialog.Builder(context, R.style.CustomAlertDialog)
+                        .setTitle(context.getString(R.string.add_to_playlist_title))
+                        .setAdapter(android.widget.ArrayAdapter(context, R.layout.item_playlist_dialog_option, android.R.id.text1, options)) { _, which ->
+                            if (which == 0) showCreatePlaylistDialog(context, track)
+                            else addTrackToPlaylist(context, track, playlists[which - 1].first, playlists[which - 1].second)
+                        }
+                        .setNegativeButton(context.getString(R.string.cancel), null)
+                        .show()
+                }
             }
-            .setNegativeButton(context.getString(R.string.cancel), null)
-            .show()
+        }
     }
     
     private fun showCreatePlaylistDialog(context: Context, track: Track) {
@@ -293,18 +330,32 @@ object TrackMenuManager {
     }
     
     private fun createPlaylistAndAddTrack(context: Context, name: String, track: Track) {
-        try {
-            AppPlaylistManager.createPlaylist(context, name, listOf(track.uri))
-            Toast.makeText(context, context.getString(R.string.playlist_created), Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) { e.printStackTrace() }
+        if (context is AppCompatActivity) {
+            context.lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    AppPlaylistManager.createPlaylist(context, name, listOf(track.uri))
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, context.getString(R.string.playlist_created), Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) { e.printStackTrace() }
+            }
+        }
     }
     
     private fun addTrackToPlaylist(context: Context, track: Track, playlistId: Long, playlistName: String) {
-        try {
-            AppPlaylistManager.addTrackToPlaylist(context, playlistId, track.uri)
-            Toast.makeText(context, context.getString(R.string.added_to_playlist, playlistName), Toast.LENGTH_SHORT).show()
-        } catch (_: Exception) {
-            Toast.makeText(context, context.getString(R.string.failed_add_playlist), Toast.LENGTH_SHORT).show() 
+        if (context is AppCompatActivity) {
+            context.lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    AppPlaylistManager.addTrackToPlaylist(context, playlistId, track.uri)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, context.getString(R.string.added_to_playlist, playlistName), Toast.LENGTH_SHORT).show()
+                    }
+                } catch (_: Exception) {
+                    withContext(Dispatchers.Main) {
+                       Toast.makeText(context, context.getString(R.string.failed_add_playlist), Toast.LENGTH_SHORT).show() 
+                    }
+                }
+            }
         }
     }
 

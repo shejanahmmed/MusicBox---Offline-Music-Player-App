@@ -110,7 +110,8 @@ class AlbumsActivity : AppCompatActivity() {
     private fun loadAlbums() {
         localContentVersion = MusicUtils.contentVersion
         
-        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val appContext = applicationContext
             val albumMap = mutableMapOf<Long, Album>()
             try {
                 val projection = arrayOf(
@@ -121,7 +122,7 @@ class AlbumsActivity : AppCompatActivity() {
                 )
                 
                 // Querying Media to get individual tracks so we can filter hidden ones
-                val cursor = contentResolver.query(
+                val cursor = appContext.contentResolver.query(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     projection,
                     "${MediaStore.Audio.Media.IS_MUSIC} != 0",
@@ -138,7 +139,7 @@ class AlbumsActivity : AppCompatActivity() {
                     while (it.moveToNext()) {
                         val path = it.getString(pathCol)
                         // Check if this specific track is hidden
-                        if (HiddenTracksManager.isHidden(this@AlbumsActivity, path)) continue
+                        if (HiddenTracksManager.isHidden(appContext, path)) continue
                         
                         val albumId = it.getLong(idCol)
                         
@@ -153,14 +154,14 @@ class AlbumsActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                withContext(Dispatchers.Main) {
                     Toast.makeText(this@AlbumsActivity, "Error loading albums", Toast.LENGTH_SHORT).show()
                 }
             }
             
             val list = albumMap.values.toList().sortedBy { it.title }
             
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
                 // Update Count
                 val countView = findViewById<android.widget.TextView>(R.id.tv_albums_count)
                 val countText = if (list.size == 1) "1 Album" else "${list.size} Albums"

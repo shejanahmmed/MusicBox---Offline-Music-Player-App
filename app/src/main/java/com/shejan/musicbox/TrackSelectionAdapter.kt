@@ -75,9 +75,19 @@ class TrackSelectionAdapter(
     }
 
     fun setSelectedTrackIds(ids: List<Long>) {
+        val newSelection = ids.toSet()
+        
+        // Find changed items and notify only them
+        tracks.forEachIndexed { index, track ->
+            val wasSelected = selectedTracks.contains(track.id)
+            val isSelected = newSelection.contains(track.id)
+            
+            if (wasSelected != isSelected) {
+                notifyItemChanged(index)
+            }
+        }
+        
         selectedTracks.clear()
-        selectedTracks.addAll(ids)
-        notifyDataSetChanged()
+        selectedTracks.addAll(newSelection)
     }
 }
-

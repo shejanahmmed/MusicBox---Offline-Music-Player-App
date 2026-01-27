@@ -32,6 +32,10 @@ object TrackMetadataManager {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
     
+
+    // Memory Cache
+    private var cachedMetadata: Map<String, String>? = null
+    
     fun saveMetadata(context: Context, uri: String, title: String?, artist: String?, album: String?, year: String?) {
         val prefs = getPrefs(context)
         val allMetadata = getAllMetadata(context).toMutableMap()
@@ -45,11 +49,14 @@ object TrackMetadataManager {
         
         allMetadata[uri] = metadata.toString()
         
+        // Update Cache
+        cachedMetadata = allMetadata
+        
         prefs.edit { putString(KEY_METADATA, JSONObject(allMetadata as Map<*, *>).toString()) }
     }
     
     fun getMetadata(context: Context, uri: String): CustomTrackMetadata? {
-        val allMetadata = getAllMetadata(context)
+        val allMetadata = getAllMetadata(context) // Uses cache now
         val metadataStr = allMetadata[uri] ?: return null
         
         return try {
@@ -71,11 +78,16 @@ object TrackMetadataManager {
         val allMetadata = getAllMetadata(context).toMutableMap()
         if (allMetadata.containsKey(uri)) {
             allMetadata.remove(uri)
+            // Update Cache
+            cachedMetadata = allMetadata
             prefs.edit { putString(KEY_METADATA, JSONObject(allMetadata as Map<*, *>).toString()) }
         }
     }
     
     private fun getAllMetadata(context: Context): Map<String, String> {
+        // Return Cache if available
+        cachedMetadata?.let { return it }
+        
         val prefs = getPrefs(context)
         val jsonStr = prefs.getString(KEY_METADATA, "{}") ?: "{}"
         
@@ -85,8 +97,10 @@ object TrackMetadataManager {
             json.keys().forEach { key ->
                 map[key] = json.getString(key)
             }
+            cachedMetadata = map // Set Cache
             map
         } catch (_: Exception) {
+            cachedMetadata = emptyMap()
             emptyMap()
         }
     }

@@ -21,6 +21,7 @@ package com.shejan.musicbox
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 object TrackArtworkManager {
     private const val PREFS_NAME = "track_artwork"
@@ -35,7 +36,7 @@ object TrackArtworkManager {
     }
     
     fun saveArtwork(context: Context, uri: String, artworkUri: String) {
-        getPrefs(context).edit().putString(uri, artworkUri).apply()
+        getPrefs(context).edit { putString(uri, artworkUri) }
     }
     
     fun removeArtwork(context: Context, uri: String) {
@@ -43,7 +44,7 @@ object TrackArtworkManager {
     }
     
     fun resetArtwork(context: Context, uri: String) {
-        getPrefs(context).edit().remove(uri).apply()
+        getPrefs(context).edit { remove(uri) }
     }
     
     fun getArtworkUri(context: Context, uri: String): String? {

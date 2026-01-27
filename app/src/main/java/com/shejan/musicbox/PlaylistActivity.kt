@@ -26,6 +26,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.graphics.Color
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 
 import android.os.Bundle
 import android.os.IBinder
@@ -63,7 +67,6 @@ class PlaylistActivity : AppCompatActivity() {
 
         // Initial Load
         loadPlaylists()
-        updateTopCards()
         
     }
 
@@ -117,50 +120,62 @@ class PlaylistActivity : AppCompatActivity() {
             loadPlaylists()
         }
 
-        updateTopCards()
         MiniPlayerManager.update(this, musicService)
         MiniPlayerManager.setup(this) { musicService }
         // Refresh Navigation in case Settings changed
         NavUtils.setupNavigation(this, R.id.nav_playlist)
     }
 
-    private fun updateTopCards() {
-         val playlists = AppPlaylistManager.getAllPlaylists(this)
-         findViewById<TextView>(R.id.tv_playlists_count).text = getString(R.string.lists_count, playlists.size)
+    private fun updateTopCards(count: Int = -1) {
+        if (count != -1) {
+             findViewById<TextView>(R.id.tv_playlists_count).text = getString(R.string.lists_count, count)
+        } else {
+             // Fallback for immediate UI updates if needed (though usually we wait for load)
+             findViewById<TextView>(R.id.tv_playlists_count).text = getString(R.string.lists_count, 0)
+        }
     }
 
     // setupTopCards removed as it only set listener on removed view
 
     private fun loadPlaylists() {
         localContentVersion = MusicUtils.contentVersion
-        val list = mutableListOf<PlaylistItem>()
-
-        // 2. User Playlists from App Storage
-        val appPlaylists = AppPlaylistManager.getAllPlaylists(this)
         
-        // Map to PlaylistItem
-        list.addAll(appPlaylists.map { PlaylistItem(it.id, it.name, it.trackPaths.size) })
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val list = mutableListOf<PlaylistItem>()
 
-        val rv = findViewById<RecyclerView>(R.id.rv_playlists)
-        val emptyView = findViewById<TextView>(R.id.tv_empty_state)
-        
-        if (list.isEmpty()) {
-            rv.visibility = View.GONE
-            emptyView.visibility = View.VISIBLE
-        } else {
-            rv.visibility = View.VISIBLE
-            emptyView.visibility = View.GONE
+            // 2. User Playlists from App Storage
+            val appPlaylists = AppPlaylistManager.getAllPlaylists(this@PlaylistActivity)
+            
+            // Map to PlaylistItem
+            list.addAll(appPlaylists.map { PlaylistItem(it.id, it.name, it.trackPaths.size) })
+
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                if (isFinishing || isDestroyed) return@withContext
+
+                val rv = findViewById<RecyclerView>(R.id.rv_playlists)
+                val emptyView = findViewById<TextView>(R.id.tv_empty_state)
+                
+                if (list.isEmpty()) {
+                    rv.visibility = View.GONE
+                    emptyView.visibility = View.VISIBLE
+                } else {
+                    rv.visibility = View.VISIBLE
+                    emptyView.visibility = View.GONE
+                }
+
+                rv.layoutManager = LinearLayoutManager(this@PlaylistActivity)
+                rv.adapter = PlaylistAdapter(list, onClick = { item ->
+                     val intent = Intent(this@PlaylistActivity, TracksActivity::class.java)
+                     intent.putExtra("PLAYLIST_ID", item.id)
+                     intent.putExtra("PLAYLIST_NAME", item.name)
+                     startActivity(intent)
+                }, onLongClick = { item ->
+                    showDeleteDialog(item)
+                })
+                
+                updateTopCards(list.size)
+            }
         }
-
-        rv.layoutManager = LinearLayoutManager(this)
-        rv.adapter = PlaylistAdapter(list, onClick = { item ->
-             val intent = Intent(this, TracksActivity::class.java)
-             intent.putExtra("PLAYLIST_ID", item.id)
-             intent.putExtra("PLAYLIST_NAME", item.name)
-             startActivity(intent)
-        }, onLongClick = { item ->
-            showDeleteDialog(item)
-        })
     }
 
 
@@ -204,12 +219,15 @@ class PlaylistActivity : AppCompatActivity() {
     }
     
     private fun deletePlaylist(playlist: PlaylistItem) {
-        AppPlaylistManager.deletePlaylist(this, playlist.id)
-        Toast.makeText(this, "Playlist deleted", Toast.LENGTH_SHORT).show()
-        
-        // Reload
-        loadPlaylists()
-        updateTopCards()
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            AppPlaylistManager.deletePlaylist(this@PlaylistActivity, playlist.id)
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                if (isFinishing || isDestroyed) return@withContext
+                Toast.makeText(this@PlaylistActivity, "Playlist deleted", Toast.LENGTH_SHORT).show()
+                // Reload
+                loadPlaylists()
+            }
+        }
     }
     
     // onActivityResult removed as it is no longer needed/reachable for delete
