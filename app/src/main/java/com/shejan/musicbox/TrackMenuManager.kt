@@ -172,6 +172,10 @@ object TrackMenuManager {
             // Hide Track (Remove from app only)
             // Hide Track (Remove from app only)
             HiddenTracksManager.hideTrack(activity, track.uri)
+            
+            // Sync: Remove from all playlists
+            AppPlaylistManager.removeTrackFromAllPlaylists(activity, track.uri)
+            
             MusicUtils.contentVersion++
             Toast.makeText(activity, activity.getString(R.string.removed_from_library), Toast.LENGTH_SHORT).show()
             
@@ -333,11 +337,10 @@ object TrackMenuManager {
 
         // Reset
         view.findViewById<ImageButton>(R.id.btn_reset).setOnClickListener {
-            etTrackName.setText(track.title)
-            etArtistName.setText(track.artist)
-            etAlbumName.setText(track.album ?: "")
-            etYear.setText("")
-            Toast.makeText(activity, activity.getString(R.string.reset_original_values), Toast.LENGTH_SHORT).show()
+             TrackMetadataManager.removeMetadata(activity, track.uri)
+             Toast.makeText(activity, activity.getString(R.string.reset_original_values), Toast.LENGTH_SHORT).show()
+             callback?.onTrackUpdated()
+             dialog.dismiss()
         }
 
         // Cancel

@@ -126,4 +126,20 @@ object AppPlaylistManager {
             }
         }
     }
+
+    fun removeTrackFromAllPlaylists(context: Context, trackUri: String) {
+        val playlists = getAllPlaylists(context).toMutableList()
+        var changed = false
+        
+        for (playlist in playlists) {
+            if (playlist.trackPaths.contains(trackUri)) {
+                playlist.trackPaths.remove(trackUri)
+                changed = true
+            }
+        }
+        
+        if (changed) {
+            savePlaylists(context, playlists)
+        }
+    }
 }

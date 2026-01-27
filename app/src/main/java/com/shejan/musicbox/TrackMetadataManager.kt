@@ -66,18 +66,14 @@ object TrackMetadataManager {
         }
     }
     
-    /*
-    fun resetMetadata(context: Context, trackId: Long) {
+    fun removeMetadata(context: Context, uri: String) {
         val prefs = getPrefs(context)
         val allMetadata = getAllMetadata(context).toMutableMap()
-        allMetadata.remove(trackId.toString())
-        prefs.edit { putString(KEY_METADATA, JSONObject(allMetadata as Map<*, *>).toString()) }
+        if (allMetadata.containsKey(uri)) {
+            allMetadata.remove(uri)
+            prefs.edit { putString(KEY_METADATA, JSONObject(allMetadata as Map<*, *>).toString()) }
+        }
     }
-    
-    fun hasCustomMetadata(context: Context, trackId: Long): Boolean {
-        return getAllMetadata(context).containsKey(trackId.toString())
-    }
-    */
     
     private fun getAllMetadata(context: Context): Map<String, String> {
         val prefs = getPrefs(context)
