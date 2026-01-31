@@ -43,4 +43,7 @@
     <color name="colorVinylLabel">#FFC62828</color> <!-- Red Label -->
     <color name="colorVinylCenter">#181818</color> <!-- Matches Base for seamless look -->
     <color name="colorVinylRing">#1A000000</color> <!-- 10% Black Ring (Shadow) -->
+    
+    <!-- SeekBar Border -->
+    <color name="colorSeekBarBorder">#454545</color> <!-- Light Black -->
 </resources>
