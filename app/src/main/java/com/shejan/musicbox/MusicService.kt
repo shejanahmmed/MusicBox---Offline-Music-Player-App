@@ -338,6 +338,7 @@ class MusicService : Service() {
     private fun initMediaPlayer() {
         mediaPlayer?.release()
         mediaPlayer = MediaPlayer().apply {
+            setWakeMode(applicationContext, android.os.PowerManager.PARTIAL_WAKE_LOCK)
             setOnCompletionListener {
                 saveState() // Save state on completion (track change)
                 if (repeatMode == REPEAT_ONE) {
