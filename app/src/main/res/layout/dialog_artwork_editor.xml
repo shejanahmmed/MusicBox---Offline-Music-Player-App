@@ -15,6 +15,7 @@
         android:layout_width="40dp"
         android:layout_height="4dp"
         android:background="@drawable/shape_drag_handle"
+        app:tint="@color/colorIcon"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="16dp"
         android:alpha="0.5" />
@@ -23,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ARTWORK EDITOR"
-        android:textColor="@color/white"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_gravity="center_horizontal"
@@ -68,14 +69,14 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_refresh"
-                app:tint="@color/white"
+                app:tint="@color/colorIcon"
                 android:layout_marginEnd="16dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Default Artwork"
-                android:textColor="@color/white"
+                android:textColor="@color/colorTextPrimary"
                 android:textSize="16sp" />
         </LinearLayout>
 
@@ -94,14 +95,14 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_delete"
-                app:tint="@color/white"
+                app:tint="@color/colorIcon"
                 android:layout_marginEnd="16dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Remove Artwork"
-                android:textColor="@color/white"
+                android:textColor="@color/colorTextPrimary"
                 android:textSize="16sp" />
         </LinearLayout>
         
@@ -119,14 +120,14 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_image"
-                app:tint="@color/white"
+                app:tint="@color/colorIcon"
                 android:layout_marginEnd="16dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Change Artwork"
-                android:textColor="@color/white"
+                android:textColor="@color/colorTextPrimary"
                 android:textSize="16sp" />
         </LinearLayout>
 

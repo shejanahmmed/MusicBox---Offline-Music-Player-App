@@ -65,7 +65,7 @@ class PlaylistAdapter(
         } else {
             holder.icon.visibility = View.GONE
             // Random or specific thumb
-             holder.thumb.setBackgroundColor(holder.root.context.getColor(R.color.background_dark)) // Placeholder
+             holder.thumb.setBackgroundColor(holder.root.context.getColor(R.color.colorBackground)) // Semantic Placeholder
         }
 
         holder.root.setOnClickListener { onClick(item) }

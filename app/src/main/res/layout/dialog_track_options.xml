@@ -14,7 +14,8 @@
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="24dp"
-        android:background="#33FFFFFF"
+        android:background="@drawable/shape_drag_handle"
+        app:tint="@color/colorIcon"
         android:src="@drawable/thumb_null" />
 
     <!-- "METADATA" Title -->
@@ -22,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="METADATA"
-        android:textColor="#88FFFFFF"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="12sp"
         android:letterSpacing="0.15"
         android:textStyle="bold"
@@ -60,7 +61,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="8dp"
             tools:text="XTAL"
-            android:textColor="@color/white"
+            android:textColor="@color/colorTextPrimary"
             android:textSize="20sp"
             android:textStyle="bold"
             android:singleLine="true"
@@ -81,7 +82,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             tools:text="APHEX TWIN"
-            android:textColor="#88FFFFFF"
+            android:textColor="@color/colorTextSecondary"
             android:textSize="12sp"
             android:letterSpacing="0.1"
             android:textAllCaps="true"
@@ -100,10 +101,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="12.4 MB"
-            android:textColor="#000000"
+            android:textColor="@color/colorTextPrimary"
             android:textSize="10sp"
             android:textStyle="bold"
-            android:background="#CCCCCC"
+            android:background="@drawable/bg_track_card_outlined"
+            android:backgroundTint="@color/colorStroke"
             android:paddingHorizontal="6dp"
             android:paddingVertical="2dp"
             app:layout_constraintTop_toTopOf="parent"
@@ -134,7 +136,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_music_note"
-                app:tint="#88FFFFFF"
+                app:tint="@color/colorIconSecondary"
                 android:layout_marginBottom="8dp"/>
 
             <TextView
@@ -142,7 +144,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="FLAC"
-                android:textColor="@color/white"
+                android:textColor="@color/colorTextPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -150,7 +152,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="FORMAT"
-                android:textColor="#66FFFFFF"
+                android:textColor="@color/colorTextSecondary"
                 android:textSize="8sp"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
@@ -170,7 +172,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_equalizer"
-                app:tint="#88FFFFFF"
+                app:tint="@color/colorIconSecondary"
                 android:layout_marginBottom="8dp"/>
 
             <TextView
@@ -178,7 +180,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="942 KBPS"
-                android:textColor="@color/white"
+                android:textColor="@color/colorTextPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -186,7 +188,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="BITRATE"
-                android:textColor="#66FFFFFF"
+                android:textColor="@color/colorTextSecondary"
                 android:textSize="8sp"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
@@ -205,7 +207,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_timer"
-                app:tint="#88FFFFFF"
+                app:tint="@color/colorIconSecondary"
                 android:layout_marginBottom="8dp"/>
 
             <TextView
@@ -213,7 +215,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="03:45"
-                android:textColor="@color/white"
+                android:textColor="@color/colorTextPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -221,7 +223,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="DURATION"
-                android:textColor="#66FFFFFF"
+                android:textColor="@color/colorTextSecondary"
                 android:textSize="8sp"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
@@ -244,7 +246,7 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_favorite_border"
-            app:tint="@color/white" />
+            app:tint="@color/colorIcon" />
 
         <ImageButton
             android:id="@+id/btn_add_to_playlist"
@@ -253,7 +255,7 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_playlist_add"
-            app:tint="@color/white" />
+            app:tint="@color/colorIcon" />
 
         <ImageButton
             android:id="@+id/btn_edit"
@@ -262,7 +264,7 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_edit"
-            app:tint="@color/white" />
+            app:tint="@color/colorIcon" />
 
         <ImageButton
             android:id="@+id/btn_set_as"
@@ -271,7 +273,7 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_image"
-            app:tint="@color/white" />
+            app:tint="@color/colorIcon" />
 
         <ImageButton
             android:id="@+id/btn_share"
@@ -280,7 +282,7 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_share"
-            app:tint="@color/white" />
+            app:tint="@color/colorIcon" />
 
         <ImageButton
             android:id="@+id/btn_delete"
@@ -289,7 +291,7 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_delete"
-            app:tint="@color/white" />
+            app:tint="@color/colorIcon" />
     </LinearLayout>
 
     <!-- File Path Card -->
@@ -306,7 +308,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/ic_folder"
-            app:tint="#66FFFFFF" />
+            app:tint="@color/colorIconSecondary" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -322,7 +324,7 @@
                 tools:text="/storage/MusicBox/Albums/Aphex_Twin/SAW/..."
                 android:textSize="12sp"
                 android:fontFamily="monospace"
-                android:textColor="#CCFFFFFF"
+                android:textColor="@color/colorTextSecondary"
                 android:maxLines="2"
                 android:ellipsize="middle" />
 
@@ -330,7 +332,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="FILE PATH"
-                android:textColor="#66FFFFFF"
+                android:textColor="@color/colorTextSecondary"
                 android:textSize="10sp"
                 android:textStyle="bold"
                 android:layout_marginTop="4dp" />

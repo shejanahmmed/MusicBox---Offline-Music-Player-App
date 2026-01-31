@@ -53,6 +53,19 @@ class SettingsActivity : AppCompatActivity() {
         setupClickListeners()
 
         // Navigation
+    setupNav()
+    }
+
+    private fun setupNav() {
+        NavUtils.setupNavigation(this, R.id.nav_settings)
+        
+        val nav = findViewById<android.widget.LinearLayout>(R.id.nav_settings)
+        if (nav != null) {
+            val icon = nav.getChildAt(0) as android.widget.ImageView
+            val text = nav.getChildAt(1) as android.widget.TextView
+            icon.setColorFilter(getColor(R.color.colorNavSelected))
+            text.setTextColor(getColor(R.color.colorNavSelected))
+        }
     }
 
     private fun setupClickListeners() {
@@ -89,6 +102,11 @@ class SettingsActivity : AppCompatActivity() {
              }
              
              dialog.show()
+        }
+
+        // Theme Selection
+        findViewById<android.view.View>(R.id.card_theme).setOnClickListener {
+            showThemeSelectionDialog()
         }
 
         // Tab Order
@@ -335,5 +353,45 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }
         }.start()
+    }
+
+    private fun showThemeSelectionDialog() {
+        val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        @SuppressLint("InflateParams")
+        val view = layoutInflater.inflate(R.layout.dialog_theme, null)
+        dialog.setContentView(view)
+
+        // Fix corners
+        view.post {
+            (view.parent as? android.view.View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        }
+
+        val rgTheme = view.findViewById<android.widget.RadioGroup>(R.id.rg_theme)
+        val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
+        
+        // Load current
+        val currentMode = prefs.getInt("theme_mode", androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES)
+        
+        when (currentMode) {
+            androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO -> rgTheme.check(R.id.rb_light)
+            androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES -> rgTheme.check(R.id.rb_dark)
+            else -> rgTheme.check(R.id.rb_system)
+        }
+
+        rgTheme.setOnCheckedChangeListener { _, checkedId ->
+            val mode = when (checkedId) {
+                R.id.rb_light -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+                R.id.rb_dark -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+                else -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            }
+
+            prefs.edit { putInt("theme_mode", mode) }
+            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(mode)
+            
+            dialog.dismiss()
+            Toast.makeText(this, R.string.theme_updated, Toast.LENGTH_SHORT).show()
+        }
+
+        dialog.show()
     }
 }

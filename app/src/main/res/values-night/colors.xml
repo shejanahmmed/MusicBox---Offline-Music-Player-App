@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark Mode Semantic Colors -->
+    <color name="colorBackground">#000000</color>
+    <color name="colorSurface">#0D0D0D</color> <!-- bg_card_section -->
+    <color name="colorStroke">#26FFFFFF</color> <!-- wireframe_border -->
+    <color name="colorWireframeCorner">#66FFFFFF</color> <!-- 40% White (Restored) -->
+    <color name="colorTextPrimary">#FFFFFF</color>
+    <color name="colorTextSecondary">#99FFFFFF</color> <!-- text_white_opacity_60 -->
+    <color name="colorIcon">#FFFFFF</color>
+    <color name="colorIconSecondary">#71717a</color> <!-- nav_text_unselected -->
+    
+    <!-- Nav Semantic Colors -->
+    <color name="colorBottomNavBackground">#FF181818</color>
+    <color name="colorNavSelected">#FFFFFF</color>
+    <color name="colorNavUnselected">#71717a</color>
+    
+    <!-- Base Colors (Inherited/Override if needed) -->
+    <color name="bg_card_section">#0D0D0D</color>
+    <color name="nav_text_unselected">#71717a</color>
+    <color name="background_dark">#000000</color>
+    <color name="primary_red_opacity_50">#80f20d0d</color>
+    <color name="switch_thumb_off">#B3FFFFFF</color>
+    <color name="switch_track_off">#4DFFFFFF</color>
+
+    <!-- Vinyl/CD Artwork Semantic Colors -->
+    <color name="colorVinylBase">#181818</color> <!-- Original Dark Grey -->
+    <color name="colorVinylStroke">#282828</color> <!-- Original Stroke -->
+    <color name="colorVinylLabel">#FFC62828</color> <!-- Original Red -->
+    <color name="colorVinylCenter">#262521</color> <!-- Original Ash -->
+    <color name="colorVinylRing">#0DFFFFFF</color> <!-- 5% White Ring -->
+</resources>

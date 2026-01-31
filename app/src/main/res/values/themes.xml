@@ -10,8 +10,9 @@
         <item name="colorSecondaryVariant">@color/primary_red</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">@color/background_dark</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/colorBackground</item>
+        <item name="android:navigationBarColor">@color/colorBackground</item>
+        <item name="android:windowLightStatusBar">@bool/isLightStatusBar</item>
         <!-- Customize your theme here. -->
         <item name="android:fontFamily">@font/arimo</item>
         <item name="fontFamily">@font/arimo</item>
@@ -20,15 +21,15 @@
     <!-- Custom AlertDialog Theme -->
     <style name="CustomAlertDialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="android:windowBackground">@drawable/bg_dialog_border</item>
-        <item name="android:textColorPrimary">@color/white</item>
-        <item name="android:textColorSecondary">#CCCCCC</item>
+        <item name="android:textColorPrimary">@color/colorTextPrimary</item>
+        <item name="android:textColorSecondary">@color/colorTextSecondary</item>
         <item name="colorAccent">@color/primary_red</item>
         <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
     </style>
     
     <style name="NegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/white</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
     </style>
     
     <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">

@@ -12,7 +12,7 @@
         android:background="@drawable/bg_settings_card"
         android:layout_marginHorizontal="16dp"
         android:padding="16dp"
-        android:textColor="@color/white"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="14sp"
         android:textStyle="bold"
         android:gravity="center_vertical"

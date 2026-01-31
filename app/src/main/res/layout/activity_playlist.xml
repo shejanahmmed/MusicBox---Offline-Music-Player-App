@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_dark">
+    android:background="@color/colorBackground">
 
     <!-- Header -->
     <TextView
@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="PLAYLIST"
-        android:textColor="@color/white"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textAllCaps="true"
@@ -28,7 +28,7 @@
         android:layout_height="40dp"
         android:background="@drawable/bg_playlist_item"
         android:src="@drawable/ic_add"
-        app:tint="@color/white"
+        app:tint="@color/colorIcon"
         android:layout_marginEnd="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="@+id/tv_header_title"
@@ -42,7 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0 Lists"
-        android:textColor="#888888"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="14sp"
         android:layout_marginStart="24dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -64,7 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="NO PLAYLISTS FOUND"
-        android:textColor="#55FFFFFF"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="16sp"
         android:textStyle="bold"
         android:letterSpacing="0.1"
@@ -100,7 +100,7 @@
      <View
         android:layout_width="128dp"
         android:layout_height="4dp"
-        android:background="#33FFFFFF"
+        android:background="@color/colorStroke"
         android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

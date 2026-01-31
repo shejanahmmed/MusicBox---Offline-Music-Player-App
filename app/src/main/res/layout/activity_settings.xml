@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_dark">
+    android:background="@color/colorBackground">
 
     <!-- Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -21,7 +21,7 @@
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back"
-            app:tint="@color/white"
+            app:tint="@color/colorIcon"
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -32,7 +32,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="SETTINGS"
-            android:textColor="@color/white"
+            android:textColor="@color/colorTextPrimary"
             android:textSize="24sp"
             android:textStyle="bold"
             android:letterSpacing="-0.05"
@@ -66,7 +66,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="PERSONALIZATION"
-                android:textColor="@color/nav_text_unselected"
+                android:textColor="@color/colorTextSecondary"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.15"
@@ -80,7 +80,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_settings_card"
                 android:padding="20dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="12dp"
                 android:clickable="true"
                 android:focusable="true">
 
@@ -89,7 +89,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Profile Name"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -99,7 +99,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Change your display name"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -109,7 +109,50 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_edit"
-                    app:tint="@color/nav_text_unselected"
+                    app:tint="@color/colorIconSecondary"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Theme Card -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/card_theme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_settings_card"
+                android:padding="20dp"
+                android:layout_marginBottom="24dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:id="@+id/tv_theme_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/theme_title"
+                    android:textColor="@color/colorTextPrimary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/theme_subtitle"
+                    android:textColor="@color/colorTextSecondary"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_theme_title"/>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/colorIconSecondary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
@@ -121,7 +164,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="LIBRARY PREFERENCES"
-                android:textColor="@color/nav_text_unselected"
+                android:textColor="@color/colorTextSecondary"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.15"
@@ -144,7 +187,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tab Order"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -154,7 +197,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Customize navigation arrangement"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -164,7 +207,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/nav_text_unselected"
+                    app:tint="@color/colorIconSecondary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
@@ -187,7 +230,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Track Length Filter"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -197,7 +240,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Filter tracks by duration"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -207,7 +250,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/nav_text_unselected"
+                    app:tint="@color/colorIconSecondary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
@@ -219,7 +262,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="SYSTEM &amp; MAINTENANCE"
-                android:textColor="@color/nav_text_unselected"
+                android:textColor="@color/colorTextSecondary"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.15"
@@ -242,7 +285,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Scanning"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -252,7 +295,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Re-index local audio files"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -271,7 +314,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="READY"
-                        android:textColor="@color/nav_text_unselected"
+                        android:textColor="@color/colorTextSecondary"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:layout_marginEnd="8dp"/>
@@ -280,7 +323,7 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_refresh"
-                        app:tint="@color/nav_text_unselected" />
+                        app:tint="@color/colorIconSecondary" />
                 </LinearLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -301,7 +344,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="Customize Home Page"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -313,7 +356,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="Show or hide home boxes"
-                    android:textColor="@color/text_white_opacity_60"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="14sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -325,7 +368,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/text_white_opacity_60"
+                    app:tint="@color/colorIconSecondary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
@@ -348,7 +391,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Deleted Tracks"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -358,7 +401,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="View and restore deleted tracks"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -368,7 +411,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/nav_text_unselected"
+                    app:tint="@color/colorIconSecondary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
@@ -393,7 +436,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Update Notifications"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -403,7 +446,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Notify me about new versions"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -413,8 +456,8 @@
                     android:id="@+id/switch_pre_release"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:thumbTint="@color/white"
-                    app:trackTint="@color/selector_switch_track_white"
+                    app:thumbTint="@color/selector_switch_thumb"
+                    app:trackTint="@color/selector_switch_track"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
@@ -426,7 +469,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="INFORMATION"
-                android:textColor="@color/nav_text_unselected"
+                android:textColor="@color/colorTextSecondary"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.15"
@@ -449,7 +492,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Github Repository"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -459,7 +502,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="View source code and contribute"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -469,7 +512,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_open_in_new"
-                    app:tint="@color/nav_text_unselected"
+                    app:tint="@color/colorIconSecondary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
@@ -493,7 +536,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/privacy_policy_title"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -503,7 +546,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/privacy_policy_desc"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -513,7 +556,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_open_in_new"
-                    app:tint="@color/nav_text_unselected"
+                    app:tint="@color/colorIconSecondary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
@@ -537,7 +580,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/license_title"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -547,7 +590,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/license_desc"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -580,7 +623,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="About"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -590,7 +633,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="License, attribution and more"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -600,7 +643,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/nav_text_unselected"
+                    app:tint="@color/colorIconSecondary"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
@@ -621,7 +664,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Version"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -631,7 +674,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Installed build version"
-                    android:textColor="@color/nav_text_unselected"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -642,7 +685,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="1.0.0"
-                    android:textColor="@color/text_white_opacity_60"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -663,7 +706,7 @@
                 <View
                     android:layout_width="48dp"
                     android:layout_height="1dp"
-                    android:background="@color/text_white_opacity_60"
+                    android:background="@color/colorStroke"
                     android:layout_marginBottom="8dp"/>
                 
                 <TextView
@@ -673,7 +716,7 @@
                      android:textSize="10sp"
                      android:textStyle="bold"
                      android:letterSpacing="0.4"
-                     android:textColor="@color/white"/>
+                     android:textColor="@color/colorTextSecondary"/>
 
             </LinearLayout>
 
@@ -681,5 +724,14 @@
     </ScrollView>
 
 
+
+    <!-- Bottom Navigation -->
+    <include
+        android:id="@+id/bottom_nav"
+        layout="@layout/layout_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

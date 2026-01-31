@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="12dp"
     android:gravity="center_vertical"
     android:layout_marginBottom="8dp"
-    android:background="@drawable/bg_track_card">
+    android:background="@drawable/bg_settings_card">
 
     <ImageView
         android:id="@+id/iv_drag_handle"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/ic_drag_handle"
-        android:alpha="0.5"/>
+        android:alpha="1.0"
+        app:tint="@color/colorIcon"/>
 
     <TextView
         android:id="@+id/tv_tab_name"
@@ -21,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="Tab Name"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="14sp"
         android:layout_marginStart="16dp"/>
 
@@ -30,12 +32,14 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/ic_home"
+        app:tint="@color/colorIcon"
         android:layout_marginEnd="16dp"/>
 
     <ImageView
         android:id="@+id/btn_toggle_visibility"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:src="@drawable/ic_visibility"/>
+        android:src="@drawable/ic_visibility"
+        app:tint="@color/colorIcon"/>
 
 </LinearLayout>

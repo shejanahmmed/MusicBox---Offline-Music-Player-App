@@ -85,11 +85,11 @@ object NavUtils {
                 
                 // Highlight if active
                 if (tab.viewId == activeNavId) {
-                    icon.setColorFilter(activity.getColor(R.color.white))
-                    text.setTextColor(activity.getColor(R.color.white))
+                    icon.setColorFilter(activity.getColor(R.color.colorNavSelected))
+                    text.setTextColor(activity.getColor(R.color.colorNavSelected))
                 } else {
-                    icon.setColorFilter(activity.getColor(R.color.nav_text_unselected))
-                    text.setTextColor(activity.getColor(R.color.nav_text_unselected))
+                    icon.setColorFilter(activity.getColor(R.color.colorNavUnselected))
+                    text.setTextColor(activity.getColor(R.color.colorNavUnselected))
                 }
                 
                 // Click Listener
@@ -138,11 +138,11 @@ object NavUtils {
              val icon = view.getChildAt(0) as? ImageView ?: return
              val text = view.getChildAt(1) as? TextView ?: return
              if (id == activeId) {
-                 icon.setColorFilter(activity.getColor(R.color.white))
-                 text.setTextColor(activity.getColor(R.color.white))
+                 icon.setColorFilter(activity.getColor(R.color.colorNavSelected))
+                 text.setTextColor(activity.getColor(R.color.colorNavSelected))
              } else {
-                 icon.setColorFilter(activity.getColor(R.color.nav_text_unselected))
-                 text.setTextColor(activity.getColor(R.color.nav_text_unselected))
+                 icon.setColorFilter(activity.getColor(R.color.colorNavUnselected))
+                 text.setTextColor(activity.getColor(R.color.colorNavUnselected))
              }
         }
 

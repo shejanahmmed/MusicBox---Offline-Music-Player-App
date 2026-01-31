@@ -51,14 +51,10 @@ object TrackMenuManager {
         pickArtworkLauncher: androidx.activity.result.ActivityResultLauncher<String>?,
         callback: Callback?
     ) {
-        val dialog = BottomSheetDialog(activity)
+        val dialog = BottomSheetDialog(activity, R.style.BottomSheetDialogTheme)
         @SuppressLint("InflateParams")
         val view = activity.layoutInflater.inflate(R.layout.dialog_track_options, null)
         dialog.setContentView(view)
-        
-        view.post {
-            (view.parent as? View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        }
         
         // Track Info
         val customMetadata = TrackMetadataManager.getMetadata(activity, track.uri)
@@ -228,12 +224,10 @@ object TrackMenuManager {
         pickArtworkLauncher: androidx.activity.result.ActivityResultLauncher<String>?,
         callback: Callback?
     ) {
-        val dialog = BottomSheetDialog(activity)
+        val dialog = BottomSheetDialog(activity, R.style.BottomSheetDialogTheme)
         @SuppressLint("InflateParams")
         val view = activity.layoutInflater.inflate(R.layout.dialog_artwork_editor, null)
         dialog.setContentView(view)
-        
-        view.post { (view.parent as? View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT) }
         
         // Force 90% Height and Expanded State
         dialog.setOnShowListener {
@@ -366,14 +360,10 @@ object TrackMenuManager {
     }
 
     private fun showEditTrackDialog(activity: AppCompatActivity, track: Track, callback: Callback?) {
-        val dialog = BottomSheetDialog(activity)
+        val dialog = BottomSheetDialog(activity, R.style.BottomSheetDialogTheme)
         @SuppressLint("InflateParams")
         val view = activity.layoutInflater.inflate(R.layout.dialog_edit_track, null)
         dialog.setContentView(view)
-
-        view.post {
-            (view.parent as? View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        }
 
         // Get current metadata
         val customMetadata = TrackMetadataManager.getMetadata(activity, track.uri)

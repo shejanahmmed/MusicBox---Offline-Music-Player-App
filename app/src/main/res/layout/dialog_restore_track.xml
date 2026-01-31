@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Restore Track"
-            android:textColor="@color/white"
+            android:textColor="@color/colorTextPrimary"
             android:textSize="20sp"
             android:textStyle="bold"
             android:layout_marginBottom="12dp"/>
@@ -28,7 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Restore this track to your library?"
-            android:textColor="@color/text_white_opacity_60"
+            android:textColor="@color/colorTextSecondary"
             android:textSize="14sp"
             android:layout_marginBottom="24dp"/>
 
@@ -55,7 +55,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="CANCEL"
-                    android:textColor="@color/text_white_opacity_60"
+                    android:textColor="@color/colorTextSecondary"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.1"

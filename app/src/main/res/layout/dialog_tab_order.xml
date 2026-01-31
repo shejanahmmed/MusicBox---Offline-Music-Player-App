@@ -19,7 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Customize Tab Order"
-        android:textColor="@color/white"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Drag to reorder, tap eye to show/hide, tap home to set default screen."
-        android:textColor="@color/text_white_opacity_60"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="14sp"
         android:layout_marginBottom="16dp"/>
 

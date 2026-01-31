@@ -123,4 +123,12 @@
     <string name="version_fmt">v%1$s</string>
     <string name="version_full_fmt">Version %1$s</string>
     <string name="count_with_label">%1$d %2$s</string>
+    
+    <!-- Theme Strings -->
+    <string name="theme_title">Theme</string>
+    <string name="theme_subtitle">Choose your preferred appearance</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System Default</string>
+    <string name="theme_updated">Theme updated</string>
 </resources>

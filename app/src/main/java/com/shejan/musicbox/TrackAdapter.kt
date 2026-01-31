@@ -81,7 +81,7 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
             holder.title.setTextColor(holder.root.context.getColor(R.color.primary_red))
             holder.root.setBackgroundResource(R.drawable.bg_track_card_active)
         } else {
-            holder.title.setTextColor(holder.root.context.getColor(R.color.white))
+            holder.title.setTextColor(androidx.core.content.ContextCompat.getColor(holder.root.context, R.color.colorTextPrimary))
             holder.root.setBackgroundResource(R.drawable.bg_track_card)
         }
     }

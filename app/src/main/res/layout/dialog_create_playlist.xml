@@ -17,8 +17,8 @@
         android:inputType="textCapSentences"
         android:padding="16dp"
         android:maxLines="1"
-        android:textColor="@color/white"
-        android:textColorHint="#66FFFFFF"
+        android:textColor="@color/colorTextPrimary"
+        android:textColorHint="@color/colorTextSecondary"
         android:textSize="16sp" />
 
 </LinearLayout>

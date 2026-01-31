@@ -100,8 +100,8 @@ class SearchActivity : AppCompatActivity() {
         if (searchNav != null) {
             val icon = searchNav.getChildAt(0) as android.widget.ImageView
             val text = searchNav.getChildAt(1) as android.widget.TextView
-            icon.setColorFilter(getColor(R.color.white))
-            text.setTextColor(getColor(R.color.white))
+            icon.setColorFilter(getColor(R.color.colorNavSelected))
+            text.setTextColor(getColor(R.color.colorNavSelected))
         }
     }
     

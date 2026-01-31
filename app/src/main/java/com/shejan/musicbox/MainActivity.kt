@@ -214,7 +214,7 @@ class MainActivity : AppCompatActivity() {
     private fun getBoxIconTint(boxId: String): Int {
         return when (boxId) {
             HomeBoxPreferences.BOX_FAVORITES -> ContextCompat.getColor(this, R.color.primary_red)
-            else -> ContextCompat.getColor(this, R.color.white)
+            else -> ContextCompat.getColor(this, R.color.colorIcon)
         }
     }
 

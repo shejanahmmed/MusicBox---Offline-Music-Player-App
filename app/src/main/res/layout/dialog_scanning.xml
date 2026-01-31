@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0 tracks found"
-        android:textColor="@color/text_white_opacity_60"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="16sp"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="16dp"

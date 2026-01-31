@@ -13,7 +13,7 @@
         android:layout_height="40dp"
         app:cardCornerRadius="4dp"
         app:cardElevation="0dp"
-        app:cardBackgroundColor="#1AFFFFFF"
+        app:cardBackgroundColor="@color/colorSurface"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -26,7 +26,7 @@
             android:scaleType="centerCrop"
             android:src="@drawable/ic_queue_music"
             android:padding="8dp"
-            app:tint="@color/text_white_opacity_40" />
+            app:tint="@color/colorIcon" />
 
         <!-- Special Icon (Heart for Favorites) -->
         <ImageView
@@ -45,7 +45,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Playlist Name"
-        android:textColor="@color/white"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="12sp"
         android:textStyle="bold"
         android:textAllCaps="true"
@@ -64,7 +64,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="0 tracks"
-        android:textColor="@color/text_white_opacity_40"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="9sp"
         android:textAllCaps="true"
         android:letterSpacing="0.1"
@@ -83,7 +83,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/ic_chevron_right"
-        app:tint="@color/text_white_opacity_40"
+        app:tint="@color/colorIconSecondary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />

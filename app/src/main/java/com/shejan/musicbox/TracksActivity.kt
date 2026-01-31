@@ -254,13 +254,13 @@ class TracksActivity : AppCompatActivity() {
         if (MusicService.isShuffleEnabled) {
             shuffleBtn.setColorFilter(getColor(R.color.primary_red))
         } else {
-            shuffleBtn.setColorFilter(getColor(R.color.text_white_opacity_40))
+            shuffleBtn.setColorFilter(ContextCompat.getColor(this, R.color.colorIconSecondary))
         }
         
         if (MusicService.repeatMode != MusicService.REPEAT_OFF) {
             repeatBtn.setColorFilter(getColor(R.color.primary_red))
         } else {
-            repeatBtn.setColorFilter(getColor(R.color.text_white_opacity_40))
+            repeatBtn.setColorFilter(ContextCompat.getColor(this, R.color.colorIconSecondary))
         }
         
         MiniPlayerManager.update(this, musicService)

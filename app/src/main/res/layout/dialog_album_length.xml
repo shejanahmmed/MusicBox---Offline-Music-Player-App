@@ -19,7 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Set Minimum Track Length"
-        android:textColor="@color/white"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
@@ -28,17 +28,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Filter out short audio files like ringtones/notifications"
-        android:textColor="@color/text_white_opacity_60"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="14sp"
         android:layout_marginBottom="24dp"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColorHint="@color/text_white_opacity_40"
+        android:textColorHint="@color/colorTextSecondary"
         app:hintTextColor="@color/primary_red"
         app:boxStrokeColor="@color/primary_red"
-        app:boxBackgroundColor="@color/bg_card_section"
+        app:boxBackgroundColor="@color/colorSurface"
         app:boxCornerRadiusTopStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
@@ -50,7 +50,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Duration (seconds)"
-            android:textColor="@color/white"
+            android:textColor="@color/colorTextPrimary"
             android:inputType="number"
             android:text="10"/>
 

@@ -12,9 +12,9 @@
         app:layout_constraintDimensionRatio="1:1"
         app:cardCornerRadius="8dp"
         app:cardElevation="0dp"
-        app:cardBackgroundColor="#111111"
+        app:cardBackgroundColor="@color/colorSurface"
         app:strokeWidth="1dp"
-        app:strokeColor="#26FFFFFF"
+        app:strokeColor="@color/colorStroke"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:src="@color/background_dark" />
+            android:src="@color/colorBackground" />
 
     </com.google.android.material.card.MaterialCardView>
 
@@ -33,7 +33,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="ALBUM NAME"
-        android:textColor="@color/white"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="14sp"
         android:textStyle="bold"
         android:textAllCaps="true"
@@ -50,7 +50,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Artist Name"
-        android:textColor="#80FFFFFF"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="12sp"
         android:maxLines="1"
         android:ellipsize="end"

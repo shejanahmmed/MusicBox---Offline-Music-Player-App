@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_dark">
+    android:background="@color/colorBackground">
 
     <TextView
         android:id="@+id/tv_header_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="SEARCH"
-        android:textColor="@color/white"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="24sp"
         android:textStyle="bold"
         android:letterSpacing="-0.05"
@@ -37,7 +37,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_search"
-            app:tint="#80FFFFFF"
+            app:tint="@color/colorIconSecondary"
             android:layout_marginEnd="12dp"/>
 
         <EditText
@@ -46,8 +46,8 @@
             android:layout_height="match_parent"
             android:background="@null"
             android:hint="SEARCH"
-            android:textColor="@color/white"
-            android:textColorHint="#33FFFFFF"
+            android:textColor="@color/colorTextPrimary"
+            android:textColorHint="@color/colorTextSecondary"
             android:textSize="18sp"
             android:textAllCaps="true"
             android:maxLines="1"
@@ -80,7 +80,7 @@
      <View
         android:layout_width="128dp"
         android:layout_height="4dp"
-        android:background="#33FFFFFF"
+        android:background="@color/colorStroke"
         android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

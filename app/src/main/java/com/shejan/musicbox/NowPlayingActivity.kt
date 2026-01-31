@@ -103,6 +103,10 @@ class NowPlayingActivity : AppCompatActivity() {
     }
     }
     
+    // State Caching for Artwork
+    private var loadedTrackId: Long = -1L
+    private var loadedContentVersion: Long = -1L
+
     // Artwork Picker Launcher
     private val pickArtworkLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri ->
         if (uri != null && musicService != null) {
@@ -121,6 +125,9 @@ class NowPlayingActivity : AppCompatActivity() {
              ImageLoader.clearCacheForTrack(track.uri)
              MusicUtils.contentVersion++
 
+            // Force Reload
+            loadedTrackId = -1L
+            
             // Refresh UI
             updateUI()
             Toast.makeText(this, getString(R.string.artwork_updated), Toast.LENGTH_SHORT).show()
@@ -204,12 +211,10 @@ class NowPlayingActivity : AppCompatActivity() {
         if (MusicService.playlist.isEmpty() || MusicService.currentIndex < 0 || 
             MusicService.currentIndex >= MusicService.playlist.size) return
 
-        val dialog = BottomSheetDialog(this)
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
         @SuppressLint("InflateParams")
         val view = layoutInflater.inflate(R.layout.dialog_queue, null)
         dialog.setContentView(view)
-        
-        (view.parent as? View)?.setBackgroundColor(Color.TRANSPARENT)
 
         val rvQueue = view.findViewById<RecyclerView>(R.id.rv_queue)
         rvQueue.layoutManager = LinearLayoutManager(this)
@@ -423,9 +428,13 @@ class NowPlayingActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tv_now_playing_title).text = customMetadata?.title ?: track.title
         findViewById<TextView>(R.id.tv_now_playing_artist).text = customMetadata?.artist ?: track.artist
         
-        // Load Album Art
-        val ivAlbumArt = findViewById<ImageView>(R.id.iv_album_art_large)
-        MusicUtils.loadTrackArt(this, track.id, track.albumId, track.uri, ivAlbumArt)
+        // Load Album Art ONLY if track changed or content updated
+        if (track.id != loadedTrackId || MusicUtils.contentVersion != loadedContentVersion) {
+            val ivAlbumArt = findViewById<ImageView>(R.id.iv_album_art_large)
+            MusicUtils.loadTrackArt(this, track.id, track.albumId, track.uri, ivAlbumArt)
+            loadedTrackId = track.id
+            loadedContentVersion = MusicUtils.contentVersion
+        }
         
         // Update Duration FIRST to avoid progress clamping
         val duration = musicService!!.getDuration()
@@ -439,7 +448,7 @@ class NowPlayingActivity : AppCompatActivity() {
              btnFav.setColorFilter(getColor(R.color.primary_red))
         } else {
              btnFav.setImageResource(R.drawable.ic_favorite_border)
-             btnFav.setColorFilter(getColor(R.color.white))
+             btnFav.setColorFilter(getColor(R.color.colorIcon))
         }
         
         val btnPlayPause = findViewById<ImageButton>(R.id.btn_play_large)
@@ -482,7 +491,7 @@ class NowPlayingActivity : AppCompatActivity() {
             btnSleepTimer.setColorFilter(getColor(R.color.primary_red))
             btnSleepTimer.alpha = 1.0f
         } else {
-            btnSleepTimer.setColorFilter(getColor(R.color.white))
+            btnSleepTimer.setColorFilter(getColor(R.color.colorIcon))
             btnSleepTimer.alpha = 1.0f
         }
     }
@@ -559,13 +568,9 @@ class NowPlayingActivity : AppCompatActivity() {
     
     @SuppressLint("InflateParams")
     private fun showSleepTimerDialog() {
-        val dialog = BottomSheetDialog(this)
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
         val view = layoutInflater.inflate(R.layout.dialog_sleep_timer, null)
         dialog.setContentView(view)
-        
-        view.post {
-            (view.parent as? View)?.setBackgroundColor(Color.TRANSPARENT)
-        }
         
         val llSetup = view.findViewById<View>(R.id.ll_timer_setup)
         val llActive = view.findViewById<View>(R.id.ll_timer_active)
@@ -659,6 +664,8 @@ class NowPlayingActivity : AppCompatActivity() {
         
         TrackMenuManager.showTrackOptionsDialog(this, track, pickArtworkLauncher, object : TrackMenuManager.Callback {
             override fun onArtworkChanged() {
+                // Force Reload
+                loadedTrackId = -1L
                 updateUI()
             }
             override fun onTrackUpdated() {

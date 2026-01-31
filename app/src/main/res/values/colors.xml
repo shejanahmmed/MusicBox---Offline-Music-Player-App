@@ -18,4 +18,29 @@
     <color name="nav_text_unselected">#71717a</color> <!-- Zinc 500 -->
     <color name="wireframe_border">#26FFFFFF</color> <!-- 15% White -->
     <color name="bg_card_section">#0D0D0D</color>
+    
+    <!-- Semantic Colors (Light Mode Defaults) -->
+    <color name="colorBackground">#F2F2F7</color> <!-- iOS-like Light Gray -->
+    <color name="colorSurface">#FFFFFF</color> <!-- White Card -->
+    <color name="colorStroke">#E5E5EA</color> <!-- Light Gray Border -->
+    <color name="colorWireframeCorner">#8E8E93</color> <!-- System Gray (Distinct) -->
+    <color name="colorTextPrimary">#1C1C1E</color> <!-- Dark Dark Gray -->
+    <color name="colorTextSecondary">#8E8E93</color> <!-- Gray -->
+    <color name="colorIcon">#1C1C1E</color>
+    <color name="colorIconSecondary">#8E8E93</color>
+    
+    <!-- Nav Semantic Colors -->
+    <color name="colorBottomNavBackground">#FFFFFF</color>
+    <color name="colorNavSelected">#1C1C1E</color>
+    <color name="colorNavUnselected">#8E8E93</color>
+    <color name="primary_red_opacity_50">#80f20d0d</color>
+    <color name="switch_thumb_off">#FFFFFF</color>
+    <color name="switch_track_off">#E5E5EA</color>
+    
+    <!-- Vinyl/CD Artwork Semantic Colors -->
+    <color name="colorVinylBase">#181818</color> <!-- Reverted to Black -->
+    <color name="colorVinylStroke">#282828</color> <!-- Reverted to Dark Stroke -->
+    <color name="colorVinylLabel">#FFC62828</color> <!-- Red Label -->
+    <color name="colorVinylCenter">#181818</color> <!-- Matches Base for seamless look -->
+    <color name="colorVinylRing">#1A000000</color> <!-- 10% Black Ring (Shadow) -->
 </resources>

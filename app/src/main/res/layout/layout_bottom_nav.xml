@@ -49,13 +49,13 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_search"
-                app:tint="@color/nav_text_unselected"/>
+                app:tint="@color/colorNavUnselected"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/nav_search"
                 android:textSize="8sp"
-                android:textColor="@color/nav_text_unselected"
+                android:textColor="@color/colorNavUnselected"
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
 
@@ -72,13 +72,13 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_settings"
-                app:tint="@color/nav_text_unselected"/>
+                app:tint="@color/colorNavUnselected"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/nav_settings"
                 android:textSize="8sp"
-                android:textColor="@color/nav_text_unselected"
+                android:textColor="@color/colorNavUnselected"
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
     </LinearLayout>

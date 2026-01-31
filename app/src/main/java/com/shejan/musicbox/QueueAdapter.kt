@@ -54,7 +54,7 @@ class QueueAdapter(
             holder.title.setTextColor(holder.itemView.context.getColor(R.color.primary_red))
             holder.itemView.setBackgroundResource(R.drawable.bg_track_card_active)
         } else {
-            holder.title.setTextColor(holder.itemView.context.getColor(R.color.white))
+            holder.title.setTextColor(holder.itemView.context.getColor(R.color.colorTextPrimary))
             holder.itemView.setBackgroundResource(R.drawable.bg_track_card)
         }
         

@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0 Favorites"
-        android:textColor="@color/text_white_opacity_60"
+        android:textColor="@color/colorTextSecondary"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="FAVORITES"
-        android:textColor="@color/white"
+        android:textColor="@color/colorTextPrimary"
         android:textSize="14sp"
         android:textStyle="bold"
         android:letterSpacing="0.05"
@@ -50,13 +50,14 @@
         android:layout_marginBottom="16dp"/>
 
     <!-- Wireframe corners (same as original boxes) -->
-    <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
-    <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
-    <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
-    <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
-    <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-    <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-    <View android:layout_width="8dp" android:layout_height="1dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-    <View android:layout_width="1dp" android:layout_height="8dp" android:background="#66FFFFFF" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+    <!-- Wireframe corners (same as original boxes) -->
+    <View android:layout_width="8dp" android:layout_height="1dp" android:background="@color/colorWireframeCorner" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+    <View android:layout_width="1dp" android:layout_height="8dp" android:background="@color/colorWireframeCorner" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+    <View android:layout_width="8dp" android:layout_height="1dp" android:background="@color/colorWireframeCorner" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+    <View android:layout_width="1dp" android:layout_height="8dp" android:background="@color/colorWireframeCorner" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+    <View android:layout_width="8dp" android:layout_height="1dp" android:background="@color/colorWireframeCorner" app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+    <View android:layout_width="1dp" android:layout_height="8dp" android:background="@color/colorWireframeCorner" app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+    <View android:layout_width="8dp" android:layout_height="1dp" android:background="@color/colorWireframeCorner" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
+    <View android:layout_width="1dp" android:layout_height="8dp" android:background="@color/colorWireframeCorner" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
