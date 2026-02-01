@@ -13,15 +13,31 @@
     android:visibility="gone"
     android:elevation="8dp">
 
-    <ImageView
-        android:id="@+id/iv_mini_art"
+    <FrameLayout
+        android:id="@+id/fl_mini_art_container"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:padding="2dp"
         android:background="@drawable/bg_track_card"
-        android:src="@color/colorBackground"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:cardCornerRadius="6dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/transparent">
+
+            <ImageView
+                android:id="@+id/iv_mini_art"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@color/colorBackground" />
+        </androidx.cardview.widget.CardView>
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -29,7 +45,7 @@
         android:orientation="vertical"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
-        app:layout_constraintStart_toEndOf="@+id/iv_mini_art"
+        app:layout_constraintStart_toEndOf="@+id/fl_mini_art_container"
         app:layout_constraintEnd_toStartOf="@+id/ll_mini_controls"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">

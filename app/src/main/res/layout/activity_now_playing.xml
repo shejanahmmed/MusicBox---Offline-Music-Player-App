@@ -228,11 +228,6 @@
         android:layout_marginEnd="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_seekbar_border"
-        android:paddingTop="1dp"
-        android:paddingBottom="1dp"
-        android:paddingStart="2dp"
-        android:paddingEnd="2dp"
         app:layout_constraintBottom_toTopOf="@+id/tv_time_start">
 
         <SeekBar
