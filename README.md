@@ -1,120 +1,172 @@
 # MusicBox 🎵
 
-**An Elegant, Offline Music Player for Android**
+**The Premium Offline Music Experience for Android**
 
-[![Kotlin Version](https://img.shields.io/badge/Kotlin-1.9.0-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
-[![Android API](https://img.shields.io/badge/API-28%2B-3DDC84.svg?logo=android)](https://android.com)
-[![Architecture](https://img.shields.io/badge/Architecture-MVVM-blue.svg)](https://developer.android.com/topic/architecture)
-[![License](https://img.shields.io/badge/License-GPLv3-lightgrey.svg)](LICENSE)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-7F52FF.svg?logo=kotlin&style=for-the-badge)](https://kotlinlang.org)
+[![Android](https://img.shields.io/badge/Android-9.0%2B-3DDC84.svg?logo=android&style=for-the-badge)](https://developer.android.com)
+[![License](https://img.shields.io/badge/License-GPLv3-lightgrey.svg?style=for-the-badge)](LICENSE)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/graphs/commit-activity)
 
-MusicBox is a modern, native Android music player built purely with **Kotlin**. It emphasizes a clean **MVVM architecture**, efficient media handling via `MediaSession`, and a premium ad-free user experience.
+<p align="center">
+  <a href="#-features">Features</a> •
+  <a href="#-download">Download</a> •
+  <a href="#-roadmap">Roadmap</a> •
+  <a href="#-contributing">Contributing</a> •
+  <a href="#-license">License</a>
+</p>
 
-Designed for simplicity and performance, it features a custom-built scanning engine, robust metadata management, and a unique procedural artwork generator.
-
----
-
-## 🏗️ Architecture
-
-The app follows the recommended **Model-View-ViewModel (MVVM)** architecture to ensure separation of concerns and testability.
-
-*   **View Layer**: Fragments and Activities handling UI logic (`MainActivity`, `NowPlayingActivity`).
-*   **ViewModel Layer**: Manages UI state and communicates with repositories.
-*   **Model/Repository Layer**: Handles data operations with `MediaStore` and local JSON storage.
-*   **Service Layer**: `MusicService` handles background audio playback and notification management, ensuring the music keeps playing even when the app is killed.
+</div>
 
 ---
 
-## 🛠️ Tech Stack
+## 🚀 Overview
 
-| Component | Library / Tool | Purpose |
+**MusicBox** is an open-source, ad-free, and privacy-focused offline music player designed for audiophiles who value aesthetics as much as performance. Built with **Modern Android Development** practices (Kotlin, MVVM, Coroutines), it delivers a buttery smooth experience wrapped in a stunning glassmorphic UI.
+
+Unlike generic players, MusicBox features a **procedural artwork engine** that generates unique, vintage-style vinyl covers for tracks missing metadata, ensuring your library always looks premium.
+
+---
+
+## ✨ Features at a Glance
+
+| Category | Feature | Description |
 | :--- | :--- | :--- |
-| **Language** | [Kotlin](https://kotlinlang.org/) | 100% native development. |
-| **Async** | [Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) | Asynchronous background tasks. |
-| **Android UI** | [ConstraintLayout](https://developer.android.com/training/constraint-layout) | Responsive UI layouts. |
-| **Architecture** | [ViewModel & LiveData](https://developer.android.com/topic/libraries/architecture) | State management and lifecycle awareness. |
-| **Media** | `MediaPlayer` & `MediaSession` | Core audio playback and system integration. |
-| **Storage** | `SharedPreferences` & `File I/O` | User preferences and playlist persistence. |
-| **Image Loading** | `Coil` / Custom implementation | Efficient artwork loading and caching. |
-| **Build System** | Gradle (Kotlin DSL) | Dependency management and build configuration. |
+| **🎨 Visuals** | **Vintage Vinyl Engine** | Procedurally generated retro artwork with realistic noise & texture. |
+| | **Dynamic Themes** | Fully responsive Light & Dark modes that follow system settings. |
+| | **Smart Animations** | Typewriter greetings and fluid motion transitions. |
+| **🎧 Playback** | **Gapless Logic** | Optimized media engine for seamless track transitions. |
+| | **Mini Player** | Persistent, smart-clipping controls that float above your content. |
+| | **Sleep Timer** | Drift off with a customizable playback countdown. |
+| **📂 Library** | **Deep Organization** | Auto-sorts usage into Tracks, Albums, Artists, and Playlists. |
+| | **Metadata Editor** | Fix tags directly in-app; persistent changes stored locally. |
+| | **Hidden Tracks** | filtering for short clips, voice notes, and unwanted audio. |
+| **🛠️ Tech** | **Privacy First** | 100% offline. No analytics. No tracking. No ads. |
+| | **Modern Stack** | Built with Kotlin, Coroutines, and Jetpack components. |
 
 ---
 
-## 📂 Logical Structure
+## 📱 Visual Tour
 
-The application codebase is organized into several key functional groups:
-
-*   **Activities**: Main UI entry points (`MainActivity`, `NowPlayingActivity`, `SettingsActivity`).
-*   **Adapters**: Connects data to UI lists (`TrackAdapter`, `AlbumAdapter`, `QueueAdapter`).
-*   **Managers**: Handles specific business logic (`MiniPlayerManager`, `FavoritesManager`, `TrackMenuManager`).
-*   **Services**: Background operations (`MusicService`).
-*   **Utils**: shared helper functions (`MusicUtils`, `NavUtils`, `ImageLoader`).
-*   **Models**: Data classes for media objects (`Track`, `Album`, `Playlist`).
-
----
-
-## ✨ Core Features
-
-### 🎧 Audio Engine
-*   **Gapless-style logic** for smooth track transitions.
-*   **Foreground Service** implementation for reliable background playback.
-*   **Focus Management** handling audio interruptions (calls, other apps).
-*   **Bluetooth/Headset Integration** via `MediaButtonReceiver`.
-
-### 🎨 Procedural Artwork
-*   **Vintage Vinyl Generation**: A custom algorithm generates unique, retro-styled vinyl artwork for tracks missing covers.
-*   **Vector Construction**: Uses Android `VectorDrawable` paths for crisp, noise-textured graphics without bitmap artifacts.
-
-### 💾 Data Management
-*   **Custom Indexing**: Scans `MediaStore` efficiently to build a rich library of Tracks, Albums, and Artists.
-*   **JSON Persistence**: Playlists and custom metadata are stored in local JSON files for portability and ease of backup.
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><b>Home (Dark)</b></td>
+      <td align="center"><b>Player (Light)</b></td>
+      <td align="center"><b>Library</b></td>
+    </tr>
+    <tr>
+      <td><img src="docs/screenshots/home_dark.png" width="250" alt="Home Dark" /></td>
+      <td><img src="docs/screenshots/player_light.png" width="250" alt="Player Light" /></td>
+      <td><img src="docs/screenshots/library.png" width="250" alt="Library" /></td>
+    </tr>
+  </table>
+  <p><i>*Screenshots are placeholders.</i></p>
+</div>
 
 ---
 
-## 🚀 Getting Started
+## 🏗️ Architecture & Engineering
 
-### Prerequisites
-*   **Android Studio**: Iguana (2023.2.1) or newer.
-*   **JDK**: Version 17.
-*   **SDK**: Minimum API 28 (Android 9.0).
+MusicBox helps developers understand **Clean Architecture** and **MVVM** in a real-world context.
 
-### Implementation Steps
+### Logical Structure
 
-1.  **Clone the Repository**
-    ```bash
-    git clone https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App.git
-    ```
+<details>
+<summary><b>Click to expand Project Structure</b></summary>
 
-2.  **Open in Android Studio**
-    *   File -> Open -> Select project root.
-    *   Allow Gradle sync to finish.
+```text
+com.shejan.musicbox
+├── activities      # UI Entry Points (Single Activity Pattern where possible)
+│   ├── MainActivity.kt
+│   └── NowPlayingActivity.kt
+├── adapters        # High-performance RecyclerView adapters
+│   ├── TrackAdapter.kt
+│   └── AlbumAdapter.kt
+├── managers        # Domain Logic & State Holders
+│   ├── MiniPlayerManager.kt
+│   └── TrackMenuManager.kt
+├── models          # Immutable Data Classes
+│   ├── Track.kt
+│   └── Album.kt
+├── services        # Foreground Services
+│   └── MusicService.kt (MediaButtonReceiver, Notifications)
+└── utils           # Extension functions & Helpers
+    ├── MusicUtils.kt
+    └── ImageLoader.kt
+```
+</details>
 
-3.  **Build & Run**
-    *   Select `app` configuration.
-    *   Run on Emulator or Device (Ensure distinct profile for storage permission tests).
+### Tech Stack
+
+| Type | Technology | Benefit |
+| :--- | :--- | :--- |
+| **Language** | **Kotlin** | Null safety, conciseness, and interop. |
+| **Concurrency** | **Coroutines** | Efficient background thread management. |
+| **Architecture** | **MVVM** | Separation of UI and Business Logic. |
+| **UI** | **XML / ConstraintLayout** | Performance-optimized layouts. |
+| **Media** | **MediaSession** | System-level integration (Bluetooth, Lockscreen). |
+
+---
+
+## 📥 Download
+
+The latest APK (v1.0.0) is available on the [Releases Page](https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/releases).
+
+<a href="https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/releases">
+  <img src="https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android" alt="Download APK" />
+</a>
+
+---
+
+## 🛣️ Roadmap
+
+- [x] **v1.0**: Core Playback, Dark/Light Themes, Vinyl Engine.
+- [ ] **v1.1**: Equalizer integration (System & Custom bands).
+- [ ] **v1.2**: Lyrics support (LRC file parsing).
+- [ ] **v1.3**: Cloud backup for Playlists & Favorites.
+- [ ] **v2.0**: Material You (Monet) Dynamic Theming.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these guidelines:
+We love community involvement! Whether you're a developer, designer, or user, your contributions are welcome.
 
-1.  **Fork** the repository.
-2.  **Branch** off `main` (`git checkout -b feature/dynamic-colors`).
-3.  **Commit** with clear messages (`git commit -m "Feat: Add dynamic color support"`).
-4.  **Pull Request** targeted at `main`.
+### How to Contribute
+1.  **Fork** the repo.
+2.  **Clone** your fork (`git clone ...`).
+3.  **Create** a branch (`git checkout -b feature/NewThing`).
+4.  **Commit** (`git commit -m "Add NewThing"`).
+5.  **Push** (`git push origin feature/NewThing`).
+6.  **Open** a Pull Request.
 
-Please ensure your code follows the **Kotlin Style Guide** and includes relevant comments.
+### Reporting Bugs
+If you find a bug, please create an Issue with:
+*   Steps to reproduce.
+*   Expected vs. actual behavior.
+*   Device/Android version.
+
+### Style Guide
+*   Use present tense in commit messages ("Add feature" not "Added feature").
+*   Follow standard Kotlin coding conventions.
 
 ---
 
 ## 👤 Author
 
 **Shejan Ahmmed**
-*   **GitHub**: [shejanahmmed](https://github.com/shejanahmmed)
-*   **LinkedIn**: [Shejan Ahmmed](https://www.linkedin.com/in/farjan-ahmmed/)
+
+*   🌐 **Website**: [shejan.me](https://www.farjan.me)
+*   💻 **GitHub**: [shejanahmmed](https://github.com/shejanahmmed)
+*   💼 **LinkedIn**: [Shejan Ahmmed](https://www.linkedin.com/in/farjan-ahmmed/)
+*   📧 **Email**: [farjan.swe@gmail.com](mailto:farjan.swe@gmail.com)
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](LICENSE) file for details.
+Distributed under the **GNU GPLv3**. See `LICENSE` for more information.
+
+<div align="center">
+  <sub>Built with precision and passion. © 2026 Shejan.</sub>
+</div>
