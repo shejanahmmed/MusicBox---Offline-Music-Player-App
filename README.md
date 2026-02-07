@@ -1,133 +1,120 @@
 # MusicBox 🎵
+
 **An Elegant, Offline Music Player for Android**
 
-MusicBox is a modern, feature-rich offline music player built with Kotlin for Android. It focuses on a premium user experience, featuring a sleek dark-themed UI, intuitive scrollable navigation, and robust library management with advanced customization options.
+[![Kotlin Version](https://img.shields.io/badge/Kotlin-1.9.0-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
+[![Android API](https://img.shields.io/badge/API-28%2B-3DDC84.svg?logo=android)](https://android.com)
+[![Architecture](https://img.shields.io/badge/Architecture-MVVM-blue.svg)](https://developer.android.com/topic/architecture)
+[![License](https://img.shields.io/badge/License-GPLv3-lightgrey.svg)](LICENSE)
+
+MusicBox is a modern, native Android music player built purely with **Kotlin**. It emphasizes a clean **MVVM architecture**, efficient media handling via `MediaSession`, and a premium ad-free user experience.
+
+Designed for simplicity and performance, it features a custom-built scanning engine, robust metadata management, and a unique procedural artwork generator.
 
 ---
 
-## ✨ Key Features
+## 🏗️ Architecture
 
-### 🎵 Music Library
-*   **Comprehensive Library Management**: Automatically scans and organizes your local audio files into **Tracks**, **Albums**, **Artists** and **Playlists**.
-*   **Smart Filtering**: Filter tracks by minimum duration to hide short audio clips and notifications.
-*   **Hidden Tracks Manager**: Hide unwanted tracks from your library and restore them anytime from the Deleted Tracks page.
-*   **Custom Metadata Editor**: Edit track titles, artists and album names with persistent custom metadata storage. Now includes a "Reset" option to instantly revert to original file tags.
+The app follows the recommended **Model-View-ViewModel (MVVM)** architecture to ensure separation of concerns and testability.
 
-### 🎨 Personalization
-*   **Customizable Home Screen**: Reorder, show/hide home boxes (Favorites, Tracks, Albums, Artists, Playlists, Equalizer) to create your perfect layout.
-*   **Edit Profile Name**: Personalize the home screen greeting with your own name.
-*   **Custom Artwork Editor**: Set custom album artwork for any track with an 85% screen-height drawer for better visibility.
-*   **Dynamic Greeting**: Personalized time-based greetings (Good Morning, Good Afternoon, Good Evening) with typing animation.
-*   **Flexible Navigation**: Set any page as your default home screen (Home, Tracks, Albums, Artists, Playlists, Search).
+*   **View Layer**: Fragments and Activities handling UI logic (`MainActivity`, `NowPlayingActivity`).
+*   **ViewModel Layer**: Manages UI state and communicates with repositories.
+*   **Model/Repository Layer**: Handles data operations with `MediaStore` and local JSON storage.
+*   **Service Layer**: `MusicService` handles background audio playback and notification management, ensuring the music keeps playing even when the app is killed.
 
-### 🎧 Playback & Organization
-*   **❤️ Favorites & Playlists**: Create unlimited custom playlists with full CRUD operations (Create, Read, Update, Delete).
-*   **zzZ Sleep Timer**: Fall asleep to your favorite tunes with a customizable sleep timer.
-*   **Advanced Sorting**: Sort by Title, Date Added, or Date Modified with persistent preferences per page.
-*   **Shuffle & Repeat Modes**: Full playback control with shuffle and repeat (All/One/Off) modes.
-*   **Headset Support**: Seamlessly control playback (Play/Pause/Next/Previous) using wired or Bluetooth headset buttons.
-*   **Queue Management**: View and reorder your "Up Next" queue with visual indicators for the currently playing track.
-*   **Mini Player**: Persistent mini-player controls allowing you to manage playback while browsing the app.
-
-### 🔍 Discovery & Navigation
-*   **Smart Search**: Instantly find any song, artist, or album with a powerful search feature.
-*   **🎛️ Dynamic Navigation**: Features a unique **Scrollable Bottom Navigation Bar** that provides quick access to 6+ categories while keeping essential tools like Search and Settings pinned.
-
-### 📤 Sharing & Integration
-*   **Share Music**: Share audio files directly from the Now Playing screen or Track Options menu.
-*   **System Equalizer**: Quick access to your device's built-in equalizer for audio customization.
-
-### 🎨 Premium UI/UX
-*   **Dark Mode First**: Designed with a premium dark aesthetic, utilizing glassmorphism elements and smooth transitions.
-*   **Typing Animations**: Dynamic greeting text with typewriter effect.
-*   **Consistent Header Styling**: Unified header design across all content pages with dynamic item counts.
-*   **Context-Aware Navigation**: Bottom navigation intelligently highlights the relevant tab based on current content.
+---
 
 ## 🛠️ Tech Stack
 
-*   **Language**: [Kotlin](https://kotlinlang.org/)
-*   **Architecture**: MVVM / Standard Android Architecture Patterns
-*   **UI Components**:
-    *   XML Layouts
-    *   `ConstraintLayout`, `RecyclerView`, `HorizontalScrollView`, `BottomSheetDialog`
-    *   Custom Drawable Resources & Animations
-*   **Core APIs**:
-    *   `MediaStore` API (for fetching audio files)
-    *   `MediaPlayer` (for audio playback)
-    *   `MediaSession` (for background playback and media controls)
-    *   `SharedPreferences` (for settings and simple persistence)
-    *   JSON-based local storage (for playlists and custom metadata)
-    *   `FileProvider` (for secure file sharing)
-*   **Permissions**: Handles Runtime Permissions for `READ_MEDIA_AUDIO` (Android 13+) and `READ_EXTERNAL_STORAGE`.
+| Component | Library / Tool | Purpose |
+| :--- | :--- | :--- |
+| **Language** | [Kotlin](https://kotlinlang.org/) | 100% native development. |
+| **Async** | [Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) | Asynchronous background tasks. |
+| **Android UI** | [ConstraintLayout](https://developer.android.com/training/constraint-layout) | Responsive UI layouts. |
+| **Architecture** | [ViewModel & LiveData](https://developer.android.com/topic/libraries/architecture) | State management and lifecycle awareness. |
+| **Media** | `MediaPlayer` & `MediaSession` | Core audio playback and system integration. |
+| **Storage** | `SharedPreferences` & `File I/O` | User preferences and playlist persistence. |
+| **Image Loading** | `Coil` / Custom implementation | Efficient artwork loading and caching. |
+| **Build System** | Gradle (Kotlin DSL) | Dependency management and build configuration. |
+
+---
+
+## 📂 Logical Structure
+
+The application codebase is organized into several key functional groups:
+
+*   **Activities**: Main UI entry points (`MainActivity`, `NowPlayingActivity`, `SettingsActivity`).
+*   **Adapters**: Connects data to UI lists (`TrackAdapter`, `AlbumAdapter`, `QueueAdapter`).
+*   **Managers**: Handles specific business logic (`MiniPlayerManager`, `FavoritesManager`, `TrackMenuManager`).
+*   **Services**: Background operations (`MusicService`).
+*   **Utils**: shared helper functions (`MusicUtils`, `NavUtils`, `ImageLoader`).
+*   **Models**: Data classes for media objects (`Track`, `Album`, `Playlist`).
+
+---
+
+## ✨ Core Features
+
+### 🎧 Audio Engine
+*   **Gapless-style logic** for smooth track transitions.
+*   **Foreground Service** implementation for reliable background playback.
+*   **Focus Management** handling audio interruptions (calls, other apps).
+*   **Bluetooth/Headset Integration** via `MediaButtonReceiver`.
+
+### 🎨 Procedural Artwork
+*   **Vintage Vinyl Generation**: A custom algorithm generates unique, retro-styled vinyl artwork for tracks missing covers.
+*   **Vector Construction**: Uses Android `VectorDrawable` paths for crisp, noise-textured graphics without bitmap artifacts.
+
+### 💾 Data Management
+*   **Custom Indexing**: Scans `MediaStore` efficiently to build a rich library of Tracks, Albums, and Artists.
+*   **JSON Persistence**: Playlists and custom metadata are stored in local JSON files for portability and ease of backup.
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-*   Android Studio Iguana or newer.
-*   JDK 17 or newer.
-*   Android Device or Emulator running Android 9 (Pie) or higher.
+*   **Android Studio**: Iguana (2023.2.1) or newer.
+*   **JDK**: Version 17.
+*   **SDK**: Minimum API 28 (Android 9.0).
 
-### Installation
+### Implementation Steps
 
-1.  **Clone the repository**:
+1.  **Clone the Repository**
     ```bash
     git clone https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App.git
     ```
-2.  **Open in Android Studio**:
-    *   Launch Android Studio.
-    *   Select **Open an Existing Project**.
-    *   Navigate to the cloned directory and select it.
-3.  **Build and Run**:
-    *   Wait for Gradle sync to complete.
-    *   Connect your device or start an emulator.
-    *   Click the **Run** button (green play icon).
 
-## 🔒 Permissions
+2.  **Open in Android Studio**
+    *   File -> Open -> Select project root.
+    *   Allow Gradle sync to finish.
 
-To function correctly, MusicBox requires access to your device's storage to read audio files.
-*   On first launch, you will be prompted to grant **Storage/Music** permissions.
-*   The app gracefully handles permission denial with informative prompts.
-
-## 📱 App Structure
-
-*   **Home**: Customizable dashboard with quick access to all music categories
-*   **Tracks**: Complete track listing with sorting and filtering options
-*   **Albums**: Browse music organized by album with hidden track filtering
-*   **Artists**: View all artists with track counts and dynamic navigation
-*   **Playlists**: Create and manage custom playlists stored locally
-*   **Search**: Global search across tracks, albums, and artists
-*   **Settings**: Customize app behavior, navigation, home layout, and track filtering
-*   **Now Playing**: Full-screen player with artwork, controls, queue, and sharing options
-
-## 🤝 Contributing
-
-Contributions are welcome! If you have suggestions for new features or bug fixes:
-
-1.  Fork the repository.
-2.  Create a new branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the branch (`git push origin feature/AmazingFeature`).
-5.  Open a Pull Request.
-
-## 👤 Author
-
-**Farjan Ahmmed**
-
-*   **Website**: [farjan.me](https://www.farjan.me)
-*   **GitHub**: [shejanahmmed](https://github.com/shejanahmmed)
-*   **LinkedIn**: [Farjan Ahmmed](https://www.linkedin.com/in/farjan-ahmmed/)
-*   **Instagram**: [iamshejan](https://www.instagram.com/iamshejan/)
-*   **Email**: [farjan.swe@gmail.com](mailto:farjan.swe@gmail.com)
-
-## 📄 License
-
-Copyright (C) 2026 Shejan
-
-This project is licensed under the **GNU General Public License v3.0**.  
-You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.
-
-See the [LICENSE](LICENSE) file for details.
+3.  **Build & Run**
+    *   Select `app` configuration.
+    *   Run on Emulator or Device (Ensure distinct profile for storage permission tests).
 
 ---
 
-*Made with ❤️ and Kotlin.*
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these guidelines:
+
+1.  **Fork** the repository.
+2.  **Branch** off `main` (`git checkout -b feature/dynamic-colors`).
+3.  **Commit** with clear messages (`git commit -m "Feat: Add dynamic color support"`).
+4.  **Pull Request** targeted at `main`.
+
+Please ensure your code follows the **Kotlin Style Guide** and includes relevant comments.
+
+---
+
+## 👤 Author
+
+**Shejan Ahmmed**
+*   **GitHub**: [shejanahmmed](https://github.com/shejanahmmed)
+*   **LinkedIn**: [Shejan Ahmmed](https://www.linkedin.com/in/farjan-ahmmed/)
+
+---
+
+## 📄 License
+
+This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](LICENSE) file for details.
