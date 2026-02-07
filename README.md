@@ -1,3 +1,5 @@
+<div align="center">
+
 # MusicBox 🎵
 
 **The Premium Offline Music Experience for Android**
@@ -6,6 +8,7 @@
 [![Android](https://img.shields.io/badge/Android-9.0%2B-3DDC84.svg?logo=android&style=for-the-badge)](https://developer.android.com)
 [![License](https://img.shields.io/badge/License-GPLv3-lightgrey.svg?style=for-the-badge)](LICENSE)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/graphs/commit-activity)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/shejanahmmed/MusicBox---Offline-Music-Player-App/android.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/actions)
 
 <p align="center">
   <a href="#-features">Features</a> •
@@ -45,25 +48,7 @@ Unlike generic players, MusicBox features a **procedural artwork engine** that g
 
 ---
 
-## 📱 Visual Tour
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center"><b>Home (Dark)</b></td>
-      <td align="center"><b>Player (Light)</b></td>
-      <td align="center"><b>Library</b></td>
-    </tr>
-    <tr>
-      <td><img src="docs/screenshots/home_dark.png" width="250" alt="Home Dark" /></td>
-      <td><img src="docs/screenshots/player_light.png" width="250" alt="Player Light" /></td>
-      <td><img src="docs/screenshots/library.png" width="250" alt="Library" /></td>
-    </tr>
-  </table>
-  <p><i>*Screenshots are placeholders.</i></p>
-</div>
-
----
 
 ## 🏗️ Architecture & Engineering
 
@@ -156,10 +141,18 @@ If you find a bug, please create an Issue with:
 
 **Shejan Ahmmed**
 
-*   🌐 **Website**: [shejan.me](https://www.farjan.me)
-*   💻 **GitHub**: [shejanahmmed](https://github.com/shejanahmmed)
-*   💼 **LinkedIn**: [Shejan Ahmmed](https://www.linkedin.com/in/farjan-ahmmed/)
-*   📧 **Email**: [farjan.swe@gmail.com](mailto:farjan.swe@gmail.com)
+<a href="https://shejan.me">
+  <img src="https://img.shields.io/badge/Website-shejan.me-blue?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website" />
+</a>
+<a href="https://github.com/shejanahmmed">
+  <img src="https://img.shields.io/badge/GitHub-shejanahmmed-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
+</a>
+<a href="https://www.linkedin.com/in/farjan-ahmmed/">
+  <img src="https://img.shields.io/badge/LinkedIn-Shejan%20Ahmmed-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+</a>
+<a href="mailto:farjan.swe@gmail.com">
+  <img src="https://img.shields.io/badge/Email-farjan.swe%40gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email" />
+</a>
 
 ---
 
