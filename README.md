@@ -95,7 +95,7 @@ com.shejan.musicbox
 
 ## 📥 Download
 
-The latest APK (v1.0.0) is available on the [Releases Page](https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/releases).
+The latest APK (v1.1.0) is available on the [Releases Page](https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/releases).
 
 <a href="https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/releases">
   <img src="https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android" alt="Download APK" />
