@@ -59,12 +59,14 @@ object MiniPlayerManager {
                     if (abs(diffX) > swipeThreshold && abs(velocityX) > swipeVelocityThreshold) {
                         if (diffX > 0) {
                             // Swipe left-to-right: Previous track
+                            MusicUtils.performHapticFeedback(activity)
                             val intent = Intent(activity, MusicService::class.java)
                             intent.action = MusicService.ACTION_PREV
                             activity.startService(intent)
                             return true
                         } else {
                             // Swipe right-to-left: Next track
+                            MusicUtils.performHapticFeedback(activity)
                             val intent = Intent(activity, MusicService::class.java)
                             intent.action = MusicService.ACTION_NEXT
                             activity.startService(intent)
@@ -98,6 +100,7 @@ object MiniPlayerManager {
 
         // Setup button click listeners
         activity.findViewById<ImageButton>(R.id.btn_mini_play)?.setOnClickListener {
+            MusicUtils.performHapticFeedback(activity)
             val service = getMusicService()
             if (service != null) {
                 if (service.isPlaying()) service.pause() else service.play()
@@ -108,13 +111,17 @@ object MiniPlayerManager {
             }
         }
         
+        
         activity.findViewById<ImageButton>(R.id.btn_mini_next)?.setOnClickListener {
+            MusicUtils.performHapticFeedback(activity)
             val intent = Intent(activity, MusicService::class.java)
             intent.action = MusicService.ACTION_NEXT
             activity.startService(intent)
         }
         
+        
         activity.findViewById<ImageButton>(R.id.btn_mini_prev)?.setOnClickListener {
+            MusicUtils.performHapticFeedback(activity)
             val intent = Intent(activity, MusicService::class.java)
             intent.action = MusicService.ACTION_PREV
             activity.startService(intent)
