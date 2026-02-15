@@ -14,8 +14,9 @@
   <a href="#-features">Features</a> •
   <a href="#-download">Download</a> •
   <a href="#-tech-stack">Tech Stack</a> •
-  <a href="#-roadmap">Roadmap</a> •
-  <a href="#-contributing">Contributing</a>
+
+<a href="#-contributing">Contributing</a>
+
 </p>
 
 </div>
@@ -27,16 +28,6 @@
 **MusicBox** is an open-source, ad-free, and privacy-focused offline music player designed for audiophiles who value **aesthetics** as much as **performance**.
 
 Built with **Modern Android Development** practices (Kotlin, MVVM, Coroutines), it delivers a buttery smooth experience wrapped in a stunning **Glassmorphic UI**. Unlike generic players, MusicBox features a **procedural artwork engine** that generates unique, vintage-style vinyl covers for tracks missing metadata, ensuring your library always looks premium.
-
----
-
-## 📱 Visual Showcase
-
-> _Screenshots coming soon..._
-
-|                            **Now Playing**                             |                            **Library**                             |                              **Themes**                              |
-| :--------------------------------------------------------------------: | :----------------------------------------------------------------: | :------------------------------------------------------------------: |
-| <img src="docs/screenshots/now_playing_placeholder.png" width="200" /> | <img src="docs/screenshots/library_placeholder.png" width="200" /> | <img src="docs/screenshots/dark_mode_placeholder.png" width="200" /> |
 
 ---
 
@@ -109,18 +100,6 @@ The latest APK is available on the [Releases Page](https://github.com/shejanahmm
 <a href="https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/releases">
   <img src="https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android" alt="Download APK" />
 </a>
-
----
-
-## 🛣️ Roadmap
-
-| Version  | Status       | Focus                                                    |
-| :------- | :----------- | :------------------------------------------------------- |
-| **v1.0** | ✅ Completed | Core Playback, Dark/Light Themes, Vinyl Engine.          |
-| **v1.1** | ✅ Completed | UI Polish, Haptic Feedback, Auto-Scroll, Swipe Gestures. |
-| **v1.2** | 🚧 Planned   | Equalizer integration (System & Custom bands).           |
-| **v1.3** | 🚧 Planned   | Lyrics support (LRC file parsing).                       |
-| **v2.0** | 🔮 Future    | Material You (Monet) Dynamic Theming.                    |
 
 ---
 
