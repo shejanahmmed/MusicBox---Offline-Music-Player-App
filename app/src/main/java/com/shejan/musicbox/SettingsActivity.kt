@@ -205,6 +205,24 @@ class SettingsActivity : AppCompatActivity() {
             dialog.show()
         }
 
+        // Haptic Feedback
+        val switchHaptic = findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switch_haptic_feedback)
+        val cardHaptic = findViewById<android.view.View>(R.id.card_haptic_feedback)
+        
+        // Load preference
+        switchHaptic.isChecked = prefs.getBoolean("haptic_feedback_enabled", true)
+        
+        // Toggle switch when card is clicked
+        cardHaptic.setOnClickListener {
+            switchHaptic.isChecked = !switchHaptic.isChecked
+        }
+        
+        switchHaptic.setOnCheckedChangeListener { _, isChecked ->
+             prefs.edit { putBoolean("haptic_feedback_enabled", isChecked) }
+             val msg = if (isChecked) "Haptic feedback enabled" else "Haptic feedback disabled"
+             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
+
 
     // Scanning
         findViewById<android.view.View>(R.id.card_scanning).setOnClickListener {
