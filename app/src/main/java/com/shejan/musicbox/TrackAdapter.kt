@@ -107,4 +107,8 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         if (oldPos != -1) notifyItemChanged(oldPos)
         if (newPos != -1) notifyItemChanged(newPos)
     }
+
+    fun indexOfTrack(trackId: Long): Int {
+        return tracks.indexOfFirst { it.id == trackId }
+    }
 }

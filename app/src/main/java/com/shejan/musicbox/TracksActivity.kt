@@ -61,6 +61,7 @@ class TracksActivity : AppCompatActivity() {
     private val requestCodeReadStorage = 1001
     private var musicService: MusicService? = null
     private var isBound = false
+    private var initialScrollDone = false
     
     // Sort State
     private var sortColumn = MediaStore.Audio.Media.TITLE
@@ -107,6 +108,7 @@ class TracksActivity : AppCompatActivity() {
             musicService = binder.getService()
             isBound = true
             updateMiniPlayer()
+            attemptScrollToActiveTrack()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -203,6 +205,7 @@ class TracksActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         setIntent(intent)
+        initialScrollDone = false // Reset on new intent (e.g. from Home to Playlist)
         loadTracks()
         NavUtils.setupNavigation(this, getNavId())
     }
@@ -241,6 +244,10 @@ class TracksActivity : AppCompatActivity() {
              loadTracks()
              isEditingPlaylist = false
         }
+        
+        // Force scroll on resume to ensure active track is visible
+        initialScrollDone = false
+        attemptScrollToActiveTrack()
     }
     
     private fun updateMiniPlayer() {
@@ -373,6 +380,46 @@ class TracksActivity : AppCompatActivity() {
                     rvTracks.adapter = adapter
                 } else {
                     adapter?.updateData(trackList)
+                }
+
+                if (!initialScrollDone && trackList.isNotEmpty()) {
+                    attemptScrollToActiveTrack()
+                }
+            }
+        }
+    }
+
+    private fun attemptScrollToActiveTrack() {
+        if (initialScrollDone) return
+
+        val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks) ?: return
+        val adapter = rvTracks.adapter as? TrackAdapter ?: return
+        if (adapter.itemCount == 0) return
+
+        var currentTrackId: Long = -1
+        if (isBound && musicService != null) {
+            currentTrackId = musicService?.getCurrentTrack()?.id ?: -1
+        } else if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
+            currentTrackId = MusicService.playlist[MusicService.currentIndex].id
+        }
+
+        if (currentTrackId != -1L) {
+            val index = adapter.indexOfTrack(currentTrackId)
+            
+            if (index != -1) {
+                // Robust Scroll: Wait for Layout to be ready
+                // If already laid out, scroll immediately. If not, wait.
+                if (rvTracks.width > 0 && rvTracks.height > 0) {
+                     (rvTracks.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index, 300)
+                     initialScrollDone = true
+                } else {
+                    rvTracks.viewTreeObserver.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+                        override fun onGlobalLayout() {
+                            rvTracks.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                            (rvTracks.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(index, 300)
+                            initialScrollDone = true
+                        }
+                    })
                 }
             }
         }
