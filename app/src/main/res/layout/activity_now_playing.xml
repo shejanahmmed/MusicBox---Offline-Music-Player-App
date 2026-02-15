@@ -278,8 +278,9 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_shuffle"
         app:tint="@color/colorIconSecondary"
-        android:layout_marginStart="32dp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btn_prev_large"
+        app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintTop_toTopOf="@+id/btn_play_large"
         app:layout_constraintBottom_toBottomOf="@+id/btn_play_large" />
 
@@ -291,7 +292,7 @@
         android:src="@drawable/ic_skip_previous"
         app:tint="@color/colorIcon"
         android:scaleType="centerInside"
-        android:layout_marginEnd="16dp"
+        app:layout_constraintStart_toEndOf="@+id/btn_shuffle_large"
         app:layout_constraintEnd_toStartOf="@+id/btn_play_large"
         app:layout_constraintTop_toTopOf="@+id/btn_play_large"
         app:layout_constraintBottom_toBottomOf="@+id/btn_play_large" />
@@ -307,8 +308,8 @@
         app:tint="@color/colorSurface"
         android:scaleType="centerInside"
         android:padding="20dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btn_prev_large"
+        app:layout_constraintEnd_toStartOf="@+id/btn_next_large"
         app:layout_constraintBottom_toBottomOf="parent" />
 
     <ImageButton
@@ -319,8 +320,8 @@
         android:src="@drawable/ic_skip_next"
         app:tint="@color/colorIcon"
         android:scaleType="centerInside"
-        android:layout_marginStart="16dp"
         app:layout_constraintStart_toEndOf="@+id/btn_play_large"
+        app:layout_constraintEnd_toStartOf="@+id/btn_repeat_large"
         app:layout_constraintTop_toTopOf="@+id/btn_play_large"
         app:layout_constraintBottom_toBottomOf="@+id/btn_play_large" />
 
@@ -331,7 +332,7 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_repeat"
         app:tint="@color/primary_red"
-        android:layout_marginEnd="32dp"
+        app:layout_constraintStart_toEndOf="@+id/btn_next_large"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/btn_play_large"
         app:layout_constraintBottom_toBottomOf="@+id/btn_play_large" />
