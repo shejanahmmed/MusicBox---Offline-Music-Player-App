@@ -242,28 +242,7 @@ class SettingsActivity : AppCompatActivity() {
 
 
 
-        // Pre-Release Notification
-        val switchPreRelease = findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switch_pre_release)
-        val cardPreRelease = findViewById<android.view.View>(R.id.card_pre_release)
-        
-        // Load preference
-        switchPreRelease.isChecked = prefs.getBoolean("show_pre_releases", false)
-        
-        // Toggle switch when card is clicked
-        cardPreRelease.setOnClickListener {
-            switchPreRelease.isChecked = !switchPreRelease.isChecked
-        }
-        
-        switchPreRelease.setOnCheckedChangeListener { _, isChecked ->
-             prefs.edit { putBoolean("show_pre_releases", isChecked) }
-             val msg = if (isChecked) getString(R.string.notifications_enabled) else getString(R.string.notifications_disabled)
-             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-             
-             // Trigger check immediately if enabled
-             if (isChecked) {
-                 GitHubReleaseManager.checkForUpdates(this, isManualCheck = true)
-             }
-        }
+
 
         // Github
         findViewById<android.view.View>(R.id.card_github).setOnClickListener {
@@ -306,9 +285,6 @@ class SettingsActivity : AppCompatActivity() {
         val tvVersionValue = findViewById<android.widget.TextView>(R.id.tv_version_value)
         tvVersionValue.text = getString(R.string.version_fmt, BuildConfig.VERSION_NAME)
         
-        findViewById<android.view.View>(R.id.card_version).setOnClickListener {
-            GitHubReleaseManager.checkForUpdates(this, isManualCheck = true)
-        }
     }
 
     private fun scanMediaFiles() {

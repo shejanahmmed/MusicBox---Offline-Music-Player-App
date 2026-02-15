@@ -50,8 +50,7 @@
     <string name="playlist_track_count">%1$d Tracks</string>
     <string name="filter_updated">Filter updated: %1$d seconds</string>
     <string name="enter_valid_number">Please enter a valid number</string>
-    <string name="notifications_enabled">Notifications enabled</string>
-    <string name="notifications_disabled">Notifications disabled</string>
+
     <string name="open_browser_error">Cannot open link</string>
     <string name="scanning_started">Scanning started...</string>
     <string name="tracks_found">Found %1$d tracks</string>
@@ -101,13 +100,7 @@
     <string name="msg_storage_permission">Storage permission is required to load songs</string>
     <string name="delete_tracks_dialog_restore_message">Restore \"%1$s\" to your library?</string>
     
-    <!-- Update Manager -->
-    <string name="update_available_title">Update Available: %1$s</string>
-    <string name="download">Update</string>
-    <string name="later">Cancel</string>
-    <string name="no_updates_found">No updates found</string>
-    <string name="checking_for_updates">Checking for updates...</string>
-    <string name="update_error">Error checking for updates</string>
+
 
     <string name="privacy_policy_title">Privacy Policy</string>
     <string name="privacy_policy_desc">Read our privacy policy</string>
