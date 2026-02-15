@@ -94,6 +94,7 @@ object NavUtils {
                 
                 // Click Listener
                 itemView.setOnClickListener {
+                    MusicUtils.performHapticFeedback(activity)
                     val targetClass = TabManager.getTargetActivity(tab.id)
                     if (activity.javaClass != targetClass || tab.viewId != activeNavId) {
                         val intent = Intent(activity, targetClass)
@@ -147,6 +148,7 @@ object NavUtils {
         }
 
         view.setOnClickListener {
+            MusicUtils.performHapticFeedback(activity)
             if (activity.javaClass != targetClass || id != activeId) {
                  val intent = Intent(activity, targetClass)
                  intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)

@@ -149,6 +149,7 @@ object TrackMenuManager {
             btnFavorite.setColorFilter(activity.getColor(R.color.primary_red))
         }
         btnFavorite.setOnClickListener {
+            MusicUtils.performHapticFeedback(activity)
             if (FavoritesManager.isFavorite(activity, track.uri)) {
                 FavoritesManager.removeFavorite(activity, track.uri)
                 Toast.makeText(activity, activity.getString(R.string.removed_from_favorites), Toast.LENGTH_SHORT).show()

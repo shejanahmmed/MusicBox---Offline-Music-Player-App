@@ -287,4 +287,21 @@ object MusicUtils {
             }
             .start()
     }
+
+    fun performHapticFeedback(context: Context) {
+        try {
+            val prefs = context.getSharedPreferences("MusicBoxPrefs", Context.MODE_PRIVATE)
+            if (prefs.getBoolean("haptic_feedback_enabled", false)) {
+                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    vibrator.vibrate(android.os.VibrationEffect.createPredefined(android.os.VibrationEffect.EFFECT_CLICK))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(10) // Fallback for older devices
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }
