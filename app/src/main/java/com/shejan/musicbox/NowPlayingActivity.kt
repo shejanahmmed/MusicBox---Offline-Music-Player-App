@@ -277,16 +277,23 @@ class NowPlayingActivity : AppCompatActivity() {
                 if (fromUser) {
                     try {
                         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0)
+                        MusicUtils.performHapticFeedback(this@NowPlayingActivity)
                     } catch (_: SecurityException) {
                         Toast.makeText(this@NowPlayingActivity, getString(R.string.error_volume_restricted), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                isDraggingVolume = true
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                isDraggingVolume = false
+            }
         })
 
         findViewById<ImageButton>(R.id.btn_volume_down).setOnClickListener {
+             MusicUtils.viewBubbleAnimation(it)
+             MusicUtils.performHapticFeedback(this)
              val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
              val newVol = (currentVol - 1).coerceAtLeast(0)
              try {
@@ -298,6 +305,8 @@ class NowPlayingActivity : AppCompatActivity() {
         }
 
         findViewById<ImageButton>(R.id.btn_volume_up).setOnClickListener {
+             MusicUtils.viewBubbleAnimation(it)
+             MusicUtils.performHapticFeedback(this)
              val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
              val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
              val newVol = (currentVol + 1).coerceAtMost(maxVol)
@@ -319,6 +328,7 @@ class NowPlayingActivity : AppCompatActivity() {
 
         btnPlayPause.setOnClickListener {
              MusicUtils.viewBubbleAnimation(it)
+             MusicUtils.performHapticFeedback(this)
              if (musicService?.isPlaying() == true) {
                  musicService?.pause()
              } else {
@@ -327,10 +337,14 @@ class NowPlayingActivity : AppCompatActivity() {
         }
         
         btnNext.setOnClickListener {
+            MusicUtils.viewBubbleAnimation(it)
+            MusicUtils.performHapticFeedback(this)
             musicService?.playNext()
         }
         
         btnPrev.setOnClickListener {
+            MusicUtils.viewBubbleAnimation(it)
+            MusicUtils.performHapticFeedback(this)
             musicService?.playPrev()
         }
 
@@ -361,6 +375,8 @@ class NowPlayingActivity : AppCompatActivity() {
         // Favorite Button Logic
         val btnFav = findViewById<ImageButton>(R.id.btn_fav_large)
         btnFav.setOnClickListener {
+            MusicUtils.viewBubbleAnimation(it)
+            MusicUtils.performHapticFeedback(this)
             val track = musicService?.getCurrentTrack() ?: return@setOnClickListener
             if (FavoritesManager.isFavorite(this, track.uri)) {
                 FavoritesManager.removeFavorite(this, track.uri)
@@ -418,6 +434,9 @@ class NowPlayingActivity : AppCompatActivity() {
         })
     }
     
+    // Flag to prevent double haptics during drag and receiver update
+    private var isDraggingVolume = false
+
     private fun updateUI() {
         if (!isBound || musicService == null) return
         
@@ -514,7 +533,7 @@ class NowPlayingActivity : AppCompatActivity() {
     private val volumeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "android.media.VOLUME_CHANGED_ACTION") {
-                updateVolumeBar()
+                updateVolumeBar(feedback = true)
             }
         }
     }
@@ -539,7 +558,7 @@ class NowPlayingActivity : AppCompatActivity() {
         ContextCompat.registerReceiver(this, volumeReceiver, volumeFilter, ContextCompat.RECEIVER_EXPORTED)
         
         // Sync Volume on Start
-        updateVolumeBar()
+        updateVolumeBar(feedback = false)
     }
 
     override fun onStop() {
@@ -559,11 +578,25 @@ class NowPlayingActivity : AppCompatActivity() {
         handler.removeCallbacks(updateProgressAction)
     }
     
-    private fun updateVolumeBar() {
+    private fun updateVolumeBar(feedback: Boolean = false) {
         try {
             val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
             val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-            findViewById<SeekBar>(R.id.sb_volume)?.progress = currentVolume
+            val seekBar = findViewById<SeekBar>(R.id.sb_volume)
+            
+            // Allow update if not dragging, OR if value mismatches significantly (external force)
+            // But main goal is to avoid clearing drag state.
+            // If dragging, we mostly trust user, but if physical key pressed, we must update.
+            // But physical key implies !isDraggingVolume usually (unless multitasking?)
+            
+            if (!isDraggingVolume) {
+                if (seekBar != null && seekBar.progress != currentVolume) {
+                    seekBar.progress = currentVolume
+                    if (feedback) {
+                         MusicUtils.performHapticFeedback(this)
+                    }
+                }
+            }
         } catch (_: Exception) {}
     }
     

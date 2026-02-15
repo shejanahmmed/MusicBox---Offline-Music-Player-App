@@ -210,7 +210,7 @@ class SettingsActivity : AppCompatActivity() {
         val cardHaptic = findViewById<android.view.View>(R.id.card_haptic_feedback)
         
         // Load preference
-        switchHaptic.isChecked = prefs.getBoolean("haptic_feedback_enabled", true)
+        switchHaptic.isChecked = prefs.getBoolean("haptic_feedback_enabled", false)
         
         // Toggle switch when card is clicked
         cardHaptic.setOnClickListener {
@@ -221,6 +221,11 @@ class SettingsActivity : AppCompatActivity() {
              prefs.edit { putBoolean("haptic_feedback_enabled", isChecked) }
              val msg = if (isChecked) "Haptic feedback enabled" else "Haptic feedback disabled"
              Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+             
+             // Feedback for the toggle itself
+             if (isChecked) {
+                 MusicUtils.performHapticFeedback(this)
+             }
         }
 
 
