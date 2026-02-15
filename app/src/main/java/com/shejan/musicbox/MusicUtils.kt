@@ -272,4 +272,19 @@ object MusicUtils {
 
         return inSampleSize
     }
+    fun viewBubbleAnimation(view: android.view.View) {
+        view.animate()
+            .scaleX(0.9f)
+            .scaleY(0.9f)
+            .setDuration(100)
+            .withEndAction {
+                view.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setInterpolator(android.view.animation.OvershootInterpolator())
+                    .setDuration(100)
+                    .start()
+            }
+            .start()
+    }
 }

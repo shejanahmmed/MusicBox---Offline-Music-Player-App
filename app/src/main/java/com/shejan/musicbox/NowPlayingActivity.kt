@@ -318,6 +318,7 @@ class NowPlayingActivity : AppCompatActivity() {
         }
 
         btnPlayPause.setOnClickListener {
+             MusicUtils.viewBubbleAnimation(it)
              if (musicService?.isPlaying() == true) {
                  musicService?.pause()
              } else {
