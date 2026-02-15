@@ -111,10 +111,7 @@ class MainActivity : AppCompatActivity() {
         // Setup Home Boxes RecyclerView
         setupHomeBoxes()
         
-        // Check for Updates
-        if (prefs.getBoolean("show_pre_releases", false)) {
-            GitHubReleaseManager.checkForUpdates(this, isManualCheck = false)
-        }
+
     }
     
     private fun setupHomeBoxes() {
