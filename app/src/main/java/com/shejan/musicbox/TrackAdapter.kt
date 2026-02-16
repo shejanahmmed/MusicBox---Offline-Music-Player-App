@@ -59,6 +59,9 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         }
 
         holder.root.setOnClickListener {
+            // Haptic Feedback
+            MusicUtils.performHapticFeedback(holder.root.context)
+
             // FIXED: Use centralized playlist update to handle shuffle logic
             MusicService.updatePlaylist(tracks, position)
             
@@ -73,6 +76,8 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         }
         
         holder.options.setOnClickListener {
+            // Haptic Feedback for options too
+            MusicUtils.performHapticFeedback(holder.options.context)
             onMoreClicked(track)
         }
 

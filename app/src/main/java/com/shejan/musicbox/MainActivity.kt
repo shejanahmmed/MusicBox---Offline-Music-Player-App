@@ -137,6 +137,7 @@ class MainActivity : AppCompatActivity() {
                 val (count, label, onClick) = when (box.id) {
                     HomeBoxPreferences.BOX_FAVORITES -> {
                         Triple(getFavoriteCount(), "Favorites") {
+                            MusicUtils.performHapticFeedback(this@MainActivity)
                             val intent = Intent(this@MainActivity, TracksActivity::class.java)
                             intent.putExtra("SHOW_FAVORITES", true)
                             startActivity(intent)
@@ -146,6 +147,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     HomeBoxPreferences.BOX_PLAYLISTS -> {
                         Triple(getPlaylistCount(), "Playlists") {
+                             MusicUtils.performHapticFeedback(this@MainActivity)
                             startActivity(Intent(this@MainActivity, PlaylistActivity::class.java))
                             @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
@@ -153,6 +155,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     HomeBoxPreferences.BOX_ALBUMS -> {
                         Triple(getAlbumCount(), "Albums") {
+                             MusicUtils.performHapticFeedback(this@MainActivity)
                             startActivity(Intent(this@MainActivity, AlbumsActivity::class.java))
                             @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
@@ -160,6 +163,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     HomeBoxPreferences.BOX_ARTISTS -> {
                         Triple(getArtistCount(), "Artists") {
+                             MusicUtils.performHapticFeedback(this@MainActivity)
                             startActivity(Intent(this@MainActivity, ArtistsActivity::class.java))
                             @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
@@ -167,6 +171,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     HomeBoxPreferences.BOX_TRACKS -> {
                         Triple(getTrackCount(), "Tracks") {
+                             MusicUtils.performHapticFeedback(this@MainActivity)
                             startActivity(Intent(this@MainActivity, TracksActivity::class.java))
                             @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
@@ -174,6 +179,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     HomeBoxPreferences.BOX_EQUALIZER -> {
                         Triple(-1, "Tune Sound") {
+                             MusicUtils.performHapticFeedback(this@MainActivity)
                             openEqualizer()
                         }
                     }

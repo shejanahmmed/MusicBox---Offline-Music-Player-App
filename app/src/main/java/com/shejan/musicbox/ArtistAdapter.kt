@@ -45,7 +45,10 @@ class ArtistAdapter(private val artists: List<Artist>, private val onClick: (Art
         holder.name.text = artist.name
         holder.count.text = holder.itemView.context.getString(R.string.artist_track_count, artist.trackCount)
         
-        holder.itemView.setOnClickListener { onClick(artist) }
+        holder.itemView.setOnClickListener { 
+            MusicUtils.performHapticFeedback(holder.itemView.context)
+            onClick(artist) 
+        }
     }
 
     override fun getItemCount() = artists.size

@@ -59,6 +59,7 @@ class QueueAdapter(
         }
         
         holder.itemView.setOnClickListener {
+            MusicUtils.performHapticFeedback(holder.itemView.context)
             onTrackClick(position)
         }
     }
