@@ -56,7 +56,10 @@ class AlbumAdapter(private val albums: List<Album>, private val onClick: (Album)
         // If we had a load function in Context extension:
         // context.loadAlbumArt(album.id, holder.art)
         
-        holder.itemView.setOnClickListener { onClick(album) }
+        holder.itemView.setOnClickListener { 
+            MusicUtils.performHapticFeedback(holder.itemView.context)
+            onClick(album) 
+        }
     }
 
     override fun getItemCount() = albums.size

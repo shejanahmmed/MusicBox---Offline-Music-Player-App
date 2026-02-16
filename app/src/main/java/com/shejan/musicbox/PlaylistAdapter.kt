@@ -68,7 +68,10 @@ class PlaylistAdapter(
              holder.thumb.setBackgroundColor(holder.root.context.getColor(R.color.colorBackground)) // Semantic Placeholder
         }
 
-        holder.root.setOnClickListener { onClick(item) }
+        holder.root.setOnClickListener { 
+            MusicUtils.performHapticFeedback(holder.root.context)
+            onClick(item) 
+        }
         holder.root.setOnLongClickListener {
             onLongClick?.invoke(item)
             true

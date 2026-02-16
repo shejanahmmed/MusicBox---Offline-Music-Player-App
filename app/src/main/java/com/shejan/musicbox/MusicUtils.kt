@@ -185,7 +185,7 @@ object MusicUtils {
               if (bitmap != null) return bitmap
           }
 
-           // Fallback: Use MediaMetadataRetriever for raw file paths (Folder Browser)
+           // Fallback: Use MediaMetadataRetriever for raw file paths
            if (trackUri.isNotEmpty() && !trackUri.startsWith("content://")) {
                try {
                    val mmr = android.media.MediaMetadataRetriever()

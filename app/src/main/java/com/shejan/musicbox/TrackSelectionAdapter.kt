@@ -64,6 +64,8 @@ class TrackSelectionAdapter(
         }
 
         holder.root.setOnClickListener {
+            // Haptic Feedback
+            MusicUtils.performHapticFeedback(holder.root.context)
             holder.checkBox.isChecked = !holder.checkBox.isChecked
         }
     }
