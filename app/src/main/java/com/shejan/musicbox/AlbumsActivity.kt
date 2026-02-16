@@ -39,6 +39,9 @@ import android.content.IntentFilter
 import android.content.ServiceConnection
 
 import android.os.IBinder
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.activity.enableEdgeToEdge
 
 class AlbumsActivity : AppCompatActivity() {
 
@@ -100,7 +103,15 @@ class AlbumsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_albums)
+
+        // Apply WindowInsets to handle Navigation Bar overlap
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(view.paddingLeft, systemBars.top, view.paddingRight, systemBars.bottom)
+            insets
+        }
 
         setupNav()
         

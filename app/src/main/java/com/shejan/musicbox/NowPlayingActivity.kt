@@ -45,6 +45,7 @@ import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.media.audiofx.AudioEffect
+import androidx.activity.enableEdgeToEdge
 
 class NowPlayingActivity : AppCompatActivity() {
 
@@ -136,6 +137,7 @@ class NowPlayingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_now_playing)
         
         // Initial UI Static Setup
@@ -163,7 +165,7 @@ class NowPlayingActivity : AppCompatActivity() {
         // Apply WindowInsets to handle Navigation Bar overlap
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, systemBars.bottom)
+            view.setPadding(view.paddingLeft, systemBars.top, view.paddingRight, systemBars.bottom)
             insets
         }
     }

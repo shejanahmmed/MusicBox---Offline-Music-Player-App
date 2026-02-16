@@ -29,6 +29,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.activity.enableEdgeToEdge
 
 class HomeCustomizationActivity : AppCompatActivity() {
     
@@ -36,12 +37,13 @@ class HomeCustomizationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_home_customization)
 
         // Apply WindowInsets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, systemBars.bottom)
+            view.setPadding(view.paddingLeft, systemBars.top, view.paddingRight, systemBars.bottom)
             insets
         }
 

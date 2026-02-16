@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.MusicBox" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Base.Theme.MusicBox" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/primary_red</item>
         <item name="colorPrimaryVariant">@color/background_dark</item>
@@ -9,13 +9,16 @@
         <item name="colorSecondary">@color/primary_red</item>
         <item name="colorSecondaryVariant">@color/primary_red</item>
         <item name="colorOnSecondary">@color/black</item>
+        <!-- Customize your theme here. -->
+        <item name="android:fontFamily">@font/arimo</item>
+        <item name="fontFamily">@font/arimo</item>
+    </style>
+
+    <style name="Theme.MusicBox" parent="Base.Theme.MusicBox">
         <!-- Status bar color. -->
         <item name="android:statusBarColor">@color/colorBackground</item>
         <item name="android:navigationBarColor">@color/colorBackground</item>
         <item name="android:windowLightStatusBar">@bool/isLightStatusBar</item>
-        <!-- Customize your theme here. -->
-        <item name="android:fontFamily">@font/arimo</item>
-        <item name="fontFamily">@font/arimo</item>
     </style>
     
     <!-- Custom AlertDialog Theme -->

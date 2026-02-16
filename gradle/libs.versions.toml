@@ -12,6 +12,7 @@ ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitV
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+activity = { group = "androidx.activity", name = "activity-ktx", version = "1.9.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

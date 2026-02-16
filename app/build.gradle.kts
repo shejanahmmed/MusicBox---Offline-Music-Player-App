@@ -12,7 +12,7 @@ android {
         applicationId = "com.shejan.musicbox"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
+        versionCode = 5
         versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -41,6 +41,7 @@ android {
 dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
+    implementation(libs.activity)
     implementation("androidx.media:media:1.7.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
