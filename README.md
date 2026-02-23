@@ -4,12 +4,12 @@
 
 **The Premium Offline Music Experience for Android**
 
-[![Google Play](https://img.shields.io/badge/Google_Play-Get_it_now-green?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.shejan.musicbox)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-7F52FF.svg?logo=kotlin&style=for-the-badge)](https://kotlinlang.org)
-[![Android](https://img.shields.io/badge/Android-9.0%2B-3DDC84.svg?logo=android&style=for-the-badge)](https://developer.android.com)
-[![License](https://img.shields.io/badge/License-GPLv3-lightgrey.svg?style=for-the-badge)](LICENSE)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/graphs/commit-activity)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/shejanahmmed/MusicBox---Offline-Music-Player-App/android.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/actions)
+<a href="https://play.google.com/store/apps/details?id=com.shejan.musicbox">
+  <img alt="Get it on Google Play" height="60" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" />
+</a>
+<a href="https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/releases">
+  <img alt="Get it on GitHub" height="60" src="https://raw.githubusercontent.com/rubenpgrady/get-it-on-github/refs/heads/main/get-it-on-github.png" />
+</a>
 
 <p align="center">
   <a href="#-features">Features</a> •
@@ -99,14 +99,14 @@ com.shejan.musicbox
 **MusicBox is now available on the Google Play Store!**
 
 <a href="https://play.google.com/store/apps/details?id=com.shejan.musicbox">
-  <img src="https://img.shields.io/badge/Google_Play-Get_it_now-green?style=for-the-badge&logo=google-play&logoColor=white" alt="Get it on Google Play" />
+  <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="60" />
 </a>
 <br>
 
 Alternatively, you can download the latest APK from the [Releases Page](https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/releases).
 
 <a href="https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App/releases">
-  <img src="https://img.shields.io/badge/Download-APK-blue?style=for-the-badge&logo=android" alt="Download APK" />
+  <img src="https://raw.githubusercontent.com/rubenpgrady/get-it-on-github/refs/heads/main/get-it-on-github.png" alt="Get it on GitHub" height="60" />
 </a>
 
 ---
