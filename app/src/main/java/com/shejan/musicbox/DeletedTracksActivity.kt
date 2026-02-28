@@ -83,6 +83,7 @@ class DeletedTracksActivity : AppCompatActivity() {
     
             // ── 1. Query MediaStore.Audio for hidden audio tracks ────────────────
             try {
+                @Suppress("DEPRECATION")
                 contentResolver.query(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     arrayOf(
@@ -123,6 +124,7 @@ class DeletedTracksActivity : AppCompatActivity() {
 
             // ── 2. Query MediaStore.Video for hidden video files ─────────────────
             try {
+                @Suppress("DEPRECATION")
                 contentResolver.query(
                     MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                     arrayOf(

@@ -285,10 +285,9 @@ class SettingsActivity : AppCompatActivity() {
                         Toast.makeText(this, "Minimum must be less than maximum", Toast.LENGTH_SHORT).show()
                     }
                     else -> {
-                        videoPrefs.edit().apply {
+                        videoPrefs.edit {
                             putInt("video_min_duration_sec", minInput)
                             putInt("video_max_duration_sec", maxInput)
-                            apply()
                         }
                         val msg = if (maxInput == 0)
                             "Videos: min ${minInput}s, no max limit"

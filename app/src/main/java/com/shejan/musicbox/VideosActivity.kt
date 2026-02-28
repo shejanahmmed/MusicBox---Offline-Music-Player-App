@@ -115,9 +115,7 @@ class VideosActivity : AppCompatActivity() {
         adapter = VideoAdapter(emptyList()) { video -> showVideoOptions(video) }
         rvVideos.adapter = adapter
 
-        if (checkPermission()) {
-            loadVideos()
-        } else {
+        if (!checkPermission()) {
             requestPermission()
         }
 
@@ -160,7 +158,9 @@ class VideosActivity : AppCompatActivity() {
         super.onResume()
         updateMiniPlayer()
         NavUtils.setupNavigation(this, R.id.nav_videos)
-        loadVideos()   // re-apply duration filter and refresh list on every resume
+        if (checkPermission()) {
+            loadVideos()   // re-apply duration filter and refresh list on every resume
+        }
     }
 
 
@@ -196,11 +196,10 @@ class VideosActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == requestCodePermission) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                loadVideos()
-            } else {
+            if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Storage permission required to show videos.", Toast.LENGTH_LONG).show()
             }
+            // If permission granted, onResume will call loadVideos()
         }
     }
 
