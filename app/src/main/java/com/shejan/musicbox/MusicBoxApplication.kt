@@ -32,3 +32,4 @@ class MusicBoxApplication : Application() {
         AppCompatDelegate.setDefaultNightMode(themeMode)
     }
 }
+

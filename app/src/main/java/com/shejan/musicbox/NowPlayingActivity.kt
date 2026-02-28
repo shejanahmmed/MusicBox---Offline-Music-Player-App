@@ -45,6 +45,7 @@ import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.media.audiofx.AudioEffect
+import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
 
 class NowPlayingActivity : AppCompatActivity() {
@@ -62,7 +63,6 @@ class NowPlayingActivity : AppCompatActivity() {
             context.startActivity(intent)
             // Apply slide-up animation for drawer-style effect
             if (context is AppCompatActivity) {
-                @Suppress("DEPRECATION")
                 context.overridePendingTransition(R.anim.slide_up_enter, R.anim.no_animation)
             }
         }
@@ -137,7 +137,9 @@ class NowPlayingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_now_playing)
         
         // Initial UI Static Setup
@@ -148,7 +150,6 @@ class NowPlayingActivity : AppCompatActivity() {
 
         findViewById<ImageButton>(R.id.btn_back).setOnClickListener {
             finish()
-            @Suppress("DEPRECATION")
             overridePendingTransition(R.anim.no_animation, R.anim.slide_down_exit)
         }
         
@@ -194,7 +195,6 @@ class NowPlayingActivity : AppCompatActivity() {
                     val deltaY = ev.y - swipeStartY
                     if (deltaY > swipeThreshold) {
                         finish()
-                        @Suppress("DEPRECATION")
                         overridePendingTransition(R.anim.no_animation, R.anim.slide_down_exit)
                         return true // Consume event
                     }
@@ -718,3 +718,6 @@ class NowPlayingActivity : AppCompatActivity() {
     }
 
 }
+
+
+

@@ -151,3 +151,4 @@ class VideoAdapter(
         return (this * view.context.resources.displayMetrics.density).toInt()
     }
 }
+

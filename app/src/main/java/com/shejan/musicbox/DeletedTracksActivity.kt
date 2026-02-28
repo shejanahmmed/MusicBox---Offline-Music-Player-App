@@ -32,6 +32,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
 
 class DeletedTracksActivity : AppCompatActivity() {
@@ -43,7 +44,9 @@ class DeletedTracksActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_deleted_tracks)
 
         // Apply WindowInsets
@@ -80,7 +83,6 @@ class DeletedTracksActivity : AppCompatActivity() {
     
             // ── 1. Query MediaStore.Audio for hidden audio tracks ────────────────
             try {
-                @Suppress("DEPRECATION")
                 contentResolver.query(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     arrayOf(
@@ -121,7 +123,6 @@ class DeletedTracksActivity : AppCompatActivity() {
 
             // ── 2. Query MediaStore.Video for hidden video files ─────────────────
             try {
-                @Suppress("DEPRECATION")
                 contentResolver.query(
                     MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                     arrayOf(
@@ -227,4 +228,7 @@ class DeletedTracksActivity : AppCompatActivity() {
         loadDeletedTracks()
     }
 }
+
+
+
 

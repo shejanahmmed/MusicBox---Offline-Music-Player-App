@@ -34,6 +34,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
+import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
 
 class CreatePlaylistActivity : AppCompatActivity() {
@@ -45,7 +46,9 @@ class CreatePlaylistActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_create_playlist)
         
         // Apply WindowInsets to handle Navigation Bar overlap
@@ -161,4 +164,7 @@ class CreatePlaylistActivity : AppCompatActivity() {
 
     // MediaStore methods removed
 }
+
+
+
 
