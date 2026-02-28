@@ -117,3 +117,4 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         return tracks.indexOfFirst { it.id == trackId }
     }
 }
+

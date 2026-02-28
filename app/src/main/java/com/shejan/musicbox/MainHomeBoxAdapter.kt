@@ -87,3 +87,4 @@ class MainHomeBoxAdapter(
     override fun getItemCount() = boxes.size
 }
 
+

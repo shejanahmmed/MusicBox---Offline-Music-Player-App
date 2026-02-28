@@ -93,3 +93,4 @@ class TrackSelectionAdapter(
         selectedTracks.addAll(newSelection)
     }
 }
+

@@ -65,3 +65,4 @@ class AlbumAdapter(private val albums: List<Album>, private val onClick: (Album)
     override fun getItemCount() = albums.size
 }
 
+

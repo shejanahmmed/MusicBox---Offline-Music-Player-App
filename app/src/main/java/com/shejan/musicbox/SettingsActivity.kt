@@ -29,6 +29,7 @@ import androidx.core.graphics.drawable.toDrawable
 import androidx.core.net.toUri
 
 import android.annotation.SuppressLint
+import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -37,7 +38,9 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_settings)
         
         // Apply WindowInsets to handle Navigation Bar overlap
@@ -411,7 +414,6 @@ class SettingsActivity : AppCompatActivity() {
                 var count = 0
                 
                 // Query MediaStore for ALL audio files (including hidden tracks)
-                @Suppress("DEPRECATION")
                 contentResolver.query(
                     android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     arrayOf(android.provider.MediaStore.Audio.Media._ID, android.provider.MediaStore.Audio.Media.DATA),
@@ -489,3 +491,6 @@ class SettingsActivity : AppCompatActivity() {
         dialog.show()
     }
 }
+
+
+

@@ -41,6 +41,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
 
 class AlbumsActivity : AppCompatActivity() {
@@ -103,7 +104,9 @@ class AlbumsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_albums)
 
         // Apply WindowInsets to handle Navigation Bar overlap
@@ -204,4 +207,7 @@ class AlbumsActivity : AppCompatActivity() {
         NavUtils.setupNavigation(this, R.id.nav_albums)
     }
 }
+
+
+
 

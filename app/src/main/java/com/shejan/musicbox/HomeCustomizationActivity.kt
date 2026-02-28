@@ -29,6 +29,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
 
 class HomeCustomizationActivity : AppCompatActivity() {
@@ -37,7 +38,9 @@ class HomeCustomizationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_home_customization)
 
         // Apply WindowInsets
@@ -126,4 +129,7 @@ class HomeCustomizationActivity : AppCompatActivity() {
         }
     }
 }
+
+
+
 

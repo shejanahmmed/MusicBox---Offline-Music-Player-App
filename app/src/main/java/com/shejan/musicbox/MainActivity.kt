@@ -41,6 +41,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -48,7 +49,9 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
         // Check for first run
         val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
@@ -88,7 +91,6 @@ class MainActivity : AppCompatActivity() {
                 val target = TabManager.getTargetActivity(homeId)
                 if (target != MainActivity::class.java) {
                      startActivity(Intent(this, target))
-                     @Suppress("DEPRECATION")
                      overridePendingTransition(0, 0)
                      // Keep Main in backstack? Yes, usually.
                 }
@@ -143,7 +145,6 @@ class MainActivity : AppCompatActivity() {
                             val intent = Intent(this@MainActivity, TracksActivity::class.java)
                             intent.putExtra("SHOW_FAVORITES", true)
                             startActivity(intent)
-                            @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
                         }
                     }
@@ -151,7 +152,6 @@ class MainActivity : AppCompatActivity() {
                         Triple(getPlaylistCount(), "Playlists") {
                              MusicUtils.performHapticFeedback(this@MainActivity)
                             startActivity(Intent(this@MainActivity, PlaylistActivity::class.java))
-                            @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
                         }
                     }
@@ -159,7 +159,6 @@ class MainActivity : AppCompatActivity() {
                         Triple(getAlbumCount(), "Albums") {
                              MusicUtils.performHapticFeedback(this@MainActivity)
                             startActivity(Intent(this@MainActivity, AlbumsActivity::class.java))
-                            @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
                         }
                     }
@@ -167,7 +166,6 @@ class MainActivity : AppCompatActivity() {
                         Triple(getArtistCount(), "Artists") {
                              MusicUtils.performHapticFeedback(this@MainActivity)
                             startActivity(Intent(this@MainActivity, ArtistsActivity::class.java))
-                            @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
                         }
                     }
@@ -175,7 +173,6 @@ class MainActivity : AppCompatActivity() {
                         Triple(getTrackCount(), "Tracks") {
                              MusicUtils.performHapticFeedback(this@MainActivity)
                             startActivity(Intent(this@MainActivity, TracksActivity::class.java))
-                            @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
                         }
                     }
@@ -350,7 +347,6 @@ class MainActivity : AppCompatActivity() {
             // Only query tracks that match our duration criteria
             val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
             
-            @Suppress("DEPRECATION")
             contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 arrayOf(MediaStore.Audio.Media.DATA), // valid column
@@ -384,7 +380,6 @@ class MainActivity : AppCompatActivity() {
     private fun getAlbumCount(): Int {
         var count = 0
         try {
-            @Suppress("DEPRECATION")
             contentResolver.query(
                 MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
                 arrayOf(MediaStore.Audio.Albums._ID),
@@ -397,7 +392,6 @@ class MainActivity : AppCompatActivity() {
     private fun getArtistCount(): Int {
         var count = 0
         try {
-            @Suppress("DEPRECATION")
             contentResolver.query(
                 MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
                 arrayOf(MediaStore.Audio.Artists._ID),
@@ -414,7 +408,6 @@ class MainActivity : AppCompatActivity() {
         val minDurationMs = minDurationSec * 1000
         
         try {
-            @Suppress("DEPRECATION")
             contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.DURATION),
@@ -492,3 +485,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
+
+

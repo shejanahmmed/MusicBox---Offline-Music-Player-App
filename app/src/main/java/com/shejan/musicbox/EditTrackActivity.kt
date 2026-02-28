@@ -26,6 +26,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
 
 class EditTrackActivity : AppCompatActivity() {
@@ -54,7 +55,9 @@ class EditTrackActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_edit_track)
         
         // Apply WindowInsets to handle Navigation Bar overlap
@@ -145,4 +148,7 @@ class EditTrackActivity : AppCompatActivity() {
         }
     }
 }
+
+
+
 
