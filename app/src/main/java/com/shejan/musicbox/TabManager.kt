@@ -44,7 +44,8 @@ object TabManager {
         TabItem("albums", "Albums", R.drawable.ic_album, true, R.id.nav_albums),
 
         TabItem("artists", "Artists", R.drawable.ic_person, true, R.id.nav_artists),
-        TabItem("playlist", "Playlist", R.drawable.ic_queue_music, true, R.id.nav_playlist)
+        TabItem("playlist", "Playlist", R.drawable.ic_queue_music, true, R.id.nav_playlist),
+        TabItem("videos", "Videos", R.drawable.ic_videocam, true, R.id.nav_videos)
     )
 
     fun getTabOrder(context: Context): List<TabItem> {
@@ -121,6 +122,7 @@ object TabManager {
 
             "artists" -> ArtistsActivity::class.java
             "playlist" -> PlaylistActivity::class.java
+            "videos" -> VideosActivity::class.java
             else -> MainActivity::class.java
         }
     }

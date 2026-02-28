@@ -89,6 +89,7 @@
     <string name="version_info">Version 1.2.0</string>
     <string name="nav_search">Search</string>
     <string name="nav_settings">Settings</string>
+    <string name="tab_videos">Videos</string>
 
     <!-- New Strings for TracksActivity -->
     <string name="title_favorites">FAVORITES</string>
