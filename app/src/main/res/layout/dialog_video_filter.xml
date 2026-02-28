@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_bottom_sheet">
+
+    <!-- Drag Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:background="@drawable/shape_drag_handle"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:alpha="0.5"/>
+
+    <!-- Title Row with Icon -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_videocam"
+            android:layout_marginEnd="8dp"
+            app:tint="@color/primary_red"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Video Duration Filter"
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <!-- Subtitle -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Only show videos within the set duration range. Set max to 0 for no upper limit."
+        android:textColor="@color/colorTextSecondary"
+        android:textSize="13sp"
+        android:lineSpacingExtra="2dp"
+        android:layout_marginBottom="28dp"/>
+
+    <!-- Duration Range Label -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DURATION RANGE (SECONDS)"
+        android:textColor="@color/colorTextSecondary"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.12"
+        android:layout_marginBottom="10dp"/>
+
+    <!-- Side-by-side Min / Max boxes -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="28dp">
+
+        <!-- MIN box -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:background="@drawable/bg_settings_card"
+            android:padding="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MIN"
+                android:textColor="@color/primary_red"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="6dp"/>
+
+            <EditText
+                android:id="@+id/et_min_duration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:inputType="number"
+                android:text="0"
+                android:padding="0dp"
+                android:maxLines="1"/>
+
+            <TextView
+                android:id="@+id/tv_min_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="seconds"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="10sp"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <!-- Dash Separator -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="–"
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="22sp"
+            android:layout_marginHorizontal="12dp"/>
+
+        <!-- MAX box -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:background="@drawable/bg_settings_card"
+            android:padding="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MAX"
+                android:textColor="@color/primary_red"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="6dp"/>
+
+            <EditText
+                android:id="@+id/et_max_duration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:inputType="number"
+                android:text="0"
+                android:padding="0dp"
+                android:maxLines="1"/>
+
+            <TextView
+                android:id="@+id/tv_max_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 = unlimited"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="10sp"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Apply Button -->
+    <Button
+        android:id="@+id/btn_save"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Apply Filter"
+        android:backgroundTint="@color/primary_red"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:cornerRadius="12dp"/>
+
+</LinearLayout>
