@@ -241,6 +241,13 @@ class VideosActivity : AppCompatActivity() {
             val order = if (isAscending) "ASC" else "DESC"
             val sortOrder = "$sortColumn $order"
 
+            // Read duration filter from dedicated video prefs (separate from audio track filter)
+            val videoPrefs = context.getSharedPreferences("MusicBoxVideoPrefs", MODE_PRIVATE)
+            val minSec = videoPrefs.getInt("video_min_duration_sec", 0)
+            val maxSec = videoPrefs.getInt("video_max_duration_sec", 0)
+            val minMs = minSec * 1000L
+            val maxMs = if (maxSec > 0) maxSec * 1000L else Long.MAX_VALUE
+
             val cursor = context.contentResolver.query(
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                 projection,
@@ -262,6 +269,10 @@ class VideosActivity : AppCompatActivity() {
                     val duration = it.getLong(durationCol)
                     val path = it.getString(dataCol) ?: continue
                     val size = it.getLong(sizeCol)
+
+                    // Apply duration filter
+                    if (duration < minMs || duration > maxMs) continue
+
                     list.add(VideoItem(id, title, duration, path, size))
                 }
             }
@@ -270,6 +281,7 @@ class VideosActivity : AppCompatActivity() {
         }
         return list
     }
+
 
     // ── UI Updates ──────────────────────────────────────────────────────────────
 

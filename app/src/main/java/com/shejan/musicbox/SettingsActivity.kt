@@ -207,7 +207,100 @@ class SettingsActivity : AppCompatActivity() {
             dialog.show()
         }
 
-        // Haptic Feedback
+        // Video Duration Filter
+        findViewById<android.view.View>(R.id.card_video_filter).setOnClickListener {
+            val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+            @SuppressLint("InflateParams")
+            val view = layoutInflater.inflate(R.layout.dialog_video_filter, null)
+            dialog.setContentView(view)
+
+            // Fix corners
+            view.post {
+                (view.parent as? android.view.View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            }
+
+            val etMin = view.findViewById<android.widget.EditText>(R.id.et_min_duration)
+            val etMax = view.findViewById<android.widget.EditText>(R.id.et_max_duration)
+            val btnSave = view.findViewById<android.widget.Button>(R.id.btn_save)
+
+            // Load current values (stored separately in MusicBoxVideoPrefs)
+            val videoPrefs = getSharedPreferences("MusicBoxVideoPrefs", MODE_PRIVATE)
+            val currentMin = videoPrefs.getInt("video_min_duration_sec", 0)
+            val currentMax = videoPrefs.getInt("video_max_duration_sec", 0)
+            etMin.setText(currentMin.toString())
+            etMax.setText(currentMax.toString())
+
+            val tvMinHint = view.findViewById<android.widget.TextView>(R.id.tv_min_hint)
+            val tvMaxHint = view.findViewById<android.widget.TextView>(R.id.tv_max_hint)
+
+            fun secToLabel(sec: Int, isMax: Boolean): String {
+                if (sec == 0) return if (isMax) "0 = unlimited" else "seconds"
+                val mins = sec / 60
+                val secs = sec % 60
+                return when {
+                    mins == 0 -> "${sec}s"
+                    secs == 0 -> "${sec}s = ${mins} min"
+                    else -> "${sec}s = ${mins} min ${secs} sec"
+                }
+            }
+
+            // Set initial hints based on loaded values
+            tvMinHint.text = secToLabel(currentMin, false)
+            tvMaxHint.text = secToLabel(currentMax, true)
+
+            etMin.addTextChangedListener(object : android.text.TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                override fun afterTextChanged(s: android.text.Editable?) {
+                    val v = s.toString().toIntOrNull() ?: 0
+                    tvMinHint.text = secToLabel(v, false)
+                }
+            })
+
+            etMax.addTextChangedListener(object : android.text.TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                override fun afterTextChanged(s: android.text.Editable?) {
+                    val v = s.toString().toIntOrNull() ?: 0
+                    tvMaxHint.text = secToLabel(v, true)
+                }
+            })
+
+
+            btnSave.setOnClickListener {
+                val minInput = etMin.text.toString().toIntOrNull()
+                val maxInput = etMax.text.toString().toIntOrNull()
+
+                when {
+                    minInput == null || minInput < 0 -> {
+                        Toast.makeText(this, "Enter a valid minimum duration (0 or above)", Toast.LENGTH_SHORT).show()
+                    }
+                    maxInput == null || maxInput < 0 -> {
+                        Toast.makeText(this, "Enter a valid maximum duration (0 = unlimited)", Toast.LENGTH_SHORT).show()
+                    }
+                    maxInput > 0 && minInput > maxInput -> {
+                        Toast.makeText(this, "Minimum must be less than maximum", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                        videoPrefs.edit().apply {
+                            putInt("video_min_duration_sec", minInput)
+                            putInt("video_max_duration_sec", maxInput)
+                            apply()
+                        }
+                        val msg = if (maxInput == 0)
+                            "Videos: min ${minInput}s, no max limit"
+                        else
+                            "Videos: ${minInput}s – ${maxInput}s"
+                        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }
+                }
+            }
+
+            dialog.show()
+        }
+
+
         val switchHaptic = findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switch_haptic_feedback)
         val cardHaptic = findViewById<android.view.View>(R.id.card_haptic_feedback)
         
