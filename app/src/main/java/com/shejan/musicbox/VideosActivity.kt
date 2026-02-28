@@ -157,7 +157,9 @@ class VideosActivity : AppCompatActivity() {
         super.onResume()
         updateMiniPlayer()
         NavUtils.setupNavigation(this, R.id.nav_videos)
+        loadVideos()   // re-apply duration filter and refresh list on every resume
     }
+
 
     override fun onDestroy() {
         super.onDestroy()
