@@ -395,7 +395,25 @@ class VideosActivity : AppCompatActivity() {
     // ── Video Options ───────────────────────────────────────────────────────────
 
     private fun showVideoOptions(video: VideoItem) {
-        // Simple toast for now — can be expanded with a context menu later
-        Toast.makeText(this, video.title, Toast.LENGTH_SHORT).show()
+        // Convert VideoItem → Track so we can reuse the full TrackMenuManager options dialog
+        val track = Track(
+            id = video.id,
+            title = video.title,
+            artist = "Video",
+            uri = video.uri,
+            album = null,
+            albumId = -1L
+        )
+        TrackMenuManager.showTrackOptionsDialog(
+            activity = this,
+            track = track,
+            pickArtworkLauncher = null,     // artwork editing not applicable for videos
+            callback = object : TrackMenuManager.Callback {
+                override fun onArtworkChanged() {}
+                override fun onTrackDeleted() { loadVideos() }
+                override fun onTrackUpdated() { loadVideos() }
+            }
+        )
     }
+
 }
