@@ -104,9 +104,13 @@ object TrackMenuManager {
                     val seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(durMs) - java.util.concurrent.TimeUnit.MINUTES.toSeconds(minutes)
                     durationStr = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
                     
-                    bitrate = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_BITRATE)?.let {
-                         activity.getString(R.string.bitrate_kbits, (it.toLong() / 1000).toString())
-                    } ?: activity.getString(R.string.na_placeholder)
+                    bitrate = if (track.albumId == -1L) {
+                        "Unknown" // video tracks report total A/V bitrate which is misleading
+                    } else {
+                        retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_BITRATE)?.let {
+                             activity.getString(R.string.bitrate_kbits, (it.toLong() / 1000).toString())
+                        } ?: activity.getString(R.string.na_placeholder)
+                    }
                     
                     val mimetype = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
                     if (mimetype != null) {
