@@ -2,7 +2,7 @@
 
 # MusicBox 🎵
 
-**The Premium Offline Music Experience for Android**
+**The Premium Offline Music & Video Experience for Android**
 
 <a href="https://play.google.com/store/apps/details?id=com.shejan.musicbox">
   <img alt="Get it on Google Play" height="60" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" />
@@ -15,7 +15,7 @@
   <a href="#-features">Features</a> •
   <a href="#-download">Download</a> •
   <a href="#-tech-stack">Tech Stack</a> •
-
+  <a href="#-changelog">Changelog</a> •
 <a href="#-contributing">Contributing</a>
 
 </p>
@@ -26,7 +26,7 @@
 
 ## 🚀 Overview
 
-**MusicBox** is an open-source, ad-free, and privacy-focused offline music player designed for audiophiles who value **aesthetics** as much as **performance**.
+**MusicBox** is an open-source, ad-free, and privacy-focused offline music & video player designed for audiophiles who value **aesthetics** as much as **performance**.
 
 Built with **Modern Android Development** practices (Kotlin, MVVM, Coroutines), it delivers a buttery smooth experience wrapped in a stunning **Glassmorphic UI**. Unlike generic players, MusicBox features a **procedural artwork engine** that generates unique, vintage-style vinyl covers for tracks missing metadata, ensuring your library always looks premium.
 
@@ -40,6 +40,7 @@ Built with **Modern Android Development** practices (Kotlin, MVVM, Coroutines), 
 - **Vintage Vinyl Engine**: Procedurally generates retro artwork with realistic noise & texture for songs without covers.
 - **Smart Animations**: Fluid motion transitions and typewriter-style greetings.
 - **Dynamic Themes**: Fully responsive Light & Dark modes that follow system settings.
+- **Edge-to-Edge UI**: True full-screen experience — app background extends seamlessly behind the status bar.
 
 ### 🎧 **Immersive Playback**
 
@@ -54,6 +55,14 @@ Built with **Modern Android Development** practices (Kotlin, MVVM, Coroutines), 
 - **Smart Library**: Auto-sorts your music into Tracks, Albums, Artists, and Playlists.
 - **Metadata Editor**: Fix tags directly in-app; persistent changes are stored locally.
 - **Hidden Tracks**: Filter out short clips, voice notes, and unwanted audio.
+- **Deleted Tracks Folder**: Restore any hidden audio or video file from one place.
+
+### 🎬 **Videos Page** _(New in v1.3.0)_
+
+- **Dedicated Videos Tab**: Browse all local video files sorted by title, date added, or date modified.
+- **Video Options Menu**: Full 3-dot options dialog for each video — share, favorite, add to playlist, view metadata, and delete.
+- **Video Duration Filter**: Set minimum and maximum duration to filter your video library in Settings.
+- **Deleted Videos**: Hidden videos appear in the Deleted Tracks folder alongside audio, with full restore support.
 
 ### 🛡️ **Privacy First**
 
@@ -91,6 +100,25 @@ com.shejan.musicbox
 ```
 
 </details>
+
+---
+
+## 📋 Changelog
+
+### v1.3.0 _(Latest)_
+
+- 🎬 **Videos Page**: Dedicated tab for browsing local video files with sort controls
+- ⋮ **Video Options Menu**: Full options dialog for videos (share, favorite, playlist, metadata, delete)
+- ⏱️ **Video Duration Filter**: Set min/max duration range for the video library in Settings
+- 🗑️ **Deleted Videos**: Hidden videos now appear in Deleted Tracks folder with restore support
+- 🖥️ **Edge-to-Edge UI**: App background extends seamlessly behind the status bar on all devices
+- 🐛 **Bug Fixes**: Resolved double video load on launch, SharedPrefs anti-pattern, missing deprecation suppressions
+
+### v1.2.0
+
+- Initial Videos page with navigation
+- Library Preferences section in Settings
+- Audio track duration filter
 
 ---
 
