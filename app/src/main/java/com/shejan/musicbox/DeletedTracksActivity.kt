@@ -78,7 +78,7 @@ class DeletedTracksActivity : AppCompatActivity() {
                 return@launch
             }
     
-            // Query MediaStore for hidden tracks
+            // ── 1. Query MediaStore.Audio for hidden audio tracks ────────────────
             try {
                 @Suppress("DEPRECATION")
                 contentResolver.query(
@@ -105,27 +105,55 @@ class DeletedTracksActivity : AppCompatActivity() {
     
                     while (cursor.moveToNext()) {
                         val path = cursor.getString(dataColumn)
-                        
-                        // Only include if it's in the hidden list
                         if (hiddenUris.contains(path)) {
-                            val track = Track(
+                            list.add(Track(
                                 id = cursor.getLong(idColumn),
                                 title = cursor.getString(titleColumn) ?: "Unknown",
                                 artist = cursor.getString(artistColumn) ?: "Unknown Artist",
                                 album = cursor.getString(albumColumn) ?: "Unknown Album",
                                 uri = path,
                                 albumId = cursor.getLong(albumIdColumn)
-                            )
-                            list.add(track)
+                            ))
                         }
                     }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            } catch (e: Exception) { e.printStackTrace() }
+
+            // ── 2. Query MediaStore.Video for hidden video files ─────────────────
+            try {
+                @Suppress("DEPRECATION")
+                contentResolver.query(
+                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                    arrayOf(
+                        MediaStore.Video.Media._ID,
+                        MediaStore.Video.Media.TITLE,
+                        MediaStore.Video.Media.DATA
+                    ),
+                    null,
+                    null,
+                    null
+                )?.use { cursor ->
+                    val idCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
+                    val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.TITLE)
+                    val dataCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
+
+                    while (cursor.moveToNext()) {
+                        val path = cursor.getString(dataCol) ?: continue
+                        if (hiddenUris.contains(path)) {
+                            list.add(Track(
+                                id = cursor.getLong(idCol),
+                                title = cursor.getString(titleCol) ?: "Unknown Video",
+                                artist = "Video",
+                                album = null,
+                                uri = path,
+                                albumId = -1L
+                            ))
+                        }
+                    }
+                }
+            } catch (e: Exception) { e.printStackTrace() }
             
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                // Update class-level variable safely
                 deletedTracks.clear()
                 deletedTracks.addAll(list)
 
@@ -137,6 +165,7 @@ class DeletedTracksActivity : AppCompatActivity() {
             }
         }
     }
+
 
     private fun showTrackList() {
         rvDeletedTracks.visibility = View.VISIBLE
