@@ -68,14 +68,16 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
             // FIXED: Use centralized playlist update to handle shuffle logic
             MusicService.updatePlaylist(tracks, currentPos)
             
+            val clickedTrack = tracks[currentPos]
+            
             val intent = Intent(holder.root.context, MusicService::class.java).apply {
-                putExtra("TITLE", track.title)
-                putExtra("ARTIST", track.artist)
-                putExtra("URI", track.uri)
+                putExtra("TITLE", clickedTrack.title)
+                putExtra("ARTIST", clickedTrack.artist)
+                putExtra("URI", clickedTrack.uri)
             }
             androidx.core.content.ContextCompat.startForegroundService(holder.root.context, intent)
             
-            NowPlayingActivity.start(holder.root.context, track.title, track.artist)
+            NowPlayingActivity.start(holder.root.context, clickedTrack.title, clickedTrack.artist)
         }
         
         holder.options.setOnClickListener {

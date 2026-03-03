@@ -91,13 +91,14 @@ class VideoAdapter(
             }
             MusicService.updatePlaylist(trackList, currentPos)
 
+            val clickedVideo = videos[currentPos]
             val intent = Intent(holder.root.context, MusicService::class.java).apply {
-                putExtra("TITLE", videos[currentPos].title)
+                putExtra("TITLE", clickedVideo.title)
                 putExtra("ARTIST", "Video")
-                putExtra("URI", videos[currentPos].uri)
+                putExtra("URI", clickedVideo.uri)
             }
             ContextCompat.startForegroundService(holder.root.context, intent)
-            NowPlayingActivity.start(holder.root.context, videos[currentPos].title, "Video")
+            NowPlayingActivity.start(holder.root.context, clickedVideo.title, "Video")
         }
 
         holder.options.setOnClickListener {

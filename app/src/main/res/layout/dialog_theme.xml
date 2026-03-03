@@ -1,63 +1,239 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:paddingTop="24dp"
+    android:paddingBottom="40dp"
+    android:paddingHorizontal="24dp">
 
+    <!-- Drag Handle -->
     <View
-        android:layout_width="40dp"
+        android:layout_width="48dp"
         android:layout_height="4dp"
         android:background="@drawable/shape_drag_handle"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="24dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="20dp"
         android:text="@string/theme_title"
         android:textColor="@color/colorTextPrimary"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:letterSpacing="-0.03" />
 
-    <RadioGroup
-        android:id="@+id/rg_theme"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_marginBottom="24dp"
+        android:text="Choose how MusicBox looks to you."
+        android:textColor="@color/colorTextSecondary"
+        android:textSize="14sp" />
 
-        <RadioButton
-            android:id="@+id/rb_system"
+    <!-- Radio Group replaced by Custom Card Container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_settings_card"
+        android:padding="8dp">
+
+        <!-- System -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/card_theme_system"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:buttonTint="@color/primary_red"
-            android:padding="12dp"
-            android:text="@string/theme_system"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="16sp" />
+            android:paddingVertical="16dp"
+            android:paddingHorizontal="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
 
-        <RadioButton
-            android:id="@+id/rb_light"
+            <ImageView
+                android:id="@+id/iv_icon_system"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_smartphone"
+                app:tint="@color/colorIconSecondary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_system_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/theme_system"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@id/iv_icon_system"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_system_desc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Follows your device's settings"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"
+                app:layout_constraintStart_toStartOf="@id/tv_system_title"
+                app:layout_constraintEnd_toStartOf="@id/iv_check_system"
+                app:layout_constraintTop_toBottomOf="@id/tv_system_title"
+                android:layout_marginEnd="16dp"/>
+
+            <ImageView
+                android:id="@+id/iv_check_system"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_check_circle"
+                app:tint="@color/colorNavSelected"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorStroke"
+            android:layout_marginHorizontal="16dp"/>
+
+        <!-- Light -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/card_theme_light"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:buttonTint="@color/primary_red"
-            android:padding="12dp"
-            android:text="@string/theme_light"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="16sp" />
+            android:paddingVertical="16dp"
+            android:paddingHorizontal="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
 
-        <RadioButton
-            android:id="@+id/rb_dark"
+            <ImageView
+                android:id="@+id/iv_icon_light"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_sun"
+                app:tint="@color/colorIconSecondary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_light_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/theme_light"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@id/iv_icon_light"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_light_desc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Clean and bright appearance"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"
+                app:layout_constraintStart_toStartOf="@id/tv_light_title"
+                app:layout_constraintEnd_toStartOf="@id/iv_check_light"
+                app:layout_constraintTop_toBottomOf="@id/tv_light_title"
+                android:layout_marginEnd="16dp"/>
+
+            <ImageView
+                android:id="@+id/iv_check_light"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_check_circle"
+                app:tint="@color/colorNavSelected"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorStroke"
+            android:layout_marginHorizontal="16dp"/>
+
+        <!-- Dark -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/card_theme_dark"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:buttonTint="@color/primary_red"
-            android:padding="12dp"
-            android:text="@string/theme_dark"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="16sp" />
+            android:paddingVertical="16dp"
+            android:paddingHorizontal="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
 
-    </RadioGroup>
+            <ImageView
+                android:id="@+id/iv_icon_dark"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_moon"
+                app:tint="@color/colorIconSecondary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_dark_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/theme_dark"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@id/iv_icon_dark"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_dark_desc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Sleek and easy on the eyes"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"
+                app:layout_constraintStart_toStartOf="@id/tv_dark_title"
+                app:layout_constraintEnd_toStartOf="@id/iv_check_dark"
+                app:layout_constraintTop_toBottomOf="@id/tv_dark_title"
+                android:layout_marginEnd="16dp"/>
+
+            <ImageView
+                android:id="@+id/iv_check_dark"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_check_circle"
+                app:tint="@color/colorNavSelected"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
 
 </LinearLayout>
