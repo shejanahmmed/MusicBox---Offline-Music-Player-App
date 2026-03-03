@@ -50,11 +50,6 @@ class SettingsActivity : AppCompatActivity() {
             insets
         }
 
-        // Back Button
-        findViewById<ImageButton>(R.id.btn_back).setOnClickListener {
-            finish()
-        }
-
         setupClickListeners()
 
         // Navigation
@@ -461,31 +456,38 @@ class SettingsActivity : AppCompatActivity() {
             (view.parent as? android.view.View)?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         }
 
-        val rgTheme = view.findViewById<android.widget.RadioGroup>(R.id.rg_theme)
+        val cardSystem = view.findViewById<android.view.View>(R.id.card_theme_system)
+        val cardLight = view.findViewById<android.view.View>(R.id.card_theme_light)
+        val cardDark = view.findViewById<android.view.View>(R.id.card_theme_dark)
+        
+        val checkSystem = view.findViewById<android.widget.ImageView>(R.id.iv_check_system)
+        val checkLight = view.findViewById<android.widget.ImageView>(R.id.iv_check_light)
+        val checkDark = view.findViewById<android.widget.ImageView>(R.id.iv_check_dark)
+
         val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
-        
-        // Load current
         val currentMode = prefs.getInt("theme_mode", androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES)
-        
-        when (currentMode) {
-            androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO -> rgTheme.check(R.id.rb_light)
-            androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES -> rgTheme.check(R.id.rb_dark)
-            else -> rgTheme.check(R.id.rb_system)
+
+        fun updateUI(selectedMode: Int) {
+            checkSystem.visibility = if (selectedMode == androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) android.view.View.VISIBLE else android.view.View.GONE
+            checkLight.visibility = if (selectedMode == androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO) android.view.View.VISIBLE else android.view.View.GONE
+            checkDark.visibility = if (selectedMode == androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES) android.view.View.VISIBLE else android.view.View.GONE
         }
+        
+        // Initialize UI
+        updateUI(currentMode)
 
-        rgTheme.setOnCheckedChangeListener { _, checkedId ->
-            val mode = when (checkedId) {
-                R.id.rb_light -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
-                R.id.rb_dark -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-                else -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-            }
-
+        fun selectTheme(mode: Int) {
             prefs.edit { putInt("theme_mode", mode) }
             androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(mode)
-            
+            updateUI(mode)
             dialog.dismiss()
             Toast.makeText(this, R.string.theme_updated, Toast.LENGTH_SHORT).show()
         }
+
+        cardSystem.setOnClickListener { selectTheme(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) }
+        cardLight.setOnClickListener { selectTheme(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO) }
+        cardDark.setOnClickListener { selectTheme(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES) }
+
 
         dialog.show()
     }

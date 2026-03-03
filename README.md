@@ -105,7 +105,7 @@ com.shejan.musicbox
 
 ## 📋 Changelog
 
-### v1.3.0 _(Latest)_
+### v1.3.1 _(Latest)_
 
 - 🎬 **Videos Page**: Dedicated tab for browsing local video files with sort controls
 - ⋮ **Video Options Menu**: Full options dialog for videos (share, favorite, playlist, metadata, delete)

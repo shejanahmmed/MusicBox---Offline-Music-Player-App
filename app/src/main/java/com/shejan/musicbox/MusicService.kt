@@ -348,9 +348,13 @@ class MusicService : Service() {
                 }
             }
             setOnPreparedListener(standardPreparedListener)
-            setOnErrorListener { mp, _, _ ->
+            setOnErrorListener { mp, what, extra ->
                 mp.reset()
-                false
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    android.widget.Toast.makeText(applicationContext, "Error playing track: what=$what extra=$extra", android.widget.Toast.LENGTH_LONG).show()
+                }
+                pause(abandonFocus = false)
+                true // Return true to indicate error was handled, preventing onCompletionListener from triggering
             }
         }
     }
@@ -447,20 +451,59 @@ class MusicService : Service() {
             currentTrackUri = track.uri
             
             try {
-                mediaPlayer?.reset()
-                mediaPlayer?.setDataSource(applicationContext, track.uri.toUri())
-                mediaPlayer?.prepareAsync() // This triggers onPrepared, which sends the ONE update
+                // Completely release and recreate the MediaPlayer to avoid Error -38 (Invalid State)
+                mediaPlayer?.release()
+                mediaPlayer = null
+                
+                val sourceUri = if (track.uri.startsWith("content://") || track.uri.startsWith("http://") || track.uri.startsWith("https://")) {
+                    track.uri.toUri()
+                } else if (track.id > 0) {
+                    if (track.artist == "Video") {
+                        android.content.ContentUris.withAppendedId(android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI, track.id)
+                    } else {
+                        android.content.ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.id)
+                    }
+                } else {
+                    android.net.Uri.fromFile(java.io.File(track.uri))
+                }
+                
+                android.util.Log.d("MusicService", "Attempting to play URI: $sourceUri")
+                
+                mediaPlayer = android.media.MediaPlayer().apply {
+                    setWakeMode(applicationContext, android.os.PowerManager.PARTIAL_WAKE_LOCK)
+                    setAudioAttributes(
+                        android.media.AudioAttributes.Builder()
+                            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                            .build()
+                    )
+                    
+                    setOnCompletionListener {
+                        saveState()
+                        if (repeatMode == REPEAT_ONE) {
+                            playTrack(currentIndex)
+                        } else {
+                            playNext(autoPlay = true)
+                        }
+                    }
+                    setOnPreparedListener(standardPreparedListener)
+                    setOnErrorListener { mp, what, extra ->
+                        android.util.Log.e("MusicService", "MediaPlayer Error: what=$what extra=$extra URI=$sourceUri")
+                        // Many files (especially on newer Android versions) throw benign -38 errors but still play fine.
+                        // We log it, but do not show a Toast to avoid bothering the user.
+                        true // Return true to indicate error was handled
+                    }
+                    
+                    setDataSource(applicationContext, sourceUri)
+                    prepareAsync()
+                }
+                
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Fallback for race conditions ensuring player is reset
-                if (e is IllegalStateException) {
-                    initMediaPlayer()
-                    try {
-                        mediaPlayer?.setDataSource(applicationContext, track.uri.toUri())
-                        mediaPlayer?.prepareAsync()
-                    } catch (e2: Exception) {
-                        e2.printStackTrace()
-                    }
+                // If it still fails, it's likely a missing file or hard crash
+                android.util.Log.e("MusicService", "Exception in playTrack: ${e.message}", e)
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    android.widget.Toast.makeText(applicationContext, "Failed to load media file.", android.widget.Toast.LENGTH_LONG).show()
                 }
             }
         }
