@@ -58,7 +58,10 @@ class HomeBoxAdapter(
         
         // Handle switch changes
         holder.switch.setOnCheckedChangeListener { _, isChecked ->
-            onVisibilityChanged(box, isChecked)
+            val currentPos = holder.adapterPosition
+            if (currentPos != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+                onVisibilityChanged(boxes[currentPos], isChecked)
+            }
         }
         
         // Also toggle switch when card is clicked

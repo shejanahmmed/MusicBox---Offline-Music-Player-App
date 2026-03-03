@@ -57,8 +57,10 @@ class AlbumAdapter(private val albums: List<Album>, private val onClick: (Album)
         // context.loadAlbumArt(album.id, holder.art)
         
         holder.itemView.setOnClickListener { 
+            val currentPos = holder.adapterPosition
+            if (currentPos == androidx.recyclerview.widget.RecyclerView.NO_POSITION) return@setOnClickListener
             MusicUtils.performHapticFeedback(holder.itemView.context)
-            onClick(album) 
+            onClick(albums[currentPos]) 
         }
     }
 

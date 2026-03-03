@@ -55,8 +55,12 @@ class TabOrderAdapter(
         // Visibility Logic
         updateVisibilityIcon(holder.btnVisibility, tab.isVisible)
         holder.btnVisibility.setOnClickListener {
-            tab.isVisible = !tab.isVisible
-            updateVisibilityIcon(holder.btnVisibility, tab.isVisible)
+            val currentPos = holder.adapterPosition
+            if (currentPos != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+                val currentTab = tabs[currentPos]
+                currentTab.isVisible = !currentTab.isVisible
+                updateVisibilityIcon(holder.btnVisibility, currentTab.isVisible)
+            }
         }
 
         // Home Logic
