@@ -59,8 +59,11 @@ class QueueAdapter(
         }
         
         holder.itemView.setOnClickListener {
-            MusicUtils.performHapticFeedback(holder.itemView.context)
-            onTrackClick(position)
+            val currentPos = holder.adapterPosition
+            if (currentPos != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+                MusicUtils.performHapticFeedback(holder.itemView.context)
+                onTrackClick(currentPos)
+            }
         }
     }
 

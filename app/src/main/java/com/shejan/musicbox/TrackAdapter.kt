@@ -59,11 +59,14 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         }
 
         holder.root.setOnClickListener {
+            val currentPos = holder.adapterPosition
+            if (currentPos == androidx.recyclerview.widget.RecyclerView.NO_POSITION) return@setOnClickListener
+
             // Haptic Feedback
             MusicUtils.performHapticFeedback(holder.root.context)
 
             // FIXED: Use centralized playlist update to handle shuffle logic
-            MusicService.updatePlaylist(tracks, position)
+            MusicService.updatePlaylist(tracks, currentPos)
             
             val intent = Intent(holder.root.context, MusicService::class.java).apply {
                 putExtra("TITLE", track.title)
@@ -76,9 +79,12 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
         }
         
         holder.options.setOnClickListener {
+            val currentPos = holder.adapterPosition
+            if (currentPos == androidx.recyclerview.widget.RecyclerView.NO_POSITION) return@setOnClickListener
+            
             // Haptic Feedback for options too
             MusicUtils.performHapticFeedback(holder.options.context)
-            onMoreClicked(track)
+            onMoreClicked(tracks[currentPos])
         }
 
         // Optimized Highlight Logic

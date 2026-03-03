@@ -55,12 +55,15 @@ class TrackSelectionAdapter(
         holder.checkBox.isChecked = selectedTracks.contains(track.id)
 
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                selectedTracks.add(track.id)
-            } else {
-                selectedTracks.remove(track.id)
+            val currentPos = holder.adapterPosition
+            if (currentPos != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+                if (isChecked) {
+                    selectedTracks.add(tracks[currentPos].id)
+                } else {
+                    selectedTracks.remove(tracks[currentPos].id)
+                }
+                onSelectionChanged(tracks[currentPos], isChecked)
             }
-            onSelectionChanged(track, isChecked)
         }
 
         holder.root.setOnClickListener {

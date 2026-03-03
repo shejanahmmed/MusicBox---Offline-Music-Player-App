@@ -46,8 +46,10 @@ class ArtistAdapter(private val artists: List<Artist>, private val onClick: (Art
         holder.count.text = holder.itemView.context.getString(R.string.artist_track_count, artist.trackCount)
         
         holder.itemView.setOnClickListener { 
+            val currentPos = holder.adapterPosition
+            if (currentPos == androidx.recyclerview.widget.RecyclerView.NO_POSITION) return@setOnClickListener
             MusicUtils.performHapticFeedback(holder.itemView.context)
-            onClick(artist) 
+            onClick(artists[currentPos]) 
         }
     }
 

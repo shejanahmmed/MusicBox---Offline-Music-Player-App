@@ -81,25 +81,31 @@ class VideoAdapter(
         }
 
         holder.root.setOnClickListener {
+            val currentPos = holder.adapterPosition
+            if (currentPos == androidx.recyclerview.widget.RecyclerView.NO_POSITION) return@setOnClickListener
+
             MusicUtils.performHapticFeedback(holder.root.context)
             // Convert video list to Track list and play audio only via MusicService
             val trackList = videos.map { v ->
                 Track(v.id, v.title, "Video", v.uri, null, -1L)
             }
-            MusicService.updatePlaylist(trackList, position)
+            MusicService.updatePlaylist(trackList, currentPos)
 
             val intent = Intent(holder.root.context, MusicService::class.java).apply {
-                putExtra("TITLE", video.title)
+                putExtra("TITLE", videos[currentPos].title)
                 putExtra("ARTIST", "Video")
-                putExtra("URI", video.uri)
+                putExtra("URI", videos[currentPos].uri)
             }
             ContextCompat.startForegroundService(holder.root.context, intent)
-            NowPlayingActivity.start(holder.root.context, video.title, "Video")
+            NowPlayingActivity.start(holder.root.context, videos[currentPos].title, "Video")
         }
 
         holder.options.setOnClickListener {
-            MusicUtils.performHapticFeedback(holder.options.context)
-            onMoreClicked(video)
+            val currentPos = holder.adapterPosition
+            if (currentPos != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+                MusicUtils.performHapticFeedback(holder.options.context)
+                onMoreClicked(videos[currentPos])
+            }
         }
     }
 

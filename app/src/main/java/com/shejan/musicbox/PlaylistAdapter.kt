@@ -69,11 +69,16 @@ class PlaylistAdapter(
         }
 
         holder.root.setOnClickListener { 
+            val currentPos = holder.adapterPosition
+            if (currentPos == androidx.recyclerview.widget.RecyclerView.NO_POSITION) return@setOnClickListener
             MusicUtils.performHapticFeedback(holder.root.context)
-            onClick(item) 
+            onClick(playlists[currentPos]) 
         }
         holder.root.setOnLongClickListener {
-            onLongClick?.invoke(item)
+            val currentPos = holder.adapterPosition
+            if (currentPos != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+                onLongClick?.invoke(playlists[currentPos])
+            }
             true
         }
     }
