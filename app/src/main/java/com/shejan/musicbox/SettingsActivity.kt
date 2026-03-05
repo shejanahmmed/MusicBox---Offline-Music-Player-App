@@ -352,7 +352,7 @@ class SettingsActivity : AppCompatActivity() {
         // Privacy Policy
         findViewById<android.view.View>(R.id.card_privacy_policy).setOnClickListener {
             try {
-                val intent = Intent(Intent.ACTION_VIEW, "https://www.farjan.me/privacy-policy.html".toUri())
+                val intent = Intent(Intent.ACTION_VIEW, "https://www.farjan.me/privacy-policy/".toUri())
                 startActivity(intent)
             } catch (e: Exception) {
                 Toast.makeText(this, R.string.open_browser_error, Toast.LENGTH_SHORT).show()
