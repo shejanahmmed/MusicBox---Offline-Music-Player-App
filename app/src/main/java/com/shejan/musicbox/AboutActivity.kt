@@ -46,9 +46,6 @@ class AboutActivity : AppCompatActivity() {
             insets
         }
 
-        findViewById<ImageButton>(R.id.btn_back).setOnClickListener {
-            finish()
-        }
 
         val tvVersion = findViewById<android.widget.TextView>(R.id.tv_app_version)
         tvVersion.text = getString(R.string.version_full_fmt, BuildConfig.VERSION_NAME)

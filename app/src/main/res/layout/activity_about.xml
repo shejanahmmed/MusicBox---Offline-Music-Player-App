@@ -14,18 +14,6 @@
         android:paddingBottom="16dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
-            android:id="@+id/btn_back"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="@color/colorIcon"
-            android:layout_marginStart="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
         <TextView
             android:id="@+id/tv_header_title"
             android:layout_width="0dp"
@@ -35,9 +23,9 @@
             android:textSize="24sp"
             android:textStyle="bold"
             android:letterSpacing="-0.05"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
-            app:layout_constraintStart_toEndOf="@+id/btn_back"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
