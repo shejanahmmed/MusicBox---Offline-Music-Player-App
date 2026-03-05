@@ -43,17 +43,9 @@ class HomeCustomizationActivity : AppCompatActivity() {
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_home_customization)
 
-        // Apply WindowInsets
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(view.paddingLeft, systemBars.top, view.paddingRight, systemBars.bottom)
-            insets
-        }
 
-        // Back Button
-        findViewById<ImageButton>(R.id.btn_back).setOnClickListener {
-            finish()
-        }
+
+
 
         // Setup RecyclerView
         val rvBoxes = findViewById<RecyclerView>(R.id.rv_boxes)

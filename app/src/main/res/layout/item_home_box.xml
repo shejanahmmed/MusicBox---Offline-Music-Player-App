@@ -4,46 +4,66 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_settings_card"
-    android:padding="20dp"
-    android:layout_marginBottom="12dp">
+    android:elevation="2dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
 
-    <!-- Drag Handle (moved to left) -->
+    <!-- Drag Handle Outline (subtle) -->
     <ImageView
         android:id="@+id/iv_drag_handle"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
         android:src="@drawable/ic_drag_handle"
         android:contentDescription="Drag to reorder"
-        app:tint="@color/colorIcon"
+        app:tint="@color/colorIconSecondary"
+        android:alpha="0.6"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <ImageView
-        android:id="@+id/iv_box_icon"
+    <!-- Icon Container with tinted background -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_icon_container"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        app:tint="@color/colorIcon"
+        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="?attr/colorControlHighlight"
+        app:cardElevation="0dp"
+        android:layout_marginStart="16dp"
         app:layout_constraintStart_toEndOf="@+id/iv_drag_handle"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginStart="16dp"/>
+        app:layout_constraintBottom_toBottomOf="parent">
 
+        <ImageView
+            android:id="@+id/iv_box_icon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            app:tint="?attr/colorAccent"
+            android:layout_gravity="center" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- Title -->
     <TextView
         android:id="@+id/tv_box_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Box Name"
         android:textColor="@color/colorTextPrimary"
-        android:textSize="16sp"
+        android:textSize="15sp"
         android:textStyle="bold"
+        android:letterSpacing="0.01"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        app:layout_constraintStart_toEndOf="@+id/iv_box_icon"
+        app:layout_constraintStart_toEndOf="@+id/cv_icon_container"
         app:layout_constraintEnd_toStartOf="@+id/switch_visibility"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
+    <!-- Visibility Switch -->
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switch_visibility"
         android:layout_width="wrap_content"
