@@ -28,7 +28,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="VIDEOS"
-            android:textColor="@color/white"
+            android:textColor="@color/colorHeaderElement"
             android:textSize="16sp"
             android:textStyle="bold"
             android:letterSpacing="-0.05"
@@ -45,7 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0 Videos"
-            android:textColor="@color/text_white_opacity_60"
+            android:textColor="@color/colorHeaderElementSecondary"
             android:textSize="13sp"
             app:layout_constraintStart_toStartOf="@+id/tv_header_title"
             app:layout_constraintTop_toBottomOf="@+id/tv_header_title" />
@@ -65,7 +65,7 @@
                 android:layout_height="24dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_sort"
-                app:tint="@color/white"
+                app:tint="@color/colorHeaderElement"
                 android:layout_marginEnd="16dp" />
 
             <ImageButton
@@ -74,7 +74,7 @@
                 android:layout_height="24dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_shuffle"
-                app:tint="@color/text_white_opacity_60"
+                app:tint="@color/colorHeaderElementSecondary"
                 android:layout_marginEnd="16dp" />
 
         </LinearLayout>

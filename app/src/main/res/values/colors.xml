@@ -24,6 +24,9 @@
     <color name="colorSurface">#FFFFFF</color> <!-- White Card -->
     <color name="colorStroke">#E5E5EA</color> <!-- Light Gray Border -->
     <color name="colorWireframeCorner">#8E8E93</color> <!-- System Gray (Distinct) -->
+    <color name="colorHeaderBorder">#000000</color> <!-- New Header Border for Light Mode -->
+    <color name="colorHeaderElement">#000000</color> <!-- Header Text and Icons for Light Mode -->
+    <color name="colorHeaderElementSecondary">#99000000</color> <!-- 60% Black for subtitle -->
     <color name="colorTextPrimary">#1C1C1E</color> <!-- Dark Dark Gray -->
     <color name="colorTextSecondary">#8E8E93</color> <!-- Gray -->
     <color name="colorIcon">#1C1C1E</color>

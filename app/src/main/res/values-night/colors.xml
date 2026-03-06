@@ -9,6 +9,9 @@
     <color name="colorTextSecondary">#99FFFFFF</color> <!-- text_white_opacity_60 -->
     <color name="colorIcon">#FFFFFF</color>
     <color name="colorIconSecondary">#71717a</color> <!-- nav_text_unselected -->
+    <color name="colorHeaderBorder">#66FFFFFF</color> <!-- Matches text_white_opacity_40 -->
+    <color name="colorHeaderElement">#FFFFFF</color> <!-- Header Text and Icons for Dark Mode (Original White) -->
+    <color name="colorHeaderElementSecondary">#99FFFFFF</color> <!-- 60% White for subtitle -->
     
     <!-- Nav Semantic Colors -->
     <color name="colorBottomNavBackground">#FF181818</color>
