@@ -20,9 +20,9 @@
     <color name="bg_card_section">#0D0D0D</color>
     
     <!-- Semantic Colors (Light Mode Defaults) -->
-    <color name="colorBackground">#F2F2F7</color> <!-- iOS-like Light Gray -->
-    <color name="colorSurface">#FFFFFF</color> <!-- White Card -->
-    <color name="colorStroke">#E5E5EA</color> <!-- Light Gray Border -->
+    <color name="colorBackground">#F7F8F0</color> <!-- User Requested Background -->
+    <color name="colorSurface">#EDDCC6</color> <!-- User Requested Card Color (Warm Peach/Latte) -->
+    <color name="colorStroke">#555555</color> <!-- Light Black Border -->
     <color name="colorWireframeCorner">#8E8E93</color> <!-- System Gray (Distinct) -->
     <color name="colorHeaderBorder">#000000</color> <!-- New Header Border for Light Mode -->
     <color name="colorHeaderElement">#000000</color> <!-- Header Text and Icons for Light Mode -->
@@ -33,9 +33,9 @@
     <color name="colorIconSecondary">#8E8E93</color>
     
     <!-- Nav Semantic Colors -->
-    <color name="colorBottomNavBackground">#FFFFFF</color>
-    <color name="colorNavSelected">#1C1C1E</color>
-    <color name="colorNavUnselected">#8E8E93</color>
+    <color name="colorBottomNavBackground">#7EACB5</color> <!-- Teal Nav Bar -->
+    <color name="colorNavSelected">#000000</color>
+    <color name="colorNavUnselected">#CCFFFFFF</color> <!-- 80% White for unselected -->
     <color name="primary_red_opacity_50">#80f20d0d</color>
     <color name="switch_thumb_off">#FFFFFF</color>
     <color name="switch_track_off">#E5E5EA</color>
