@@ -54,10 +54,6 @@ class DeletedTracksActivity : AppCompatActivity() {
             insets
         }
 
-        // Back Button
-        findViewById<ImageButton>(R.id.btn_back).setOnClickListener {
-            finish()
-        }
 
         rvDeletedTracks = findViewById(R.id.rv_deleted_tracks)
         llEmptyState = findViewById(R.id.ll_empty_state)
