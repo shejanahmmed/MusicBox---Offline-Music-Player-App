@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="@drawable/bg_bottom_sheet">
+    android:background="@drawable/bg_bottom_sheet_ash">
 
     <View
         android:layout_width="40dp"
@@ -33,14 +33,28 @@
         android:textSize="14sp"
         android:layout_marginBottom="24dp"/>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Your Name"
+        android:textColor="@color/primary_red"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="4dp"/>
+
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:textColor="@color/colorTextSecondary"
         android:textColorHint="@color/colorTextSecondary"
-        app:hintTextColor="@color/primary_red"
-        app:boxStrokeColor="@color/primary_red"
-        app:boxBackgroundColor="@color/colorSurface"
+        app:hintEnabled="false"
+        app:hintTextColor="@color/text_white_opacity_40"
+        app:boxStrokeColor="@color/selector_box_stroke"
+        app:boxStrokeWidth="1dp"
+        app:boxStrokeWidthFocused="1dp"
+        app:boxBackgroundColor="@color/colorSeekBarBorder"
         app:boxCornerRadiusTopStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
@@ -51,7 +65,6 @@
             android:id="@+id/et_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Your Name"
             android:textColor="@color/colorTextPrimary"
             android:inputType="textPersonName|textCapWords"
             android:maxLines="1"/>
