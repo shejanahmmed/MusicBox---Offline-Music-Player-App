@@ -8,57 +8,66 @@
     android:layout_height="match_parent"
     android:background="@color/colorBackground">
 
-    <!-- Header -->
-    <TextView
-        android:id="@+id/tv_header_title"
-        android:layout_width="wrap_content"
+    <!-- Header Box -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_header"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="PLAYLIST"
-        android:textColor="@color/colorTextPrimary"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textAllCaps="true"
-        android:letterSpacing="-0.05"
+        android:padding="16dp"
+        android:background="@drawable/bg_header_box"
+        android:elevation="6dp"
+        android:layout_marginTop="16dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <ImageButton
-        android:id="@+id/btn_add_playlist"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@drawable/bg_playlist_item"
-        android:src="@drawable/ic_add"
-        app:tint="@color/colorIcon"
         android:layout_marginEnd="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="@+id/tv_header_title"
-        app:layout_constraintTop_toTopOf="@+id/tv_header_title"/>
-
-    <!-- Invisible Anchor for compatibility if code references cl_header (it shouldn't strongly depend on it for layout below, but we need to check constraints below) -->
-    <!-- The next item 'll_top_grid' constrains to 'cl_header'. We need to update that constraint. -->
-
-    <TextView
-        android:id="@+id/tv_playlists_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0 Lists"
-        android:textColor="@color/colorTextSecondary"
-        android:textSize="14sp"
-        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_header_title"/>
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tv_header_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PLAYLIST"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="-0.05"
+            android:textAllCaps="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_playlists_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 Lists"
+            android:textColor="@color/text_white_opacity_60"
+            android:textSize="13sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_header_title"/>
+
+        <ImageButton
+            android:id="@+id/btn_add_playlist"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_playlist_item"
+            android:src="@drawable/ic_add"
+            app:tint="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_playlists"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="16dp"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="12dp"
         android:clipToPadding="false"
         android:paddingBottom="100dp"
-        app:layout_constraintTop_toBottomOf="@+id/tv_playlists_count"
+        app:layout_constraintTop_toBottomOf="@+id/cl_header"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <TextView
@@ -73,7 +82,7 @@
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_header_title"
+        app:layout_constraintTop_toBottomOf="@+id/cl_header"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0.3"/>
 
