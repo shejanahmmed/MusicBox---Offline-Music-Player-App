@@ -8,32 +8,45 @@
     android:layout_height="match_parent"
     android:background="@color/colorBackground">
 
-    <!-- Header -->
-    <TextView
-        android:id="@+id/tv_header_title"
-        android:layout_width="wrap_content"
+    <!-- Header Box -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_header"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="ARTISTS"
-        android:textColor="@color/colorTextPrimary"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:letterSpacing="-0.05"
-        android:textAllCaps="true"
+        android:padding="16dp"
+        android:background="@drawable/bg_header_box"
+        android:elevation="6dp"
+        android:layout_marginTop="16dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <TextView
-        android:id="@+id/tv_artists_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0 Artists"
-        android:textColor="@color/colorTextSecondary"
-        android:textSize="14sp"
-        android:layout_marginStart="24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_header_title"/>
+        <TextView
+            android:id="@+id/tv_header_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ARTISTS"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="-0.05"
+            android:textAllCaps="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_artists_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 Artists"
+            android:textColor="@color/text_white_opacity_60"
+            android:textSize="13sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_header_title"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Artists List -->
     <androidx.recyclerview.widget.RecyclerView
@@ -42,9 +55,9 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:paddingHorizontal="24dp"
-        android:paddingTop="24dp"
+        android:paddingTop="12dp"
         android:paddingBottom="100dp"
-        app:layout_constraintTop_toBottomOf="@+id/tv_artists_count"
+        app:layout_constraintTop_toBottomOf="@+id/cl_header"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <!-- Mini Player -->

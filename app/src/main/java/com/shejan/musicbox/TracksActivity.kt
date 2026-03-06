@@ -163,6 +163,9 @@ class TracksActivity : AppCompatActivity() {
              if (isBound && musicService != null) {
                  musicService?.toggleShuffle()
                  updateUI()
+                 
+                 val msg = if (MusicService.isShuffleEnabled) "Shuffle On" else "Shuffle Off"
+                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
              }
         }
         
@@ -264,13 +267,13 @@ class TracksActivity : AppCompatActivity() {
         if (MusicService.isShuffleEnabled) {
             shuffleBtn.setColorFilter(getColor(R.color.primary_red))
         } else {
-            shuffleBtn.setColorFilter(ContextCompat.getColor(this, R.color.colorIconSecondary))
+            shuffleBtn.setColorFilter(ContextCompat.getColor(this, R.color.white))
         }
         
         if (MusicService.repeatMode != MusicService.REPEAT_OFF) {
             repeatBtn.setColorFilter(getColor(R.color.primary_red))
         } else {
-            repeatBtn.setColorFilter(ContextCompat.getColor(this, R.color.colorIconSecondary))
+            repeatBtn.setColorFilter(ContextCompat.getColor(this, R.color.white))
         }
         
         MiniPlayerManager.update(this, musicService)

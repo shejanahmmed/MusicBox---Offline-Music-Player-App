@@ -127,6 +127,9 @@ class VideosActivity : AppCompatActivity() {
             if (isBound && musicService != null) {
                 musicService?.toggleShuffle()
                 updateUI()
+                
+                val msg = if (MusicService.isShuffleEnabled) "Shuffle On" else "Shuffle Off"
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -296,7 +299,7 @@ class VideosActivity : AppCompatActivity() {
         if (MusicService.isShuffleEnabled) {
             shuffleBtn?.setColorFilter(getColor(R.color.primary_red))
         } else {
-            shuffleBtn?.setColorFilter(ContextCompat.getColor(this, R.color.colorIconSecondary))
+            shuffleBtn?.setColorFilter(ContextCompat.getColor(this, R.color.white))
         }
 
         MiniPlayerManager.update(this, musicService)

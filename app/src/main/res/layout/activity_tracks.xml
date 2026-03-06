@@ -68,20 +68,20 @@
                 app:tint="@color/white"
                 android:layout_marginEnd="16dp" />
             <ImageButton
-                android:id="@+id/btn_header_repeat"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_repeat"
-                app:tint="@color/text_white_opacity_60"
-                android:layout_marginEnd="16dp" />
-            <ImageButton
                 android:id="@+id/btn_header_shuffle"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_shuffle"
-                app:tint="@color/text_white_opacity_60"
+                app:tint="@color/white"
+                android:layout_marginEnd="16dp" />
+            <ImageButton
+                android:id="@+id/btn_header_repeat"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_repeat"
+                app:tint="@color/white"
                 android:layout_marginEnd="0dp" />
             <ImageButton
                 android:id="@+id/btn_edit"
