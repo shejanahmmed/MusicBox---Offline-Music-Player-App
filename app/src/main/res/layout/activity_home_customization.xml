@@ -59,7 +59,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="24dp"
+                android:paddingTop="12dp"
                 android:paddingBottom="16dp"
                 android:nestedScrollingEnabled="false" />
 
@@ -69,8 +70,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_settings_card"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
                 android:layout_marginBottom="24dp"
                 android:padding="16dp">
 
