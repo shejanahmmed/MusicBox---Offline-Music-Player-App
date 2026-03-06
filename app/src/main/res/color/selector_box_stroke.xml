@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Focused state: Slightly brighter or same thin white -->
+    <item android:color="@color/text_white_opacity_60" android:state_focused="true" />
+    <!-- Hovered state -->
+    <item android:color="@color/text_white_opacity_60" android:state_hovered="true" />
+    <!-- Default (resting) state: Thin white -->
+    <item android:color="@color/text_white_opacity_40" />
+</selector>
