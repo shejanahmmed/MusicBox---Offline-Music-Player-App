@@ -12,12 +12,14 @@
         android:id="@+id/cl_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:background="@drawable/bg_header_box"
-        android:elevation="6dp"
-        android:layout_marginTop="16dp"
+        android:paddingVertical="8dp"
+        android:paddingHorizontal="16dp"
+        android:background="@drawable/bg_header_box_background"
+
+        android:layout_marginTop="8dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
+
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -27,7 +29,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="DELETED TRACKS"
-            android:textColor="@color/colorHeaderElement"
+            android:textColor="@color/colorTextPrimary"
             android:textSize="16sp"
             android:textStyle="bold"
             android:letterSpacing="-0.05"
@@ -74,9 +76,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No deleted tracks"
+            android:text="0 Tracks"
             android:textColor="@color/colorTextSecondary"
-            android:textSize="16sp"
+            android:textSize="13sp"
             android:layout_marginTop="16dp"/>
 
     </LinearLayout>

@@ -21,21 +21,22 @@
     
     <!-- Semantic Colors (Light Mode Defaults) -->
     <color name="colorBackground">#F7F8F0</color> <!-- User Requested Background -->
-    <color name="colorSurface">#EDDCC6</color> <!-- User Requested Card Color (Warm Peach/Latte) -->
+    <color name="colorSurface">#FFFFFF</color> <!-- User Requested Card Color (Pure White) -->
     <color name="colorStroke">#555555</color> <!-- Light Black Border -->
     <color name="colorWireframeCorner">#8E8E93</color> <!-- System Gray (Distinct) -->
     <color name="colorHeaderBorder">#000000</color> <!-- New Header Border for Light Mode -->
-    <color name="colorHeaderElement">#000000</color> <!-- Header Text and Icons for Light Mode -->
-    <color name="colorHeaderElementSecondary">#99000000</color> <!-- 60% Black for subtitle -->
+    <color name="colorHeaderElement">#FFFFFF</color> <!-- Header Text and Icons -->
+    <color name="colorHeaderElementSecondary">#CCFFFFFF</color> <!-- 80% White for subtitle text -->
     <color name="colorTextPrimary">#1C1C1E</color> <!-- Dark Dark Gray -->
     <color name="colorTextSecondary">#8E8E93</color> <!-- Gray -->
     <color name="colorIcon">#1C1C1E</color>
     <color name="colorIconSecondary">#8E8E93</color>
     
     <!-- Nav Semantic Colors -->
-    <color name="colorBottomNavBackground">#7EACB5</color> <!-- Teal Nav Bar -->
-    <color name="colorNavSelected">#000000</color>
-    <color name="colorNavUnselected">#CCFFFFFF</color> <!-- 80% White for unselected -->
+    <color name="colorBottomNavBackground">#FFFFFF</color> <!-- Pure White Nav Bar -->
+    <color name="colorNavBorder">#355872</color> <!-- User Requested Nav Border -->
+    <color name="colorNavSelected">#000000</color> <!-- Black for selected -->
+    <color name="colorNavUnselected">#66000000</color> <!-- 40% Black for unselected -->
     <color name="primary_red_opacity_50">#80f20d0d</color>
     <color name="switch_thumb_off">#FFFFFF</color>
     <color name="switch_track_off">#E5E5EA</color>

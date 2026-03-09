@@ -2,7 +2,7 @@
 <resources>
     <!-- Dark Mode Semantic Colors -->
     <color name="colorBackground">#000000</color>
-    <color name="colorSurface">#0D0D0D</color> <!-- bg_card_section -->
+    <color name="colorSurface">#1C1C1E</color> <!-- Light Dark Card Section -->
     <color name="colorStroke">#26FFFFFF</color> <!-- wireframe_border -->
     <color name="colorWireframeCorner">#66FFFFFF</color> <!-- 40% White (Restored) -->
     <color name="colorTextPrimary">#FFFFFF</color>
@@ -15,6 +15,7 @@
     
     <!-- Nav Semantic Colors -->
     <color name="colorBottomNavBackground">#FF181818</color>
+    <color name="colorNavBorder">#26FFFFFF</color> <!-- 15% White for dark mode border -->
     <color name="colorNavSelected">#FFFFFF</color>
     <color name="colorNavUnselected">#71717a</color>
     
