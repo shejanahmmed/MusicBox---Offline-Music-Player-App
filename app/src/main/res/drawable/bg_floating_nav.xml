@@ -2,5 +2,5 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="@color/colorBottomNavBackground" /> <!-- Near Black -->
     <corners android:radius="8dp" /> <!-- Less rounded corners -->
-    <stroke android:width="2.5dp" android:color="@color/colorStroke" /> <!-- Subtle border -->
+    <!-- No Border -->
 </shape>

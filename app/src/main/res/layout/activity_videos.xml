@@ -13,12 +13,14 @@
         android:id="@+id/cl_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="16dp"
+        android:paddingVertical="8dp"
+        android:paddingHorizontal="16dp"
         android:background="@drawable/bg_header_box"
-        android:elevation="6dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -61,21 +63,25 @@
 
             <ImageButton
                 android:id="@+id/btn_sort"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:background="@drawable/bg_red_square_button"
                 android:src="@drawable/ic_sort"
                 app:tint="@color/colorHeaderElement"
-                android:layout_marginEnd="16dp" />
+                android:layout_marginEnd="8dp" />
 
             <ImageButton
                 android:id="@+id/btn_header_shuffle"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:background="@drawable/bg_red_square_button"
                 android:src="@drawable/ic_shuffle"
-                app:tint="@color/colorHeaderElementSecondary"
-                android:layout_marginEnd="16dp" />
+                app:tint="@color/colorHeaderElement"
+                android:layout_marginEnd="0dp" />
 
         </LinearLayout>
 

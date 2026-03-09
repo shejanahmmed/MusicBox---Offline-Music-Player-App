@@ -2,8 +2,8 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     
-    <!-- Dark Ash Background Color -->
-    <solid android:color="#2c2c2c" />
+    <!-- Theme Aware Background -->
+    <solid android:color="@color/colorSurface" />
     
     <!-- Rounded corners at top only for bottom sheet style -->
     <corners

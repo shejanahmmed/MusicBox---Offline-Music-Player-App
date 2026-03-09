@@ -54,7 +54,7 @@
         app:boxStrokeColor="@color/selector_box_stroke"
         app:boxStrokeWidth="1dp"
         app:boxStrokeWidthFocused="1dp"
-        app:boxBackgroundColor="@color/colorSeekBarBorder"
+        app:boxBackgroundColor="@color/colorBackground"
         app:boxCornerRadiusTopStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
