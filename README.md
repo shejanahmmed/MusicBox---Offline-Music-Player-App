@@ -105,7 +105,19 @@ com.shejan.musicbox
 
 ## 📋 Changelog
 
-### v1.3.1 _(Latest)_
+### v1.5.0 _(Latest)_
+
+- ✨ **UI Refinements**: Standardized a stunning borderless layout across all track and navigation components.
+- 🌓 **Theme Enhancements**: Optimized background contrast and header styling for both Light and Dark modes.
+- 📐 **Polished Spacing**: Ensured uniform padding and gap alignments throughout the app for a flawlessly cohesive experience.
+- 🔴 **Action Highlights**: Introduced vibrant red accent boxes for primary action buttons.
+
+### v1.4.0
+
+- ⚙️ **Home Customization**: Added comprehensive settings to reorder and hide boxes on the Home screen.
+- 🎨 **Visual Tweaks**: Navigation and layout improvements across list items.
+
+### v1.3.1
 
 - 🎬 **Videos Page**: Dedicated tab for browsing local video files with sort controls
 - ⋮ **Video Options Menu**: Full options dialog for videos (share, favorite, playlist, metadata, delete)
