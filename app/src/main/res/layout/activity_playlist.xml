@@ -112,13 +112,5 @@
         android:layout_margin="16dp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-     <View
-        android:layout_width="128dp"
-        android:layout_height="4dp"
-        android:background="@color/colorStroke"
-        android:layout_marginBottom="4dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
