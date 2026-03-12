@@ -23,7 +23,8 @@
 
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:elevation="8dp">
 
         <TextView
             android:id="@+id/tv_header_title"
@@ -69,7 +70,7 @@
                 android:scaleType="fitCenter"
                 android:background="@drawable/bg_red_square_button"
                 android:src="@drawable/ic_sort"
-                app:tint="@color/colorHeaderElement"
+                app:tint="@android:color/white"
                 android:layout_marginEnd="8dp" />
             <ImageButton
                 android:id="@+id/btn_header_shuffle"
@@ -79,7 +80,7 @@
                 android:scaleType="fitCenter"
                 android:background="@drawable/bg_red_square_button"
                 android:src="@drawable/ic_shuffle"
-                app:tint="@color/colorHeaderElement"
+                app:tint="@android:color/white"
                 android:layout_marginEnd="8dp" />
             <ImageButton
                 android:id="@+id/btn_header_repeat"
@@ -89,15 +90,17 @@
                 android:scaleType="fitCenter"
                 android:background="@drawable/bg_red_square_button"
                 android:src="@drawable/ic_repeat"
-                app:tint="@color/colorHeaderElement"
+                app:tint="@android:color/white"
                 android:layout_marginEnd="0dp" />
             <ImageButton
                 android:id="@+id/btn_edit"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:background="@drawable/bg_red_square_button"
                 android:src="@drawable/ic_edit"
-                app:tint="@color/colorHeaderElement"
+                app:tint="@android:color/white"
                 android:layout_marginStart="16dp"
                 android:visibility="gone"
                 tools:visibility="visible" />

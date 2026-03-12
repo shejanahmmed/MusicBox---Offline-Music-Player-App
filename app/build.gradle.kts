@@ -47,8 +47,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
-    implementation("androidx.exifinterface:exifinterface:1.3.7")
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.exifinterface)
+    implementation(libs.navigation.fragment)
+    implementation(libs.navigation.ui)
 }
 
 tasks.register("copyMappingFile") {

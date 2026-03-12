@@ -6,4 +6,14 @@
   <component name="ProjectType">
     <option name="id" value="Android" />
   </component>
+  <component name="ProjectResources">
+    <resource url="http://schemas.android.com/apk/res/android" location="" />
+    <resource url="http://schemas.android.com/apk/res-auto" location="" />
+    <resource url="http://schemas.android.com/tools" location="" />
+  </component>
+  <component name="IgnoredResourceRoot">
+    <resource url="http://schemas.android.com/apk/res/android" />
+    <resource url="http://schemas.android.com/apk/res-auto" />
+    <resource url="http://schemas.android.com/tools" />
+  </component>
 </project>
