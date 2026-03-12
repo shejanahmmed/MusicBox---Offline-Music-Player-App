@@ -25,15 +25,15 @@
     <color name="colorStroke">#555555</color> <!-- Light Black Border -->
     <color name="colorWireframeCorner">#8E8E93</color> <!-- System Gray (Distinct) -->
     <color name="colorHeaderBorder">#000000</color> <!-- New Header Border for Light Mode -->
-    <color name="colorHeaderElement">#FFFFFF</color> <!-- Header Text and Icons -->
-    <color name="colorHeaderElementSecondary">#CCFFFFFF</color> <!-- 80% White for subtitle text -->
+    <color name="colorHeaderElement">#1C1C1E</color> <!-- Header Text and Icons (Dark) -->
+    <color name="colorHeaderElementSecondary">#8E8E93</color> <!-- Subtitle text (Gray) -->
     <color name="colorTextPrimary">#1C1C1E</color> <!-- Dark Dark Gray -->
     <color name="colorTextSecondary">#8E8E93</color> <!-- Gray -->
     <color name="colorIcon">#1C1C1E</color>
     <color name="colorIconSecondary">#8E8E93</color>
     
     <!-- Nav Semantic Colors -->
-    <color name="colorBottomNavBackground">#FFFFFF</color> <!-- Pure White Nav Bar -->
+    <color name="colorBottomNavBackground">#F7F8F0</color> <!-- Pure White Nav Bar -->
     <color name="colorNavBorder">#355872</color> <!-- User Requested Nav Border -->
     <color name="colorNavSelected">#000000</color> <!-- Black for selected -->
     <color name="colorNavUnselected">#66000000</color> <!-- 40% Black for unselected -->
@@ -50,4 +50,13 @@
     
     <!-- SeekBar Border -->
     <color name="colorSeekBarBorder">#454545</color> <!-- Light Black -->
+
+    <!-- Mini Player Semantic Colors (Light Mode: Cream White Background) -->
+    <color name="colorMiniPlayerBackground">#F7F8F0</color> <!-- Cream White -->
+    <color name="colorMiniPlayerTextPrimary">#1C1C1E</color>
+    <color name="colorMiniPlayerTextSecondary">#8E8E93</color>
+    <color name="colorMiniPlayerIcon">#1C1C1E</color>
+
+    <!-- Header Box Semantic Colors (Light Mode: Cream White Background) -->
+    <color name="colorHeaderBoxBackground">#F7F8F0</color> <!-- Cream White -->
 </resources>

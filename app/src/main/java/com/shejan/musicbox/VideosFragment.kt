@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2026 Shejan
- *
- * This file is part of MusicBox.
- *
- * MusicBox is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * MusicBox is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with MusicBox.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package com.shejan.musicbox
 
 import android.Manifest
@@ -33,18 +14,16 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.MediaStore
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.view.WindowCompat
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -54,7 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class VideosActivity : AppCompatActivity() {
+class VideosFragment : Fragment() {
 
     private val requestCodePermission = 2001
 
@@ -97,77 +76,69 @@ class VideosActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_videos)
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { view, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(view.paddingLeft, systemBars.top, view.paddingRight, systemBars.bottom)
-            insets
-        }
-
         loadSortPrefs()
+    }
 
-        val rvVideos = findViewById<RecyclerView>(R.id.rv_videos)
-        rvVideos.layoutManager = LinearLayoutManager(this)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_videos, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val rvVideos = view.findViewById<RecyclerView>(R.id.rv_videos)
+        rvVideos.layoutManager = LinearLayoutManager(requireContext())
         adapter = VideoAdapter(emptyList()) { video -> showVideoOptions(video) }
         rvVideos.adapter = adapter
 
         if (!checkPermission()) {
             requestPermission()
+        } else {
+            loadVideos()
         }
 
-        // Sort button
-        findViewById<View>(R.id.btn_sort).setOnClickListener {
+        view.findViewById<View>(R.id.btn_sort).setOnClickListener {
             showSortDialog()
         }
 
-        // Shuffle button
-        findViewById<View>(R.id.btn_header_shuffle).setOnClickListener {
+        view.findViewById<View>(R.id.btn_header_shuffle).setOnClickListener {
             if (isBound && musicService != null) {
                 musicService?.toggleShuffle()
                 updateUI()
                 
                 val msg = if (MusicService.isShuffleEnabled) "Shuffle On" else "Shuffle Off"
-                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
             }
         }
-
-        MiniPlayerManager.setup(this) { musicService }
-
-        NavUtils.setupNavigation(this, R.id.nav_videos)
-
-        // Register broadcast
-        val filter = IntentFilter("MUSIC_BOX_UPDATE")
-        ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     override fun onStart() {
         super.onStart()
-        bindService(Intent(this, MusicService::class.java), connection, BIND_AUTO_CREATE)
+        val intent = Intent(requireContext(), MusicService::class.java)
+        requireContext().bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        
+        val filter = IntentFilter("MUSIC_BOX_UPDATE")
+        ContextCompat.registerReceiver(requireContext(), receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     override fun onStop() {
         super.onStop()
         if (isBound) {
-            unbindService(connection)
+            requireContext().unbindService(connection)
             isBound = false
         }
+        try { requireContext().unregisterReceiver(receiver) } catch (_: IllegalArgumentException) {}
     }
 
     override fun onResume() {
         super.onResume()
         updateMiniPlayer()
-        NavUtils.setupNavigation(this, R.id.nav_videos)
         if (checkPermission()) {
-            loadVideos()   // re-apply duration filter and refresh list on every resume
+            loadVideos()
         }
-    }
-
-
-    override fun onDestroy() {
-        super.onDestroy()
-        try { unregisterReceiver(receiver) } catch (_: IllegalArgumentException) {}
     }
 
     // ── Permission ──────────────────────────────────────────────────────────────
@@ -178,52 +149,54 @@ class VideosActivity : AppCompatActivity() {
         } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
-        return ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(requireContext(), perm) == PackageManager.PERMISSION_GRANTED
     }
 
+    @Suppress("DEPRECATION")
     private fun requestPermission() {
         val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_VIDEO
         } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
-        ActivityCompat.requestPermissions(this, arrayOf(perm), requestCodePermission)
+        requestPermissions(arrayOf(perm), requestCodePermission)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == requestCodePermission) {
             if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Storage permission required to show videos.", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Storage permission required to show videos.", Toast.LENGTH_LONG).show()
+            } else {
+                loadVideos()
             }
-            // If permission granted, onResume will call loadVideos()
         }
     }
 
     // ── Data Loading ────────────────────────────────────────────────────────────
 
     private fun loadVideos() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val videoList = queryVideos(applicationContext)
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val videoList = queryVideos(requireContext().applicationContext)
             withContext(Dispatchers.Main) {
-                if (isFinishing || isDestroyed) return@withContext
+                val view = view ?: return@withContext
 
                 val countText = when (videoList.size) {
                     0 -> "0 Videos"
                     1 -> "1 Video"
                     else -> "${videoList.size} Videos"
                 }
-                findViewById<TextView>(R.id.tv_videos_count)?.text = countText
+                view.findViewById<TextView>(R.id.tv_videos_count)?.text = countText
 
                 adapter?.updateData(videoList)
 
                 if (videoList.isEmpty()) {
                     Toast.makeText(
-                        this@VideosActivity,
+                        requireContext(),
                         "No videos found on device.",
                         Toast.LENGTH_LONG
                     ).show()
@@ -246,8 +219,7 @@ class VideosActivity : AppCompatActivity() {
             val order = if (isAscending) "ASC" else "DESC"
             val sortOrder = "$sortColumn $order"
 
-            // Read duration filter from dedicated video prefs (separate from audio track filter)
-            val videoPrefs = context.getSharedPreferences("MusicBoxVideoPrefs", MODE_PRIVATE)
+            val videoPrefs = context.getSharedPreferences("MusicBoxVideoPrefs", Context.MODE_PRIVATE)
             val minSec = videoPrefs.getInt("video_min_duration_sec", 0)
             val maxSec = videoPrefs.getInt("video_max_duration_sec", 0)
             val minMs = minSec * 1000L
@@ -275,7 +247,6 @@ class VideosActivity : AppCompatActivity() {
                     val path = it.getString(dataCol) ?: continue
                     val size = it.getLong(sizeCol)
 
-                    // Apply duration filter
                     if (duration < minMs || duration > maxMs) continue
 
                     list.add(VideoItem(id, title, duration, path, size))
@@ -295,7 +266,10 @@ class VideosActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
-        val shuffleBtn = findViewById<ImageButton>(R.id.btn_header_shuffle)
+        val view = view ?: return
+        val shuffleBtn = view.findViewById<ImageButton>(R.id.btn_header_shuffle)
+        val context = requireContext()
+
         if (MusicService.isShuffleEnabled) {
             shuffleBtn?.setColorFilter(Color.WHITE)
         } else {
@@ -303,9 +277,6 @@ class VideosActivity : AppCompatActivity() {
         }
         shuffleBtn?.alpha = 1.0f
 
-        MiniPlayerManager.update(this, musicService)
-
-        // Highlight currently playing video if it comes from this page
         var currentTrack: Track? = null
         if (isBound && musicService != null) {
             currentTrack = musicService?.getCurrentTrack()
@@ -319,22 +290,22 @@ class VideosActivity : AppCompatActivity() {
 
     @SuppressLint("InflateParams")
     private fun showSortDialog() {
-        val dialog = BottomSheetDialog(this)
-        val view = layoutInflater.inflate(R.layout.dialog_sort, null)
-        dialog.setContentView(view)
+        val dialog = BottomSheetDialog(requireContext())
+        val dialogView = layoutInflater.inflate(R.layout.dialog_sort, null)
+        dialog.setContentView(dialogView)
 
-        view.post {
-            (view.parent as? View)?.setBackgroundColor(Color.TRANSPARENT)
+        dialogView.post {
+            (dialogView.parent as? View)?.setBackgroundColor(Color.TRANSPARENT)
         }
 
-        val switchAsc = view.findViewById<SwitchMaterial>(R.id.switch_ascending)
-        val containerTitle = view.findViewById<View>(R.id.container_title)
-        val containerDateAdded = view.findViewById<View>(R.id.container_date_added)
-        val containerDateModified = view.findViewById<View>(R.id.container_date_modified)
+        val switchAsc = dialogView.findViewById<SwitchMaterial>(R.id.switch_ascending)
+        val containerTitle = dialogView.findViewById<View>(R.id.container_title)
+        val containerDateAdded = dialogView.findViewById<View>(R.id.container_date_added)
+        val containerDateModified = dialogView.findViewById<View>(R.id.container_date_modified)
 
-        val rbTitle = view.findViewById<RadioButton>(R.id.rb_title)
-        val rbDateAdded = view.findViewById<RadioButton>(R.id.rb_date_added)
-        val rbDateModified = view.findViewById<RadioButton>(R.id.rb_date_modified)
+        val rbTitle = dialogView.findViewById<RadioButton>(R.id.rb_title)
+        val rbDateAdded = dialogView.findViewById<RadioButton>(R.id.rb_date_added)
+        val rbDateModified = dialogView.findViewById<RadioButton>(R.id.rb_date_modified)
 
         fun updateSelection(selectedRb: RadioButton) {
             rbTitle.isChecked = false
@@ -351,7 +322,7 @@ class VideosActivity : AppCompatActivity() {
         }
 
         fun saveSortPrefs() {
-            getSharedPreferences("MusicBoxVideoPrefs", MODE_PRIVATE).edit().apply {
+            requireContext().getSharedPreferences("MusicBoxVideoPrefs", Context.MODE_PRIVATE).edit().apply {
                 putString("video_sort_column", sortColumn)
                 putBoolean("video_is_ascending", isAscending)
                 apply()
@@ -392,7 +363,7 @@ class VideosActivity : AppCompatActivity() {
     }
 
     private fun loadSortPrefs() {
-        val prefs = getSharedPreferences("MusicBoxVideoPrefs", MODE_PRIVATE)
+        val prefs = requireContext().getSharedPreferences("MusicBoxVideoPrefs", Context.MODE_PRIVATE)
         sortColumn = prefs.getString("video_sort_column", MediaStore.Video.Media.TITLE)
             ?: MediaStore.Video.Media.TITLE
         isAscending = prefs.getBoolean("video_is_ascending", true)
@@ -401,7 +372,6 @@ class VideosActivity : AppCompatActivity() {
     // ── Video Options ───────────────────────────────────────────────────────────
 
     private fun showVideoOptions(video: VideoItem) {
-        // Convert VideoItem → Track so we can reuse the full TrackMenuManager options dialog
         val track = Track(
             id = video.id,
             title = video.title,
@@ -411,9 +381,9 @@ class VideosActivity : AppCompatActivity() {
             albumId = -1L
         )
         TrackMenuManager.showTrackOptionsDialog(
-            activity = this,
+            activity = requireActivity() as AppCompatActivity,
             track = track,
-            pickArtworkLauncher = null,     // artwork editing not applicable for videos
+            pickArtworkLauncher = null,
             callback = object : TrackMenuManager.Callback {
                 override fun onArtworkChanged() {}
                 override fun onTrackDeleted() { loadVideos() }
@@ -421,8 +391,4 @@ class VideosActivity : AppCompatActivity() {
             }
         )
     }
-
 }
-
-
-

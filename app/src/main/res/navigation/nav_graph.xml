@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.shejan.musicbox.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_tracks"
+        android:name="com.shejan.musicbox.TracksFragment"
+        android:label="Tracks"
+        tools:layout="@layout/fragment_tracks">
+        <argument
+            android:name="SHOW_FAVORITES"
+            app:argType="boolean"
+            android:defaultValue="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_albums"
+        android:name="com.shejan.musicbox.AlbumsFragment"
+        android:label="Albums"
+        tools:layout="@layout/fragment_albums" />
+
+    <fragment
+        android:id="@+id/nav_artists"
+        android:name="com.shejan.musicbox.ArtistsFragment"
+        android:label="Artists"
+        tools:layout="@layout/fragment_artists" />
+
+    <fragment
+        android:id="@+id/nav_videos"
+        android:name="com.shejan.musicbox.VideosFragment"
+        android:label="Videos"
+        tools:layout="@layout/fragment_videos" />
+
+    <fragment
+        android:id="@+id/nav_playlists"
+        android:name="com.shejan.musicbox.PlaylistFragment"
+        android:label="Playlists"
+        tools:layout="@layout/fragment_playlist" />
+
+    <fragment
+        android:id="@+id/nav_search"
+        android:name="com.shejan.musicbox.SearchFragment"
+        android:label="Search"
+        tools:layout="@layout/fragment_search" />
+
+    <!-- Note: Settings might remain an Activity for simplicity, or we can make it a Fragment.
+         Let's keep it in the graph just in case. -->
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="com.shejan.musicbox.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings" />
+
+</navigation>
