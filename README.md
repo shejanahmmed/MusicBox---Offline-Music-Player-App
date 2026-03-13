@@ -105,7 +105,7 @@ com.shejan.musicbox
 
 ## 📋 Changelog
 
-### v1.5.0 _(Latest)_
+### v1.6.0 _(Latest)_
 
 - ✨ **UI Refinements**: Standardized a stunning borderless layout across all track and navigation components.
 - 🌓 **Theme Enhancements**: Optimized background contrast and header styling for both Light and Dark modes.
