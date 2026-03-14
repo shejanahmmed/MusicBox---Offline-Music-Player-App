@@ -105,14 +105,15 @@ com.shejan.musicbox
 
 ## 📋 Changelog
 
-### v1.6.0 _(Latest)_
+### v1.6.5 _(Latest)_
 
-- ✨ **UI Refinements**: Standardized a stunning borderless layout across all track and navigation components.
-- 🌓 **Theme Enhancements**: Optimized background contrast and header styling for both Light and Dark modes.
-- 📐 **Polished Spacing**: Ensured uniform padding and gap alignments throughout the app for a flawlessly cohesive experience.
-- 🔴 **Action Highlights**: Introduced vibrant red accent boxes for primary action buttons.
+- 🎨 **Premium Theme Enhancements**: Significantly improved both **Light and Dark modes** with refined color palettes (Premium Ash) and better contrast.
+- 💎 **Sleek UI Design**: Enhanced card layouts, buttons, and iconography across the app for a more professional and modern aesthetic.
+- 🛠️ **UI Layout Fixes**: Increased bottom padding in all scrollable lists (Tracks, Albums, etc.) to prevent content from being hidden behind the mini-player.
+- 📐 **Navigation Refinement**: Adjusted "Now Playing" header spacing and alignment for better visual balance.
+- ✅ **Version Alignment**: Standardised versioning to v1.6.5 (Build 15).
 
-### v1.4.0
+### v1.6.0
 
 - ⚙️ **Home Customization**: Added comprehensive settings to reorder and hide boxes on the Home screen.
 - 🎨 **Visual Tweaks**: Navigation and layout improvements across list items.
