@@ -349,11 +349,14 @@ class MusicService : Service() {
             }
             setOnPreparedListener(standardPreparedListener)
             setOnErrorListener { mp, what, extra ->
-                mp.reset()
-                android.os.Handler(android.os.Looper.getMainLooper()).post {
-                    android.widget.Toast.makeText(applicationContext, "Error playing track: what=$what extra=$extra", android.widget.Toast.LENGTH_LONG).show()
+                android.util.Log.e("MusicService", "MediaPlayer Error in initMediaPlayer: what=$what extra=$extra")
+                if (what != -38) {
+                    mp.reset()
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        android.widget.Toast.makeText(applicationContext, "Error playing track: what=$what extra=$extra", android.widget.Toast.LENGTH_LONG).show()
+                    }
+                    pause(abandonFocus = false)
                 }
-                pause(abandonFocus = false)
                 true // Return true to indicate error was handled, preventing onCompletionListener from triggering
             }
         }
@@ -438,6 +441,7 @@ class MusicService : Service() {
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         // Stop service when user swipes app away from recents
+        pause(abandonFocus = true)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
@@ -445,6 +449,11 @@ class MusicService : Service() {
     fun playTrack(index: Int) {
         synchronized(playlist) {
             if (index < 0 || index >= playlist.size) return
+            
+            // Promote to started service to survive unbinding
+            try {
+                androidx.core.content.ContextCompat.startForegroundService(applicationContext, Intent(applicationContext, MusicService::class.java))
+            } catch (_: Exception) {}
             
             val track = playlist.getOrNull(index) ?: return
             currentIndex = index
@@ -511,6 +520,11 @@ class MusicService : Service() {
 
     fun play() {
         try {
+            // Promote to started service to survive unbinding
+            try {
+                androidx.core.content.ContextCompat.startForegroundService(applicationContext, Intent(applicationContext, MusicService::class.java))
+            } catch (_: Exception) {}
+            
             mediaPlayer?.let {
                 if (!it.isPlaying) {
                     if (!requestAudioFocus()) return@let
@@ -523,7 +537,12 @@ class MusicService : Service() {
                 }
             }
         } catch (_: IllegalStateException) {
-            initMediaPlayer()
+            val currentIdx = currentIndex
+            if (currentIdx != -1) {
+                playTrack(currentIdx)
+            } else {
+                initMediaPlayer()
+            }
         }
     }
 
