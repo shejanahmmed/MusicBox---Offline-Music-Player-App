@@ -146,6 +146,7 @@ class TracksFragment : Fragment() {
                 // Show animated letter bubble
                 letterBubble.text = letter
                 hideBubbleRunnable?.let { letterBubble.removeCallbacks(it) }
+                letterBubble.animate().cancel()
 
                 if (letterBubble.visibility != View.VISIBLE) {
                     letterBubble.alpha = 0f
@@ -157,21 +158,30 @@ class TracksFragment : Fragment() {
                         .setDuration(150)
                         .setInterpolator(OvershootInterpolator())
                         .start()
+                } else {
+                    letterBubble.alpha = 1f
+                    letterBubble.scaleX = 1f
+                    letterBubble.scaleY = 1f
                 }
-
-                // Auto-hide bubble after 800ms of no interaction
-                hideBubbleRunnable = Runnable {
-                    letterBubble.animate()
-                        .alpha(0f).scaleX(0.5f).scaleY(0.5f)
-                        .setDuration(200)
-                        .setListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationEnd(animation: Animator) {
-                                letterBubble.visibility = View.GONE
-                            }
-                        })
-                        .start()
-                }.also { letterBubble.postDelayed(it, 800) }
             }
+        }
+
+        alphabetScrollbar.onDragEnded = {
+            hideBubbleRunnable?.let { letterBubble.removeCallbacks(it) }
+            hideBubbleRunnable = Runnable {
+                letterBubble.animate()
+                    .alpha(0f).scaleX(0.5f).scaleY(0.5f)
+                    .setDuration(200)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            letterBubble.visibility = View.GONE
+                            letterBubble.alpha = 1f
+                            letterBubble.scaleX = 1f
+                            letterBubble.scaleY = 1f
+                        }
+                    })
+                    .start()
+            }.also { letterBubble.postDelayed(it, 800) }
         }
         // ─────────────────────────────────────────────────────────────────
 
