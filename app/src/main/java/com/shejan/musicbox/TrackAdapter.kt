@@ -124,5 +124,52 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
     fun indexOfTrack(trackId: Long): Int {
         return tracks.indexOfFirst { it.id == trackId }
     }
+
+    /**
+     * Returns the first list position whose title starts with the given letter.
+     * '#' matches any title that doesn't start with A–Z.
+     */
+    fun getFirstIndexForLetter(letter: String): Int {
+        if (letter == "#") {
+            return tracks.indexOfFirst { track ->
+                val first = track.title.trimStart().firstOrNull()?.uppercaseChar()
+                first == null || !first.isLetter()
+            }
+        }
+        return tracks.indexOfFirst { track ->
+            track.title.trimStart().firstOrNull()?.uppercaseChar()?.toString() == letter
+        }
+    }
+
+    /**
+     * Returns the sorted list of unique first-letter sections present in the current tracks.
+     * '#' is included if any title doesn't start with A–Z.
+     */
+    fun getAvailableLetters(): List<String> {
+        val letters = mutableListOf<String>()
+        var hasNonAlpha = false
+        val seen = mutableSetOf<Char>()
+        for (track in tracks) {
+            val first = track.title.trimStart().firstOrNull()?.uppercaseChar()
+            if (first != null && first in 'A'..'Z') {
+                if (seen.add(first)) letters.add(first.toString())
+            } else {
+                hasNonAlpha = true
+            }
+        }
+        letters.sort()
+        if (hasNonAlpha) letters.add(0, "#")
+        return letters
+    }
+
+    /**
+     * Returns the first letter of the track at [pos], or "#" for non-alpha titles.
+     * Used by the moving-pill scrollbar in TracksActivity.
+     */
+    fun getLetterAtPosition(pos: Int): String {
+        if (pos !in tracks.indices) return ""
+        val first = tracks[pos].title.trimStart().firstOrNull()?.uppercaseChar()
+        return if (first != null && first in 'A'..'Z') first.toString() else "#"
+    }
 }
 

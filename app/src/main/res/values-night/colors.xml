@@ -42,4 +42,10 @@
 
     <!-- Header Box Semantic Colors (Dark Mode: Dark Background) -->
     <color name="colorHeaderBoxBackground">#1C1C1E</color>
+
+    <!-- Alphabet Index Scrollbar -->
+    <color name="colorScrollbarPill">#30FFFFFF</color>       <!-- subtle white pill in dark mode -->
+    <color name="colorScrollbarText">#AAFFFFFF</color>       <!-- 67% white letter text -->
+    <color name="colorScrollbarActive">#f20d0d</color>       <!-- accent red highlight -->
+    <color name="colorScrollbarActiveText">#FFFFFF</color>   <!-- white text on red dot -->
 </resources>
