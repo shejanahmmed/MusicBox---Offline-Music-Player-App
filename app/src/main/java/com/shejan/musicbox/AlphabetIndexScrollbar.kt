@@ -177,7 +177,7 @@ class AlphabetIndexScrollbar @JvmOverloads constructor(
             val letter = adapter?.getLetterAtPosition(targetPos) ?: ""
             if (letter.isNotEmpty() && letter != lastLetter) {
                 lastLetter = letter
-                performHapticFeedback(HapticFeedbackConstants.TEXT_HANDLE_MOVE)
+                MusicUtils.performHapticFeedback(context)
                 onLetterSelected?.invoke(letter)
             }
         }
