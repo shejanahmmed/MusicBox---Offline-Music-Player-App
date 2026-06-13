@@ -18,6 +18,9 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.view.animation.OvershootInterpolator
 import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.TextView
@@ -125,6 +128,52 @@ class TracksFragment : Fragment() {
             showTrackOptionsDialog(track)
         }
         rvTracks.adapter = adapter
+
+        // ── Alphabet Index Scrollbar ──────────────────────────────────────
+        val alphabetScrollbar = view.findViewById<AlphabetIndexScrollbar>(R.id.alphabet_scrollbar)
+        val letterBubble = view.findViewById<TextView>(R.id.tv_letter_bubble)
+        var hideBubbleRunnable: Runnable? = null
+
+        alphabetScrollbar.onLetterSelected = { letter ->
+            val currentAdapter = rvTracks.adapter as? TrackAdapter
+            if (currentAdapter != null) {
+                val index = currentAdapter.getFirstIndexForLetter(letter)
+                if (index != -1) {
+                    (rvTracks.layoutManager as? LinearLayoutManager)
+                        ?.scrollToPositionWithOffset(index, 0)
+                }
+
+                // Show animated letter bubble
+                letterBubble.text = letter
+                hideBubbleRunnable?.let { letterBubble.removeCallbacks(it) }
+
+                if (letterBubble.visibility != View.VISIBLE) {
+                    letterBubble.alpha = 0f
+                    letterBubble.scaleX = 0.5f
+                    letterBubble.scaleY = 0.5f
+                    letterBubble.visibility = View.VISIBLE
+                    letterBubble.animate()
+                        .alpha(1f).scaleX(1f).scaleY(1f)
+                        .setDuration(150)
+                        .setInterpolator(OvershootInterpolator())
+                        .start()
+                }
+
+                // Auto-hide bubble after 800ms of no interaction
+                hideBubbleRunnable = Runnable {
+                    letterBubble.animate()
+                        .alpha(0f).scaleX(0.5f).scaleY(0.5f)
+                        .setDuration(200)
+                        .setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationEnd(animation: Animator) {
+                                letterBubble.visibility = View.GONE
+                            }
+                        })
+                        .start()
+                }.also { letterBubble.postDelayed(it, 800) }
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────
 
         if (checkPermission()) {
             loadTracks()
@@ -344,6 +393,10 @@ class TracksFragment : Fragment() {
                 } else {
                     adapter?.updateData(trackList)
                 }
+
+                // Update alphabet scrollbar with available letters
+                val alphabetScrollbar = view.findViewById<AlphabetIndexScrollbar>(R.id.alphabet_scrollbar)
+                alphabetScrollbar?.setAvailableLetters(adapter?.getAvailableLetters() ?: emptyList())
 
                 if (!initialScrollDone && trackList.isNotEmpty()) {
                     attemptScrollToActiveTrack()

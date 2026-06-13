@@ -25,6 +25,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 import android.Manifest
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -40,6 +42,7 @@ import android.os.IBinder
 import android.provider.MediaStore
 import android.annotation.SuppressLint
 import android.view.View
+import android.view.animation.OvershootInterpolator
 import androidx.core.content.edit
 import android.widget.ImageButton
 import android.widget.RadioButton
@@ -187,6 +190,61 @@ class TracksActivity : AppCompatActivity() {
         MiniPlayerManager.setup(this) { musicService }
         
         NavUtils.setupNavigation(this, getNavId())
+
+        // ── Moving pill scrollbar ──────────────────────────────────────────
+        val alphabetScrollbar = findViewById<AlphabetIndexScrollbar>(R.id.alphabet_scrollbar)
+        val letterBubble    = findViewById<TextView>(R.id.tv_letter_bubble)
+        var hideBubbleRunnable: Runnable? = null
+
+        // Attach so the pill appears automatically when the user scrolls the list
+        alphabetScrollbar.attachToRecyclerView(rvTracks)
+
+        // While dragging the pill → show the current-section letter bubble
+        alphabetScrollbar.onLetterSelected = { letter ->
+            letterBubble.text = letter
+            hideBubbleRunnable?.let { letterBubble.removeCallbacks(it) }
+
+            // Cancel any in-progress fade-out so the bubble doesn't blink
+            letterBubble.animate().cancel()
+
+            if (letterBubble.visibility != View.VISIBLE) {
+                // Bubble was hidden — pop it in
+                letterBubble.alpha = 0f
+                letterBubble.scaleX = 0.6f
+                letterBubble.scaleY = 0.6f
+                letterBubble.visibility = View.VISIBLE
+                letterBubble.animate()
+                    .alpha(1f).scaleX(1f).scaleY(1f)
+                    .setDuration(130)
+                    .setInterpolator(OvershootInterpolator())
+                    .start()
+            } else {
+                // Bubble already visible — snap to full opacity immediately
+                // (prevents partial-fade-out state from causing blinking)
+                letterBubble.alpha = 1f
+                letterBubble.scaleX = 1f
+                letterBubble.scaleY = 1f
+            }
+        }
+
+        // On finger-up → hide bubble after short delay
+        alphabetScrollbar.onDragEnded = {
+            hideBubbleRunnable?.let { letterBubble.removeCallbacks(it) }
+            hideBubbleRunnable = Runnable {
+                letterBubble.animate()
+                    .alpha(0f).scaleX(0.6f).scaleY(0.6f)
+                    .setDuration(200)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            letterBubble.visibility = View.GONE
+                            letterBubble.alpha = 1f   // reset for next show
+                            letterBubble.scaleX = 1f
+                            letterBubble.scaleY = 1f
+                        }
+                    }).start()
+            }.also { letterBubble.postDelayed(it, 600) }
+        }
+        // ──────────────────────────────────────────────────────────────────
         
         val filter = IntentFilter("MUSIC_BOX_UPDATE")
         filter.addAction("com.shejan.musicbox.TRACK_DELETED")
