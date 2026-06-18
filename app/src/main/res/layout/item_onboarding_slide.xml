@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:paddingStart="32dp"
+    android:paddingEnd="32dp">
+
+    <!-- Icon Container with Glow, Solid Circular Border, and Inner Fill -->
+    <FrameLayout
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@drawable/bg_slide_icon_border"
+        android:layout_marginBottom="40dp">
+
+        <ImageView
+            android:id="@+id/iv_slide_icon"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_onboarding_pure_sound"
+            android:contentDescription="Slide Icon" />
+    </FrameLayout>
+
+    <!-- Tag -->
+    <TextView
+        android:id="@+id/tv_slide_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PLAYBACK"
+        android:textColor="#e8192c"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.2"
+        android:textAllCaps="true"
+        android:fontFamily="@font/inter"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:layout_marginBottom="14dp" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tv_slide_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PURE SOUND"
+        android:textColor="#FFFFFF"
+        android:textSize="42sp"
+        android:letterSpacing="0.04"
+        android:textAllCaps="true"
+        android:fontFamily="@font/bebas_neue"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Body -->
+    <TextView
+        android:id="@+id/tv_slide_body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Full-quality local playback. No streaming. No compression. Your files, played exactly as they were mastered."
+        android:textColor="#99FFFFFF"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:lineSpacingMultiplier="1.3"
+        android:fontFamily="@font/inter"
+        android:maxWidth="280dp" />
+
+</LinearLayout>

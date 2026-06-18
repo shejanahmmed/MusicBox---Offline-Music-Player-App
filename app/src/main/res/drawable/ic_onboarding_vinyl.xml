@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="220dp"
+    android:height="220dp"
+    android:viewportWidth="220"
+    android:viewportHeight="220">
+    
+    <!-- Outer disc base -->
+    <path
+        android:pathData="M110,2 A108,108 0 1,1 110,218 A108,108 0 1,1 110,2"
+        android:fillColor="#121212"
+        android:strokeColor="#222222"
+        android:strokeWidth="1"/>
+
+    <!-- Grooves -->
+    <path
+        android:pathData="M110,14 A96,96 0 1,1 110,206 A96,96 0 1,1 110,14"
+        android:strokeColor="#1a1a1a"
+        android:strokeWidth="1.2"/>
+    <path
+        android:pathData="M110,22 A88,88 0 1,1 110,198 A88,88 0 1,1 110,22"
+        android:strokeColor="#1a1a1a"
+        android:strokeWidth="0.8"/>
+    <path
+        android:pathData="M110,30 A80,80 0 1,1 110,190 A80,80 0 1,1 110,30"
+        android:strokeColor="#1a1a1a"
+        android:strokeWidth="0.8"/>
+    <path
+        android:pathData="M110,38 A72,72 0 1,1 110,182 A72,72 0 1,1 110,38"
+        android:strokeColor="#1a1a1a"
+        android:strokeWidth="0.8"/>
+    <path
+        android:pathData="M110,46 A64,64 0 1,1 110,174 A64,64 0 1,1 110,46"
+        android:strokeColor="#1a1a1a"
+        android:strokeWidth="0.8"/>
+    <path
+        android:pathData="M110,54 A56,56 0 1,1 110,166 A56,56 0 1,1 110,54"
+        android:strokeColor="#1a1a1a"
+        android:strokeWidth="0.8"/>
+
+    <!-- Label outer ring -->
+    <path
+        android:pathData="M110,64 A46,46 0 1,1 110,156 A46,46 0 1,1 110,64"
+        android:fillColor="#e8192c"/>
+
+    <!-- Label inner ring -->
+    <path
+        android:pathData="M110,72 A38,38 0 1,1 110,148 A38,38 0 1,1 110,72"
+        android:fillColor="#c2101f"/>
+
+    <!-- Spindle center -->
+    <path
+        android:pathData="M110,105 A5,5 0 1,1 110,115 A5,5 0 1,1 110,105"
+        android:fillColor="#0a0a0a"/>
+    <path
+        android:pathData="M110,107.5 A2.5,2.5 0 1,1 110,112.5 A2.5,2.5 0 1,1 110,107.5"
+        android:fillColor="#333333"/>
+</vector>
