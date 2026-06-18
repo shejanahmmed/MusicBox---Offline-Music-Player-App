@@ -360,6 +360,17 @@ class MusicService : Service() {
                 true // Return true to indicate error was handled, preventing onCompletionListener from triggering
             }
         }
+        attachEqualizer()
+    }
+
+    private fun attachEqualizer() {
+        val mp = mediaPlayer
+        if (mp != null) {
+            val sessionId = mp.audioSessionId
+            if (sessionId != android.media.audiofx.AudioEffect.ERROR_BAD_VALUE && sessionId != 0) {
+                EqManager.attach(applicationContext, sessionId)
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -506,6 +517,7 @@ class MusicService : Service() {
                     setDataSource(applicationContext, sourceUri)
                     prepareAsync()
                 }
+                attachEqualizer()
                 
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -812,6 +824,7 @@ class MusicService : Service() {
         
         mediaPlayer?.release()
         mediaPlayer = null
+        EqManager.release()
         mediaSession.release()
     }
 
