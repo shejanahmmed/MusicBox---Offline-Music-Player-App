@@ -1,155 +1,473 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/main" xmlns:android="http://schemas.android.com/apk/res/android"
-    
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_dark"
-    android:padding="32dp">
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:background="#0a0a0a">
 
-    <!-- Header -->
-    <ImageView
-        android:id="@+id/iv_music_note"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:src="@drawable/ic_music_note"
-        android:alpha="0.4"
-        app:tint="@color/white"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="16dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textColor="@color/white"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        android:alpha="0.4"
-        android:letterSpacing="0.4"
-        android:textAllCaps="true"
-        app:layout_constraintTop_toTopOf="@id/iv_music_note"
-        app:layout_constraintBottom_toBottomOf="@id/iv_music_note"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Title -->
-    <TextView
-        android:id="@+id/tv_welcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/welcome_title"
-        android:textColor="@color/white"
-        android:textSize="56sp"
-        android:textStyle="bold"
-        android:includeFontPadding="false"
-        android:layout_marginTop="64dp"
-        app:layout_constraintTop_toBottomOf="@id/iv_music_note"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <View
-        android:layout_width="48dp"
-        android:layout_height="2dp"
-        android:background="@color/primary_red"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/tv_welcome"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <!-- Content -->
-    <LinearLayout
+    <!-- ═══ SCREEN 1: SPLASH ═══ -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_s1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="128dp"
-        app:layout_constraintTop_toBottomOf="@id/tv_welcome"
-        app:layout_constraintStart_toStartOf="parent">
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:visibility="visible">
 
-        <TextView
+        <!-- Logo Header -->
+        <LinearLayout
+            android:id="@+id/logo_wrap"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/initialize_player"
-            android:textColor="@color/text_white_opacity_40"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="56dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/musicbox_logo"
+                android:contentDescription="MusicBox Logo" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MUSICBOX"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.25"
+                android:fontFamily="@font/inter" />
+        </LinearLayout>
+
+        <!-- Central Vinyl Record Container -->
+        <FrameLayout
+            android:id="@+id/fl_vinyl_container_parent"
+            android:layout_width="256dp"
+            android:layout_height="256dp"
+            android:layout_marginTop="56dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            app:layout_constraintTop_toBottomOf="@id/logo_wrap"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Pulse Ring Behind -->
+            <View
+                android:id="@+id/v_pulse_ring"
+                android:layout_width="256dp"
+                android:layout_height="256dp"
+                android:layout_gravity="center"
+                android:background="@drawable/shape_pulse_ring" />
+
+            <!-- Rotating Vinyl disc -->
+            <FrameLayout
+                android:id="@+id/fl_vinyl_container"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                android:layout_gravity="center">
+                
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_onboarding_vinyl" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MUSICBOX"
+                        android:textColor="#B3FFFFFF"
+                        android:textSize="7sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.3"
+                        android:fontFamily="@font/inter" />
+
+                    <View
+                        android:layout_width="16dp"
+                        android:layout_height="16dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="OFFLINE PLAYER"
+                        android:textColor="#66FFFFFF"
+                        android:textSize="6sp"
+                        android:letterSpacing="0.1"
+                        android:fontFamily="@font/inter" />
+                </LinearLayout>
+            </FrameLayout>
+        </FrameLayout>
+
+        <!-- Headline -->
+        <LinearLayout
+            android:id="@+id/ll_splash_headline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginTop="52dp"
+            app:layout_constraintTop_toBottomOf="@id/fl_vinyl_container_parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="YOUR MUSIC."
+                android:textColor="#FFFFFF"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:fontFamily="@font/bebas_neue"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="YOUR WORLD."
+                android:textColor="#e8192c"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:fontFamily="@font/bebas_neue"
+                android:includeFontPadding="false" />
+        </LinearLayout>
+
+        <!-- Subtext -->
+        <TextView
+            android:id="@+id/tv_splash_sub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OFFLINE · PRIVATE · YOURS"
+            android:textColor="#5a5a5a"
             android:textSize="14sp"
-            android:textAllCaps="true"
-            android:letterSpacing="0.2"
-            android:textStyle="bold"
-            android:layout_marginBottom="32dp" />
+            android:fontFamily="@font/inter"
+            android:letterSpacing="0.06"
+            android:layout_marginTop="18dp"
+            app:layout_constraintTop_toBottomOf="@id/ll_splash_headline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-        <TextView
+        <!-- Get Started Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_get_started"
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:text="GET STARTED"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.18"
+            android:textColor="#FFFFFF"
+            app:cornerRadius="100dp"
+            app:backgroundTint="#e8192c"
+            app:icon="@drawable/ic_arrow_forward"
+            app:iconGravity="textEnd"
+            app:iconTint="#FFFFFF"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="64dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- ═══ SCREEN 2: FEATURE SLIDES ═══ -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_s2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <!-- ViewPager Container -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/vp_slides"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/layout_dots"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Progress Dots Indicator -->
+        <LinearLayout
+            android:id="@+id/layout_dots"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/listener_name"
-            android:textColor="@color/text_white_opacity_60"
-            android:textSize="12sp"
-            android:textAllCaps="true"
-            android:letterSpacing="0.1"
-            android:textStyle="bold"
-            android:layout_marginBottom="12dp" />
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="28dp"
+            app:layout_constraintBottom_toTopOf="@id/nav_row"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <EditText
-            android:id="@+id/et_name"
+            <View
+                android:id="@+id/dot_0"
+                android:layout_width="22dp"
+                android:layout_height="6dp"
+                android:layout_margin="4dp"
+                android:background="@drawable/shape_dot_active" />
+
+            <View
+                android:id="@+id/dot_1"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_margin="4dp"
+                android:background="@drawable/shape_dot_inactive" />
+
+            <View
+                android:id="@+id/dot_2"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_margin="4dp"
+                android:background="@drawable/shape_dot_inactive" />
+
+            <View
+                android:id="@+id/dot_3"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_margin="4dp"
+                android:background="@drawable/shape_dot_inactive" />
+        </LinearLayout>
+
+        <!-- Skip / Next Nav Row -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/nav_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/name_placeholder"
-            android:textColor="@color/white"
-            android:textColorHint="@color/text_white_opacity_10"
-            android:background="@null"
-            android:paddingBottom="16dp"
-            android:textSize="24sp"
-            android:inputType="textPersonName"
-            android:maxLines="1" />
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:layout_marginBottom="48dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/text_white_opacity_30" />
-        
-        <TextView
-             android:layout_width="240dp"
-             android:layout_height="wrap_content"
-             android:text="@string/welcome_description"
-             android:textColor="@color/text_white_opacity_30"
-             android:textSize="12sp"
-             android:layout_marginTop="16dp"/>
+            <TextView
+                android:id="@+id/btn_skip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SKIP"
+                android:textColor="#5a5a5a"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:padding="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/inter"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
 
-    </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_next"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                app:cornerRadius="27dp"
+                app:backgroundTint="#e8192c"
+                app:icon="@drawable/ic_arrow_forward"
+                app:iconSize="20dp"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconTint="#ffffff"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Footer -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_get_started"
+    <!-- ═══ SCREEN 3: READY ═══ -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_s3"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/get_started"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:letterSpacing="0.2"
-        android:textColor="@color/white"
-        app:cornerRadius="50dp"
-        app:backgroundTint="@color/primary_red"
-        app:icon="@drawable/ic_arrow_forward"
-        app:iconGravity="textEnd"
-        app:iconTint="@color/white"
-        android:layout_marginBottom="24dp"
-        app:layout_constraintBottom_toTopOf="@+id/tv_version"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
-    <TextView
-        android:id="@+id/tv_version"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/version_info"
-        android:textColor="@color/text_white_opacity_10"
-        android:textSize="8sp"
-        android:textAllCaps="true"
-        android:letterSpacing="0.5"
-        android:layout_marginBottom="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <!-- Animated Logo Container -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/logo_anim_container"
+            android:layout_width="220dp"
+            android:layout_height="150dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/ll_ready_headline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_chainStyle="packed">
+
+            <!-- Bar 1 -->
+            <View
+                android:id="@+id/logo_bar_1"
+                android:layout_width="43.3dp"
+                android:layout_height="43.3dp"
+                android:background="@drawable/bg_logo_bar"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Bar 2 -->
+            <View
+                android:id="@+id/logo_bar_2"
+                android:layout_width="43.3dp"
+                android:layout_height="128.4dp"
+                android:background="@drawable/bg_logo_bar"
+                android:layout_marginStart="58.9dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Bar 3 -->
+            <View
+                android:id="@+id/logo_bar_3"
+                android:layout_width="43.3dp"
+                android:layout_height="95.3dp"
+                android:background="@drawable/bg_logo_bar"
+                android:layout_marginStart="117.8dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Bar 4 -->
+            <View
+                android:id="@+id/logo_bar_4"
+                android:layout_width="43.3dp"
+                android:layout_height="149.7dp"
+                android:background="@drawable/bg_logo_bar"
+                android:layout_marginStart="176.7dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Circle Group (for pulse scaling origin centering) -->
+            <FrameLayout
+                android:id="@+id/logo_circle_group"
+                android:layout_width="25.4dp"
+                android:layout_height="25.4dp"
+                android:layout_marginStart="185.9dp"
+                android:layout_marginTop="113.7dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <View
+                    android:id="@+id/logo_circle"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_logo_circle" />
+            </FrameLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Title -->
+        <LinearLayout
+            android:id="@+id/ll_ready_headline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginTop="32dp"
+            app:layout_constraintTop_toBottomOf="@id/logo_anim_container"
+            app:layout_constraintBottom_toTopOf="@id/tv_ready_description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="READY TO"
+                android:textColor="#FFFFFF"
+                android:textSize="56sp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:fontFamily="@font/bebas_neue"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PLAY."
+                android:textColor="#e8192c"
+                android:textSize="56sp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:fontFamily="@font/bebas_neue"
+                android:includeFontPadding="false" />
+        </LinearLayout>
+
+        <!-- Subtext -->
+        <TextView
+            android:id="@+id/tv_ready_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your entire music collection is waiting. Hit play and lose yourself in it."
+            android:textColor="#5a5a5a"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.3"
+            android:fontFamily="@font/inter"
+            android:maxWidth="270dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="32dp"
+            app:layout_constraintTop_toBottomOf="@id/ll_ready_headline"
+            app:layout_constraintBottom_toTopOf="@id/btn_open_library"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Open My Library Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_open_library"
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:text="LET'S GO!"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.18"
+            android:textColor="#FFFFFF"
+            app:cornerRadius="100dp"
+            app:backgroundTint="#e8192c"
+            app:icon="@drawable/ic_arrow_forward"
+            app:iconGravity="textEnd"
+            app:iconTint="#FFFFFF"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="24dp"
+            app:layout_constraintBottom_toTopOf="@id/tv_ready_version"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Version Info -->
+        <TextView
+            android:id="@+id/tv_ready_version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MUSICBOX · VERSION 1.0"
+            android:textColor="#2e2e2e"
+            android:textSize="10sp"
+            android:fontFamily="@font/inter"
+            android:letterSpacing="0.18"
+            android:layout_marginBottom="24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
