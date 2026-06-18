@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorBackground">
+
+    <!-- ─── Header ─────────────────────────────────────────────────────────── -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="8dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
+
+        <!-- Back Button -->
+        <ImageButton
+            android:id="@+id/btn_eq_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_chevron_left"
+            app:tint="@color/colorIcon"
+            android:scaleType="centerInside"
+            android:contentDescription="Back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/eq_title"
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:letterSpacing="0.4"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Power Toggle -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switch_eq_power"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorTextSecondary"
+        android:alpha="0.1" />
+
+    <!-- ─── EQ Enabled Banner ───────────────────────────────────────────────── -->
+    <TextView
+        android:id="@+id/tv_eq_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/eq_status_off"
+        android:textColor="@color/colorTextSecondary"
+        android:textSize="11sp"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <!-- ─── Band Sliders Area ────────────────────────────────────────────────── -->
+    <!-- Gains in dB row -->
+    <LinearLayout
+        android:id="@+id/ll_db_labels"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="8dp">
+
+        <TextView android:id="@+id/tv_db0"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="0 dB"
+            android:textColor="@color/primary_red"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+        <TextView android:id="@+id/tv_db1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="0 dB"
+            android:textColor="@color/primary_red"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+        <TextView android:id="@+id/tv_db2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="0 dB"
+            android:textColor="@color/primary_red"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+        <TextView android:id="@+id/tv_db3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="0 dB"
+            android:textColor="@color/primary_red"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+        <TextView android:id="@+id/tv_db4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="0 dB"
+            android:textColor="@color/primary_red"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- dB Scale Labels (+15, 0, -15) on the left -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp">
+
+        <!-- Scale column -->
+        <LinearLayout
+            android:id="@+id/ll_scale"
+            android:layout_width="32dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="+15"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="9sp"
+                android:gravity="top|center_horizontal" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="0"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="9sp"
+                android:gravity="center" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="-15"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="9sp"
+                android:gravity="bottom|center_horizontal" />
+        </LinearLayout>
+
+        <!-- Zero line overlay -->
+        <View
+            android:id="@+id/view_zero_line"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="@color/colorTextSecondary"
+            android:alpha="0.3"
+            app:layout_constraintStart_toEndOf="@+id/ll_scale"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Sliders Row -->
+        <LinearLayout
+            android:id="@+id/ll_sliders"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            app:layout_constraintStart_toEndOf="@+id/ll_scale"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <!-- Band 0: Sub-Bass -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+                <com.shejan.musicbox.VerticalSeekBar
+                    android:id="@+id/sb_band0"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@null"
+                    android:thumb="@drawable/shape_slider_thumb"
+                    android:progressTint="@color/primary_red"
+                    android:max="300"
+                    android:progress="150" />
+            </LinearLayout>
+
+            <!-- Band 1: Bass -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+                <com.shejan.musicbox.VerticalSeekBar
+                    android:id="@+id/sb_band1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@null"
+                    android:thumb="@drawable/shape_slider_thumb"
+                    android:progressTint="@color/primary_red"
+                    android:max="300"
+                    android:progress="150" />
+            </LinearLayout>
+
+            <!-- Band 2: Mid -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+                <com.shejan.musicbox.VerticalSeekBar
+                    android:id="@+id/sb_band2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@null"
+                    android:thumb="@drawable/shape_slider_thumb"
+                    android:progressTint="@color/primary_red"
+                    android:max="300"
+                    android:progress="150" />
+            </LinearLayout>
+
+            <!-- Band 3: High-Mid -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+                <com.shejan.musicbox.VerticalSeekBar
+                    android:id="@+id/sb_band3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@null"
+                    android:thumb="@drawable/shape_slider_thumb"
+                    android:progressTint="@color/primary_red"
+                    android:max="300"
+                    android:progress="150" />
+            </LinearLayout>
+
+            <!-- Band 4: Treble -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+                <com.shejan.musicbox.VerticalSeekBar
+                    android:id="@+id/sb_band4"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@null"
+                    android:thumb="@drawable/shape_slider_thumb"
+                    android:progressTint="@color/primary_red"
+                    android:max="300"
+                    android:progress="150" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Band Name Labels -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="36dp"
+        android:paddingEnd="4dp"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Sub-Bass"
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Bass"
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Mid"
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="High-Mid"
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Treble"
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- ─── Divider ─────────────────────────────────────────────────────────── -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorTextSecondary"
+        android:alpha="0.1"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- ─── Presets ─────────────────────────────────────────────────────────── -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PRESETS"
+        android:textColor="@color/colorTextSecondary"
+        android:textSize="9sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.2"
+        android:paddingStart="24dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="6dp" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="24dp"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:id="@+id/ll_presets"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_preset_custom"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Custom"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:textColor="@color/colorTextPrimary"
+                android:minWidth="72dp"
+                android:layout_marginEnd="8dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_preset_flat"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Flat"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:textColor="@color/colorTextPrimary"
+                android:minWidth="64dp"
+                android:layout_marginEnd="8dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_preset_rock"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Rock"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:textColor="@color/colorTextPrimary"
+                android:minWidth="64dp"
+                android:layout_marginEnd="8dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_preset_pop"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Pop"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:textColor="@color/colorTextPrimary"
+                android:minWidth="64dp"
+                android:layout_marginEnd="8dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_preset_jazz"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Jazz"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:textColor="@color/colorTextPrimary"
+                android:minWidth="64dp"
+                android:layout_marginEnd="8dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_preset_classical"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Classical"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:textColor="@color/colorTextPrimary"
+                android:minWidth="72dp"
+                android:layout_marginEnd="8dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_preset_bass_boost"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Bass Boost"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_button_secondary"
+                android:textColor="@color/colorTextPrimary"
+                android:minWidth="88dp" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+</LinearLayout>

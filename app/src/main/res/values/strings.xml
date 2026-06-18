@@ -126,4 +126,17 @@
     <string name="theme_system">System Default</string>
     <string name="theme_updated">Theme updated</string>
     <string name="error_playing_track">Error playing track: %1$s</string>
+
+    <!-- Equalizer Strings -->
+    <string name="eq_title">Equalizer</string>
+    <string name="eq_chooser_title">Choose how to open EQ</string>
+    <string name="eq_builtin">MusicBox EQ</string>
+    <string name="eq_system">System EQ</string>
+    <string name="eq_system_desc">Phone\'s built-in equalizer</string>
+    <string name="eq_other_apps">Other EQ Apps</string>
+    <string name="eq_other_apps_desc">Use a downloaded EQ app</string>
+    <string name="eq_status_on">EQ is ON — adjust sliders or presets</string>
+    <string name="eq_status_off">EQ is OFF — toggle the switch to enable</string>
+    <string name="eq_error_system">No System Equalizer found</string>
+    <string name="eq_error_other">Could not open external equalizer chooser</string>
 </resources>

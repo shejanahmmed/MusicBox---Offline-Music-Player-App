@@ -257,6 +257,53 @@ class NowPlayingActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    private fun showEqChooserDialog() {
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
+        @SuppressLint("InflateParams")
+        val view = layoutInflater.inflate(R.layout.dialog_eq_chooser, null)
+        dialog.setContentView(view)
+
+        val tvStatus = view.findViewById<TextView>(R.id.tv_builtin_status)
+        if (EqManager.isEnabled) {
+            val presetName = EqManager.getMatchingPresetName()
+            tvStatus.text = if (presetName != null) "On ($presetName)" else "On (Custom)"
+        } else {
+            tvStatus.text = "Off"
+        }
+
+        view.findViewById<View>(R.id.option_builtin_eq).setOnClickListener {
+            dialog.dismiss()
+            startActivity(Intent(this, EqActivity::class.java))
+        }
+
+        view.findViewById<View>(R.id.option_system_eq).setOnClickListener {
+            dialog.dismiss()
+            try {
+                val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                    putExtra(AudioEffect.EXTRA_AUDIO_SESSION, musicService?.getAudioSessionId() ?: 0)
+                    putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                    putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+                }
+                startActivity(intent)
+            } catch (_: Exception) {
+                Toast.makeText(this, getString(R.string.eq_error_system), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        view.findViewById<View>(R.id.option_other_eq).setOnClickListener {
+            dialog.dismiss()
+            try {
+                val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL)
+                val chooser = Intent.createChooser(intent, "Choose Equalizer")
+                startActivity(chooser)
+            } catch (_: Exception) {
+                Toast.makeText(this, getString(R.string.eq_error_other), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        dialog.show()
+    }
+
     private fun setupControls() {
         val btnPlayPause = findViewById<ImageButton>(R.id.btn_play_large) 
         val btnNext = findViewById<ImageButton>(R.id.btn_next_large)
@@ -400,18 +447,9 @@ class NowPlayingActivity : AppCompatActivity() {
 
         // Equalizer Button Logic
         findViewById<View>(R.id.btn_equalizer).setOnClickListener {
-             try {
-                 val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL)
-                 intent.putExtra(AudioEffect.EXTRA_AUDIO_SESSION, musicService?.getAudioSessionId() ?: 0)
-                 intent.putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
-                 intent.putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-                 // Result launcher not needed unless we want to know when they return.
-                 // startActivityForResult is deprecated but simple here. 
-                 // Or just startActivity if we don't care about result.
-                 startActivity(intent) 
-             } catch (_: Exception) {
-                 Toast.makeText(this, "No Equalizer found", Toast.LENGTH_SHORT).show()
-             }
+             MusicUtils.viewBubbleAnimation(it)
+             MusicUtils.performHapticFeedback(this)
+             showEqChooserDialog()
         }
 
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
