@@ -63,6 +63,35 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
+
+        <!-- MusicBox Home Screen Widgets -->
+        <receiver
+            android:name=".MusicWidgetProviderLight"
+            android:exported="true"
+            android:label="MusicBox Light Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="MUSIC_BOX_UPDATE" />
+                <action android:name="com.shejan.musicbox.TRACK_DELETED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_music_light_info" />
+        </receiver>
+
+        <receiver
+            android:name=".MusicWidgetProviderDark"
+            android:exported="true"
+            android:label="MusicBox Dark Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="MUSIC_BOX_UPDATE" />
+                <action android:name="com.shejan.musicbox.TRACK_DELETED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_music_dark_info" />
+        </receiver>
         <activity
             android:name=".SearchActivity"
             android:exported="false"

@@ -56,11 +56,24 @@ class MusicService : Service() {
 
     private var mediaPlayer: MediaPlayer? = null
     private var placeholderBitmap: Bitmap? = null
+    private var mediaPlayerState = STATE_IDLE
+    private var playWhenPrepared = true
     
     // Sleep Timer
     private val sleepTimerHandler = Handler(Looper.getMainLooper())
     private var sleepTimerRunnable: Runnable? = null
     var sleepTimerEndTime: Long = 0L
+
+    // Widget periodic update
+    private val widgetUpdateHandler = Handler(Looper.getMainLooper())
+    private val widgetUpdateRunnable = object : Runnable {
+        override fun run() {
+            if (isPlaying()) {
+                BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
+                widgetUpdateHandler.postDelayed(this, 1000) // Update every 1 second
+            }
+        }
+    }
 
     // Audio Focus
     private lateinit var audioManager: AudioManager
@@ -134,6 +147,8 @@ class MusicService : Service() {
 
     // Queue Management
     companion object {
+        var instance: MusicService? = null
+        
         const val CHANNEL_ID = "MusicBoxChannel"
         const val NOTIFICATION_ID = 101
         
@@ -141,6 +156,17 @@ class MusicService : Service() {
         const val ACTION_PAUSE = "action_pause"
         const val ACTION_NEXT = "action_next"
         const val ACTION_PREV = "action_prev"
+        
+        const val STATE_IDLE = 0
+        const val STATE_INITIALIZED = 1
+        const val STATE_PREPARING = 2
+        const val STATE_PREPARED = 3
+        const val STATE_STARTED = 4
+        const val STATE_PAUSED = 5
+        const val STATE_STOPPED = 6
+        const val STATE_PLAYBACK_COMPLETED = 7
+        const val STATE_ERROR = 8
+        const val STATE_END = 9
         
         private const val PREF_NAME = "MusicBoxPlaybackPrefs"
         private const val KEY_SHUFFLE = "shuffle_enabled"
@@ -215,8 +241,12 @@ class MusicService : Service() {
     }
 
     private val standardPreparedListener = MediaPlayer.OnPreparedListener { mp ->
-        if (requestAudioFocus()) {
-            mp.start()
+        mediaPlayerState = STATE_PREPARED
+        if (playWhenPrepared) {
+            if (requestAudioFocus()) {
+                mp.start()
+                mediaPlayerState = STATE_STARTED
+            }
         }
         updateNotification()
         updateMediaSessionMetadata()
@@ -227,10 +257,15 @@ class MusicService : Service() {
         val track = getCurrentTrack()
         if (track != null) {
             sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
-                putExtra("IS_PLAYING", true)
+                putExtra("IS_PLAYING", playWhenPrepared)
                 putExtra("TITLE", track.title)
                 putExtra("ARTIST", track.artist)
             })
+            BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
+            if (playWhenPrepared) {
+                widgetUpdateHandler.removeCallbacks(widgetUpdateRunnable)
+                widgetUpdateHandler.post(widgetUpdateRunnable)
+            }
         }
     }
 
@@ -288,6 +323,7 @@ class MusicService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         initPrefs(this) // Load persistent settings
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         createNotificationChannel()
@@ -333,6 +369,7 @@ class MusicService : Service() {
         
         // Restore State (Queue and Position)
         restoreState()
+        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
     }
 
     private fun initMediaPlayer() {
@@ -340,6 +377,7 @@ class MusicService : Service() {
         mediaPlayer = MediaPlayer().apply {
             setWakeMode(applicationContext, android.os.PowerManager.PARTIAL_WAKE_LOCK)
             setOnCompletionListener {
+                mediaPlayerState = STATE_PLAYBACK_COMPLETED
                 saveState() // Save state on completion (track change)
                 if (repeatMode == REPEAT_ONE) {
                     playTrack(currentIndex)
@@ -349,9 +387,11 @@ class MusicService : Service() {
             }
             setOnPreparedListener(standardPreparedListener)
             setOnErrorListener { mp, what, extra ->
+                mediaPlayerState = STATE_ERROR
                 android.util.Log.e("MusicService", "MediaPlayer Error in initMediaPlayer: what=$what extra=$extra")
                 if (what != -38) {
                     mp.reset()
+                    mediaPlayerState = STATE_IDLE
                     android.os.Handler(android.os.Looper.getMainLooper()).post {
                         android.widget.Toast.makeText(applicationContext, "Error playing track: what=$what extra=$extra", android.widget.Toast.LENGTH_LONG).show()
                     }
@@ -360,16 +400,19 @@ class MusicService : Service() {
                 true // Return true to indicate error was handled, preventing onCompletionListener from triggering
             }
         }
+        mediaPlayerState = STATE_IDLE
         attachEqualizer()
     }
 
     private fun attachEqualizer() {
         val mp = mediaPlayer
         if (mp != null) {
-            val sessionId = mp.audioSessionId
-            if (sessionId != android.media.audiofx.AudioEffect.ERROR_BAD_VALUE && sessionId != 0) {
-                EqManager.attach(applicationContext, sessionId)
-            }
+            try {
+                val sessionId = mp.audioSessionId
+                if (sessionId != android.media.audiofx.AudioEffect.ERROR_BAD_VALUE && sessionId != 0) {
+                    EqManager.attach(applicationContext, sessionId)
+                }
+            } catch (_: Exception) {}
         }
     }
 
@@ -469,11 +512,16 @@ class MusicService : Service() {
             val track = playlist.getOrNull(index) ?: return
             currentIndex = index
             currentTrackUri = track.uri
+            playWhenPrepared = true
+            
+            // Update widget immediately with new track metadata
+            BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
             
             try {
                 // Completely release and recreate the MediaPlayer to avoid Error -38 (Invalid State)
                 mediaPlayer?.release()
                 mediaPlayer = null
+                mediaPlayerState = STATE_END
                 
                 val sourceUri = if (track.uri.startsWith("content://") || track.uri.startsWith("http://") || track.uri.startsWith("https://")) {
                     track.uri.toUri()
@@ -499,6 +547,7 @@ class MusicService : Service() {
                     )
                     
                     setOnCompletionListener {
+                        mediaPlayerState = STATE_PLAYBACK_COMPLETED
                         saveState()
                         if (repeatMode == REPEAT_ONE) {
                             playTrack(currentIndex)
@@ -508,6 +557,7 @@ class MusicService : Service() {
                     }
                     setOnPreparedListener(standardPreparedListener)
                     setOnErrorListener { mp, what, extra ->
+                        mediaPlayerState = STATE_ERROR
                         android.util.Log.e("MusicService", "MediaPlayer Error: what=$what extra=$extra URI=$sourceUri")
                         // Many files (especially on newer Android versions) throw benign -38 errors but still play fine.
                         // We log it, but do not show a Toast to avoid bothering the user.
@@ -515,12 +565,15 @@ class MusicService : Service() {
                     }
                     
                     setDataSource(applicationContext, sourceUri)
+                    mediaPlayerState = STATE_INITIALIZED
                     prepareAsync()
+                    mediaPlayerState = STATE_PREPARING
                 }
                 attachEqualizer()
                 
             } catch (e: Exception) {
                 e.printStackTrace()
+                mediaPlayerState = STATE_ERROR
                 // If it still fails, it's likely a missing file or hard crash
                 android.util.Log.e("MusicService", "Exception in playTrack: ${e.message}", e)
                 android.os.Handler(android.os.Looper.getMainLooper()).post {
@@ -538,14 +591,32 @@ class MusicService : Service() {
             } catch (_: Exception) {}
             
             mediaPlayer?.let {
-                if (!it.isPlaying) {
-                    if (!requestAudioFocus()) return@let
-                    
-                    it.start()
-                    setVolume(1.0f) // Ensure full volume on start
-                    updateNotification()
-                    updateMediaSessionState()
+                if (mediaPlayerState == STATE_PREPARED || mediaPlayerState == STATE_PAUSED || mediaPlayerState == STATE_PLAYBACK_COMPLETED || mediaPlayerState == STATE_STARTED) {
+                    val isPlayingNative = try { it.isPlaying } catch (_: Exception) { false }
+                    if (!isPlayingNative) {
+                        if (!requestAudioFocus()) return@let
+                        
+                        it.start()
+                        mediaPlayerState = STATE_STARTED
+                        setVolume(1.0f) // Ensure full volume on start
+                        updateNotification()
+                        updateMediaSessionState()
+                        sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
+                        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
+                        widgetUpdateHandler.removeCallbacks(widgetUpdateRunnable)
+                        widgetUpdateHandler.post(widgetUpdateRunnable)
+                    }
+                } else if (mediaPlayerState == STATE_PREPARING) {
+                    playWhenPrepared = true
                     sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
+                    BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
+                } else {
+                    val currentIdx = currentIndex
+                    if (currentIdx != -1) {
+                        playTrack(currentIdx)
+                    } else {
+                        initMediaPlayer()
+                    }
                 }
             }
         } catch (_: IllegalStateException) {
@@ -563,12 +634,22 @@ class MusicService : Service() {
         
         try {
             mediaPlayer?.let {
-                if (it.isPlaying) {
-                    it.pause()
-                    updateNotification()
-                    updateMediaSessionState()
-                    saveState() // Save specific position on pause
+                if (mediaPlayerState == STATE_STARTED) {
+                    val isPlayingNative = try { it.isPlaying } catch (_: Exception) { false }
+                    if (isPlayingNative) {
+                        it.pause()
+                        mediaPlayerState = STATE_PAUSED
+                        updateNotification()
+                        updateMediaSessionState()
+                        saveState() // Save specific position on pause
+                        sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
+                        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
+                        widgetUpdateHandler.removeCallbacks(widgetUpdateRunnable)
+                    }
+                } else if (mediaPlayerState == STATE_PREPARING) {
+                    playWhenPrepared = false
                     sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
+                    BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
                 }
             }
         } catch (_: IllegalStateException) {
@@ -629,6 +710,7 @@ class MusicService : Service() {
         repeatMode = (repeatMode + 1) % 3
         saveRepeat(this, repeatMode) // Persist change
         sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("REPEAT_MODE", repeatMode) })
+        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
     }
 
     fun toggleShuffle() {
@@ -679,14 +761,11 @@ class MusicService : Service() {
         }
         
         sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("SHUFFLE_STATE", isShuffleEnabled) })
+        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
     }
     
     fun isPlaying(): Boolean {
-        return try {
-            mediaPlayer?.isPlaying ?: false
-        } catch (_: IllegalStateException) {
-            false
-        }
+        return mediaPlayerState == STATE_STARTED
     }
     
     fun getCurrentTrack(): Track? {
@@ -699,19 +778,36 @@ class MusicService : Service() {
     }
 
     fun getDuration(): Int {
-        return try { mediaPlayer?.duration ?: 0 } catch (_: Exception) { 0 }
+        return if (mediaPlayerState >= STATE_PREPARED && mediaPlayerState <= STATE_PLAYBACK_COMPLETED) {
+            try { mediaPlayer?.duration ?: 0 } catch (_: Exception) { 0 }
+        } else {
+            0
+        }
     }
 
     fun getCurrentPosition(): Int {
-        return try { mediaPlayer?.currentPosition ?: 0 } catch (_: Exception) { 0 }
+        return if (mediaPlayerState >= STATE_PREPARED && mediaPlayerState <= STATE_PLAYBACK_COMPLETED) {
+            try { mediaPlayer?.currentPosition ?: 0 } catch (_: Exception) { 0 }
+        } else {
+            val prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
+            prefs.getInt("current_position", 0)
+        }
     }
 
     fun seekTo(position: Int) {
-        try { mediaPlayer?.seekTo(position) } catch (_: Exception) {}
+        if (mediaPlayerState >= STATE_PREPARED && mediaPlayerState <= STATE_PLAYBACK_COMPLETED) {
+            try { 
+                mediaPlayer?.seekTo(position)
+                BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
+            } catch (_: Exception) {}
+        } else {
+            getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit().putInt("current_position", position).apply()
+            BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
+        }
     }
 
     fun getAudioSessionId(): Int {
-        return mediaPlayer?.audioSessionId ?: 0
+        return try { mediaPlayer?.audioSessionId ?: 0 } catch (_: Exception) { 0 }
     }
 
     // Scope for UI/Notification updates
@@ -806,9 +902,11 @@ class MusicService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        instance = null
         uiScope.cancel() // Cancel all pending UI updates
         cancelSleepTimer() // Clean up runnables
         sleepTimerHandler.removeCallbacksAndMessages(null) // Detailed cleanup
+        widgetUpdateHandler.removeCallbacksAndMessages(null)
         abandonAudioFocus()
         
         saveState()
@@ -826,6 +924,9 @@ class MusicService : Service() {
         mediaPlayer = null
         EqManager.release()
         mediaSession.release()
+        
+        // Final widget update to reflect stopped/paused state
+        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
     }
 
     // SingleThreadExecutor for saving state sequentially to prevent race conditions
@@ -840,6 +941,7 @@ class MusicService : Service() {
         val originalPlaylistCopy = synchronized(playlist) { ArrayList(originalPlaylist) }
         val currentIndexCopy = currentIndex
         val currentPosCopy = getCurrentPosition()
+        val currentDurationCopy = getDuration()
         val currentUriCopy = currentTrackUri
 
         // Run Serialization in Background Thread Sequentially
@@ -876,6 +978,7 @@ class MusicService : Service() {
                 // Apply to Prefs (Index/Pos only)
                 editor.putInt("current_index", currentIndexCopy)
                 editor.putInt("current_position", currentPosCopy)
+                editor.putInt("current_duration", currentDurationCopy)
                 editor.putString("current_track_uri", currentUriCopy)
                 // Remove legacy keys to save space
                 editor.remove("saved_playlist")
@@ -1019,6 +1122,7 @@ class MusicService : Service() {
                         updateNotification()
                         updateMediaSessionMetadata()
                         updateMediaSessionState()
+                        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
                         // Re-set listener for normal playback
                         it.setOnPreparedListener(standardPreparedListener)
                     }
