@@ -205,7 +205,7 @@ class TracksActivity : AppCompatActivity() {
             hideBubbleRunnable?.let { letterBubble.removeCallbacks(it) }
 
             // Cancel any in-progress fade-out so the bubble doesn't blink
-            letterBubble.animate().cancel()
+            letterBubble.animate().setListener(null).cancel()
 
             if (letterBubble.visibility != View.VISIBLE) {
                 // Bubble was hidden — pop it in
@@ -217,6 +217,7 @@ class TracksActivity : AppCompatActivity() {
                     .alpha(1f).scaleX(1f).scaleY(1f)
                     .setDuration(130)
                     .setInterpolator(OvershootInterpolator())
+                    .setListener(null)
                     .start()
             } else {
                 // Bubble already visible — snap to full opacity immediately
@@ -450,6 +451,14 @@ class TracksActivity : AppCompatActivity() {
 
                 if (!initialScrollDone && trackList.isNotEmpty()) {
                     attemptScrollToActiveTrack()
+                }
+
+                // Update alphabet scrollbar visibility
+                val alphabetScrollbar = findViewById<AlphabetIndexScrollbar>(R.id.alphabet_scrollbar)
+                if (sortColumn == MediaStore.Audio.Media.TITLE) {
+                    alphabetScrollbar?.visibility = View.VISIBLE
+                } else {
+                    alphabetScrollbar?.visibility = View.GONE
                 }
             }
         }
