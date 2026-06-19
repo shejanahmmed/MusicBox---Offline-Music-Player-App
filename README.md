@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="#-key-features"><b>Key Features</b></a> •
-  <a href="#-whats-new-in-v200"><b>What's New (v2.0.0)</b></a> •
+  <a href="#-whats-new-in-v210"><b>What's New (v2.1.0)</b></a> •
   <a href="#-architecture--tech-stack"><b>Tech Stack</b></a> •
   <a href="#-download"><b>Download</b></a> •
   <a href="#-changelog"><b>Changelog</b></a> •
@@ -58,18 +58,15 @@ Built using modern Android development architectures (Kotlin, Coroutines, MVVM, 
 
 ---
 
-## ⚡ What's New in v2.0.0
+## ⚡ What's New in v2.1.0
 
-The **v2.0.0 Release** marks a significant evolution in MusicBox's UI/UX and audio performance:
+The **v2.1.0 Release** adds premium home screen widgets and a dedicated experimental features panel:
 
 | Feature | Description |
 | :--- | :--- |
-| **🎛️ Redesigned Equalizer** | Replaced standard sliders with beautiful custom `VerticalSeekBar` elements featuring precise visual tracking, interactive labels, and instant-apply preset chips. |
-| **❤️ Micro-Interaction Pops** | Added a spring-elastic Instagram-style pop animation to favorite buttons inside the metadata drawer and Now Playing screen. |
-| **🔀 Queue Injection** | Introduced `Play Next` and `Play Last` controls in the track action menu to dynamically manage playback without interrupting current queues. |
-| **⚡ Smooth Fast-Scroll** | Fixed animation clipping and physics of the list scroll indicator, introducing an expanded touch target and a dynamic letter bubble. |
-| **📜 Marquee Path Viewer** | Upgraded static path widgets to an elegant auto-scrolling marquee path visualizer within the track properties menu. |
-| **🔄 Background Stability** | Fixed playback drops by ensuring explicit `MusicService` initialization for state persistence across background lifecycles. |
+| **📻 Cassette-Style Widgets** | Fully functional, beautifully styled Light and Dark mode cassettes for your home screen with play/pause, skip, progress tracking, and dynamic equalizer visuals. |
+| **🧪 Experimental Panel** | Added a toggle in Settings -> Experimental Features to programmatically enable/disable widgets at the OS layer, keeping the launcher clean by default. |
+| **📐 Spacing Polish** | Standardized settings page layout margins (24dp) across all card groups and category headers. |
 
 ---
 
@@ -121,7 +118,12 @@ MusicBox is available for install via official channels:
 
 ## 📋 Changelog
 
-### v2.0.0 _(Current Release)_
+### v2.1.0 _(Current Release)_
+- **📻 Cassette-Style Widgets:** Fully functional cassette-style home screen widgets in Light and Dark mode, featuring metadata display, dynamic equalizer visuals, and full control listeners.
+- **🧪 Experimental Features Settings:** Added a dedicated toggle inside settings under "Experimental Features" to let users enable/disable home screen widgets. Dynamically updates system receiver states.
+- **📐 Uniform Spacing:** Standardized card margins to `24dp` before settings section headers for a premium, clean visual structure.
+
+### v2.0.0
 - **🎛️ Equalizer Refactor:** Replaced standard sliders with beautiful custom `VerticalSeekBar` elements featuring precise visual tracking, interactive labels, and instant-apply preset chips.
 - **❤️ Micro-Interaction Pops:** Added a spring-elastic Instagram-style pop animation to favorite buttons inside the metadata drawer and Now Playing screen.
 - **🔀 Queue Injection:** Introduced `Play Next` and `Play Last` controls in the track action menu to dynamically manage playback without interrupting current queues.
