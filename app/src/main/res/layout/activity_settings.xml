@@ -346,7 +346,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_settings_card"
                 android:padding="20dp"
-                android:layout_marginBottom="12dp"
+                android:layout_marginBottom="24dp"
                 android:clickable="true"
                 android:focusable="true">
 
@@ -463,7 +463,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_settings_card"
                 android:padding="20dp"
-                android:layout_marginBottom="12dp"
+                android:layout_marginBottom="24dp"
                 android:clickable="true"
                 android:focusable="true">
 
@@ -501,11 +501,63 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <!-- Experimental Features -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="EXPERIMENTAL FEATURES"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="4dp"/>
 
+            <!-- Home Screen Widgets Switch Card -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/card_experimental_widgets"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_settings_card"
+                android:padding="20dp"
+                android:layout_marginBottom="24dp"
+                android:clickable="true"
+                android:focusable="true">
 
+                <TextView
+                    android:id="@+id/tv_experimental_widgets_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Home Screen Widgets"
+                    android:textColor="@color/colorTextPrimary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
 
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Enable cassette-style widgets (may require launcher reload)"
+                    android:textColor="@color/colorTextSecondary"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="16dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/switch_experimental_widgets"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_experimental_widgets_title"/>
 
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_experimental_widgets"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:thumbTint="@color/selector_switch_thumb_white_off"
+                    app:trackTint="@color/selector_switch_track"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
 
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Information -->
             <TextView

@@ -28,6 +28,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.switchmaterial.SwitchMaterial
+import android.content.ComponentName
+import android.content.pm.PackageManager
 
 class SettingsFragment : Fragment() {
 
@@ -281,6 +283,43 @@ class SettingsFragment : Fragment() {
              if (isChecked) {
                  MusicUtils.performHapticFeedback(requireContext())
              }
+        }
+
+        // Experimental Home Screen Widgets Toggle
+        val switchWidgets = view.findViewById<SwitchMaterial>(R.id.switch_experimental_widgets)
+        val cardWidgets = view.findViewById<View>(R.id.card_experimental_widgets)
+
+        switchWidgets.isChecked = prefs.getBoolean("experimental_widgets_enabled", false)
+
+        cardWidgets.setOnClickListener {
+            switchWidgets.isChecked = !switchWidgets.isChecked
+        }
+
+        switchWidgets.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit { putBoolean("experimental_widgets_enabled", isChecked) }
+            val msg = if (isChecked) "Home screen widgets enabled" else "Home screen widgets disabled"
+            Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+
+            try {
+                val pm = requireContext().packageManager
+                val lightComponent = ComponentName(requireContext(), MusicWidgetProviderLight::class.java)
+                val darkComponent = ComponentName(requireContext(), MusicWidgetProviderDark::class.java)
+
+                val state = if (isChecked) {
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                } else {
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+                }
+
+                pm.setComponentEnabledSetting(lightComponent, state, PackageManager.DONT_KILL_APP)
+                pm.setComponentEnabledSetting(darkComponent, state, PackageManager.DONT_KILL_APP)
+
+                if (isChecked) {
+                    BaseMusicWidgetProvider.updateAllWidgets(requireContext())
+                }
+            } catch (e: Exception) {
+                Log.e("SettingsFragment", "Error toggling widgets state", e)
+            }
         }
 
 

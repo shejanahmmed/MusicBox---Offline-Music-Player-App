@@ -28,6 +28,8 @@ import androidx.core.content.edit
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.net.toUri
 
+import android.content.ComponentName
+import android.content.pm.PackageManager
 import android.annotation.SuppressLint
 import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
@@ -313,9 +315,46 @@ class SettingsActivity : AppCompatActivity() {
              Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
              
              // Feedback for the toggle itself
-             if (isChecked) {
-                 MusicUtils.performHapticFeedback(this)
-             }
+              if (isChecked) {
+                  MusicUtils.performHapticFeedback(this)
+              }
+         }
+
+        // Experimental Home Screen Widgets Toggle
+        val switchWidgets = findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switch_experimental_widgets)
+        val cardWidgets = findViewById<android.view.View>(R.id.card_experimental_widgets)
+
+        switchWidgets.isChecked = prefs.getBoolean("experimental_widgets_enabled", false)
+
+        cardWidgets.setOnClickListener {
+            switchWidgets.isChecked = !switchWidgets.isChecked
+        }
+
+        switchWidgets.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit { putBoolean("experimental_widgets_enabled", isChecked) }
+            val msg = if (isChecked) "Home screen widgets enabled" else "Home screen widgets disabled"
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+
+            try {
+                val pm = packageManager
+                val lightComponent = ComponentName(this, MusicWidgetProviderLight::class.java)
+                val darkComponent = ComponentName(this, MusicWidgetProviderDark::class.java)
+
+                val state = if (isChecked) {
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                } else {
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+                }
+
+                pm.setComponentEnabledSetting(lightComponent, state, PackageManager.DONT_KILL_APP)
+                pm.setComponentEnabledSetting(darkComponent, state, PackageManager.DONT_KILL_APP)
+
+                if (isChecked) {
+                    BaseMusicWidgetProvider.updateAllWidgets(this)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("SettingsActivity", "Error toggling widgets state", e)
+            }
         }
 
 
