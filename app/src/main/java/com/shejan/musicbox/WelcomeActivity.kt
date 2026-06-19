@@ -65,6 +65,7 @@ class WelcomeActivity : AppCompatActivity() {
     private val logoAnimators = mutableListOf<ValueAnimator>()
 
     private var activeScreen = 1
+    private var isTransitioning = false
     private var vinylRotationAnimator: ObjectAnimator? = null
     private var pulseRingAnimator: ObjectAnimator? = null
 
@@ -220,6 +221,7 @@ class WelcomeActivity : AppCompatActivity() {
     }
 
     private fun transitionToScreen(screenNumber: Int) {
+        if (isTransitioning) return
         val fromView = when (activeScreen) {
             1 -> layoutS1
             2 -> layoutS2
@@ -234,23 +236,52 @@ class WelcomeActivity : AppCompatActivity() {
         }
 
         if (fromView != null && toView != null) {
+            isTransitioning = true
+            val movingForward = screenNumber > activeScreen
             activeScreen = screenNumber
+
+            val width = resources.displayMetrics.widthPixels.toFloat()
+            val fromTranslationTarget = if (movingForward) -width else width
+            val toTranslationStart = if (movingForward) width else -width
+
+            // Prepare toView with initial state
+            toView.alpha = 0f
+            toView.scaleX = 0.9f
+            toView.scaleY = 0.9f
+            toView.translationX = toTranslationStart
+            toView.visibility = View.VISIBLE
+
+            // Animate fromView out
             fromView.animate()
+                .translationX(fromTranslationTarget)
+                .scaleX(0.9f)
+                .scaleY(0.9f)
                 .alpha(0f)
-                .setDuration(300)
+                .setDuration(450)
+                .setInterpolator(AccelerateDecelerateInterpolator())
                 .withEndAction {
                     fromView.visibility = View.GONE
-                    toView.alpha = 0f
-                    toView.visibility = View.VISIBLE
-                    toView.animate()
-                        .alpha(1f)
-                        .setDuration(300)
-                        .withEndAction {
-                            if (screenNumber == 3) {
-                                startLogoAnimation()
-                            }
-                        }
-                        .start()
+                    // Reset properties to clean state
+                    fromView.translationX = 0f
+                    fromView.scaleX = 1f
+                    fromView.scaleY = 1f
+                    fromView.alpha = 1f
+                }
+                .start()
+
+            // Animate toView in
+            toView.animate()
+                .translationX(0f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .alpha(1f)
+                .setDuration(450)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .withEndAction {
+                    isTransitioning = false
+                    if (screenNumber == 3) {
+                        startLogoAnimation()
+                    }
                 }
                 .start()
         }
