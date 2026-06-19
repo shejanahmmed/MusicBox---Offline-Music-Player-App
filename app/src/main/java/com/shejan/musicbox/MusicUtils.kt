@@ -288,6 +288,51 @@ object MusicUtils {
             .start()
     }
 
+    fun animateFavoriteButton(view: android.view.View, isFavorite: Boolean, onStateChanged: () -> Unit) {
+        view.animate().setListener(null).cancel()
+        
+        if (isFavorite) {
+            view.animate()
+                .scaleX(0.7f)
+                .scaleY(0.7f)
+                .setDuration(120)
+                .setInterpolator(android.view.animation.AccelerateInterpolator())
+                .withEndAction {
+                    onStateChanged()
+                    view.animate()
+                        .scaleX(1.35f)
+                        .scaleY(1.35f)
+                        .setDuration(220)
+                        .setInterpolator(android.view.animation.OvershootInterpolator(3.0f))
+                        .withEndAction {
+                            view.animate()
+                                .scaleX(1.0f)
+                                .scaleY(1.0f)
+                                .setDuration(150)
+                                .setInterpolator(android.view.animation.DecelerateInterpolator())
+                                .start()
+                        }
+                        .start()
+                }
+                .start()
+        } else {
+            view.animate()
+                .scaleX(0.85f)
+                .scaleY(0.85f)
+                .setDuration(150)
+                .withEndAction {
+                    onStateChanged()
+                    view.animate()
+                        .scaleX(1.0f)
+                        .scaleY(1.0f)
+                        .setDuration(150)
+                        .setInterpolator(android.view.animation.OvershootInterpolator())
+                        .start()
+                }
+                .start()
+        }
+    }
+
     fun performHapticFeedback(context: Context) {
         try {
             val prefs = context.getSharedPreferences("MusicBoxPrefs", Context.MODE_PRIVATE)
