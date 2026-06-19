@@ -41,6 +41,13 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerView = view.findViewById(R.id.rv_home_boxes)
+        
+        // Setup Home Boxes RecyclerView synchronously with empty adapter to prevent "No adapter attached; skipping layout"
+        recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
+        val spacing = (8 * resources.displayMetrics.density).toInt()
+        recyclerView.addItemDecoration(GridSpacingItemDecoration(2, spacing, spacing, false))
+        recyclerView.adapter = MainHomeBoxAdapter(emptyList())
+
         setupHomeBoxes()
     }
 

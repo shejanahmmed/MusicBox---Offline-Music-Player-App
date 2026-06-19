@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_widget_dark"
+    android:padding="14dp">
+
+    <!-- Album Art / Tape Window Container -->
+    <RelativeLayout
+        android:id="@+id/widget_album_art_container"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true">
+
+        <ImageView
+            android:id="@+id/widget_album_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_widget_placeholder" />
+
+
+
+    </RelativeLayout>
+
+    <!-- Body Layout (Track Meta + Controls) -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toEndOf="@id/widget_album_art_container"
+        android:layout_marginStart="14dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true">
+
+        <!-- Top Row: Track Meta and Level Meter -->
+        <LinearLayout
+            android:id="@+id/widget_top_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:orientation="horizontal"
+            android:paddingTop="12dp"
+            android:gravity="top">
+
+            <!-- Track Meta (Title, Artist) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/widget_eyebrow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NOW PLAYING"
+                    android:textSize="9sp"
+                    android:textColor="#e8584d"
+                    android:fontFamily="monospace"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_track_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sahiba"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-condensed"
+                    android:textColor="#ece6d8"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:layout_marginTop="2dp" />
+
+                <TextView
+                    android:id="@+id/widget_track_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ADITYA RIKHARI"
+                    android:textSize="10sp"
+                    android:textColor="#8a8478"
+                    android:fontFamily="monospace"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:layout_marginTop="2dp" />
+
+            </LinearLayout>
+
+            <!-- Level Meter (Equalizer Bars) -->
+            <LinearLayout
+                android:id="@+id/widget_level_meter"
+                android:layout_width="wrap_content"
+                android:layout_height="18dp"
+                android:orientation="horizontal"
+                android:gravity="bottom"
+                android:layout_marginStart="8dp">
+
+                 <ImageView
+                    android:id="@+id/widget_bar_1"
+                    android:layout_width="4dp"
+                    android:layout_height="6dp"
+                    android:layout_marginEnd="3dp"
+                    android:background="#ece6d8" />
+
+                <ImageView
+                    android:id="@+id/widget_bar_2"
+                    android:layout_width="4dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="3dp"
+                    android:background="#ece6d8" />
+
+                <ImageView
+                    android:id="@+id/widget_bar_3"
+                    android:layout_width="4dp"
+                    android:layout_height="12dp"
+                    android:layout_marginEnd="3dp"
+                    android:background="#ece6d8" />
+
+                <ImageView
+                    android:id="@+id/widget_bar_4"
+                    android:layout_width="4dp"
+                    android:layout_height="14dp"
+                    android:background="#e8584d" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Bottom Row: Progress and Controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical">
+
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/widget_progress"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:max="100"
+                android:progress="42"
+                android:progressDrawable="@drawable/progress_widget_dark" />
+
+            <!-- Controls Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                 <ImageButton
+                    android:id="@+id/widget_btn_prev"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="20dp"
+                    android:background="@android:color/transparent"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_widget_prev"
+                    android:tint="#ece6d8"
+                    android:contentDescription="Previous" />
+
+                <ImageButton
+                    android:id="@+id/widget_btn_play"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_widget_play_button_dark"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_widget_play"
+                    android:tint="#161412"
+                    android:contentDescription="Play/Pause" />
+
+                <ImageButton
+                    android:id="@+id/widget_btn_next"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="20dp"
+                    android:background="@android:color/transparent"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_widget_next"
+                    android:tint="#ece6d8"
+                    android:contentDescription="Next" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

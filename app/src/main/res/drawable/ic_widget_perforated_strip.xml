@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="8dp"
+    android:height="128dp"
+    android:viewportWidth="8"
+    android:viewportHeight="128">
+    <!-- Simple rectangular dots using only M L Z — no curves, no arcs -->
+    <!-- Each "dot" is a 4x3 filled rectangle -->
+    <path android:fillColor="#50000000" android:pathData="M2,2 L6,2 L6,5 L2,5 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,12 L6,12 L6,15 L2,15 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,22 L6,22 L6,25 L2,25 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,32 L6,32 L6,35 L2,35 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,42 L6,42 L6,45 L2,45 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,52 L6,52 L6,55 L2,55 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,62 L6,62 L6,65 L2,65 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,72 L6,72 L6,75 L2,75 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,82 L6,82 L6,85 L2,85 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,92 L6,92 L6,95 L2,95 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,102 L6,102 L6,105 L2,105 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,112 L6,112 L6,115 L2,115 Z"/>
+    <path android:fillColor="#50000000" android:pathData="M2,122 L6,122 L6,125 L2,125 Z"/>
+</vector>

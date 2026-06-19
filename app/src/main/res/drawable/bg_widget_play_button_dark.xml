@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Use rectangle with very large corner radius instead of oval shape.
+     Oval uses arc commands which fail on Adreno 530 GPU hardware renderer. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#e8584d" />
+    <corners android:radius="50dp" />
+</shape>

@@ -110,10 +110,15 @@ class MainActivity : AppCompatActivity() {
         // Helper to setup Nav clicks
         NavUtils.setupNavigation(this, R.id.nav_home)
 
-        // Setup Home Boxes RecyclerView
+        // Setup Home Boxes RecyclerView synchronously with empty adapter to prevent "No adapter attached; skipping layout"
+        val rvHomeBoxes = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_home_boxes)
+        if (rvHomeBoxes != null) {
+            rvHomeBoxes.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 2)
+            val spacing = (8 * resources.displayMetrics.density).toInt()
+            rvHomeBoxes.addItemDecoration(GridSpacingItemDecoration(2, spacing, spacing, false))
+            rvHomeBoxes.adapter = MainHomeBoxAdapter(emptyList())
+        }
         setupHomeBoxes()
-        
-
     }
     
     private fun setupHomeBoxes() {
