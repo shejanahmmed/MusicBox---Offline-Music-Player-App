@@ -422,17 +422,25 @@ class NowPlayingActivity : AppCompatActivity() {
         // Favorite Button Logic
         val btnFav = findViewById<ImageButton>(R.id.btn_fav_large)
         btnFav.setOnClickListener {
-            MusicUtils.viewBubbleAnimation(it)
             MusicUtils.performHapticFeedback(this)
             val track = musicService?.getCurrentTrack() ?: return@setOnClickListener
-            if (FavoritesManager.isFavorite(this, track.uri)) {
+            val isCurrentlyFavorite = FavoritesManager.isFavorite(this, track.uri)
+            
+            if (isCurrentlyFavorite) {
                 FavoritesManager.removeFavorite(this, track.uri)
+                MusicUtils.animateFavoriteButton(btnFav, false) {
+                    btnFav.setImageResource(R.drawable.ic_favorite_border)
+                    btnFav.setColorFilter(getColor(R.color.colorIcon))
+                }
                 Toast.makeText(this, getString(R.string.fav_removed), Toast.LENGTH_SHORT).show()
             } else {
                 FavoritesManager.addFavorite(this, track.uri)
+                MusicUtils.animateFavoriteButton(btnFav, true) {
+                    btnFav.setImageResource(R.drawable.ic_favorite)
+                    btnFav.setColorFilter(getColor(R.color.primary_red))
+                }
                 Toast.makeText(this, getString(R.string.fav_added), Toast.LENGTH_SHORT).show()
             }
-            updateUI()
         }
         
         // Queue Button Logic

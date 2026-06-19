@@ -219,14 +219,23 @@ object TrackMenuManager {
         }
         btnFavorite.setOnClickListener {
             MusicUtils.performHapticFeedback(activity)
-            if (FavoritesManager.isFavorite(activity, track.uri)) {
+            val isCurrentlyFavorite = FavoritesManager.isFavorite(activity, track.uri)
+            
+            if (isCurrentlyFavorite) {
                 FavoritesManager.removeFavorite(activity, track.uri)
+                MusicUtils.animateFavoriteButton(btnFavorite, false) {
+                    btnFavorite.setImageResource(R.drawable.ic_favorite_border)
+                    btnFavorite.setColorFilter(activity.getColor(R.color.colorIcon))
+                }
                 Toast.makeText(activity, activity.getString(R.string.removed_from_favorites), Toast.LENGTH_SHORT).show()
             } else {
                 FavoritesManager.addFavorite(activity, track.uri)
+                MusicUtils.animateFavoriteButton(btnFavorite, true) {
+                    btnFavorite.setImageResource(R.drawable.ic_favorite)
+                    btnFavorite.setColorFilter(activity.getColor(R.color.primary_red))
+                }
                 Toast.makeText(activity, activity.getString(R.string.added_to_favorites), Toast.LENGTH_SHORT).show()
             }
-            dialog.dismiss()
             callback?.onTrackUpdated()
         }
         
