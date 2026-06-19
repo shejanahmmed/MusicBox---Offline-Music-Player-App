@@ -33,6 +33,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import android.annotation.SuppressLint
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import java.util.Locale
@@ -69,9 +70,13 @@ object TrackMenuManager {
         tvTitle.text = displayTitle
         tvArtist.text = activity.getString(R.string.track_artist_album_format, displayArtist, displayAlbum)
         
-        // Enable Marquee
+        val tvPathSub = view.findViewById<TextView>(R.id.tv_track_path_sub)
+        tvPathSub.text = track.uri
+        
+        // Enable Marquee / Scrolling
         tvTitle.isSelected = true
         tvArtist.isSelected = true
+        tvPathSub.isSelected = true
         
         val ivArt = view.findViewById<ImageView>(R.id.iv_track_art)
         MusicUtils.loadTrackArt(activity, track.id, track.albumId, track.uri, ivArt)
@@ -144,8 +149,68 @@ object TrackMenuManager {
 
         // view.findViewById<TextView>(R.id.tv_file_size_badge).text = fileSize // Moved to Background block
 
-        view.findViewById<TextView>(R.id.tv_track_path).text = track.uri
-        
+        // Play Next
+        view.findViewById<View>(R.id.btn_play_next_box).setOnClickListener {
+            MusicUtils.performHapticFeedback(activity)
+            val activePlaylist = MusicService.playlist
+            if (activePlaylist.isEmpty()) {
+                val newList = listOf(track)
+                MusicService.updatePlaylist(newList, 0)
+                val intent = Intent(activity, MusicService::class.java).apply {
+                    putExtra("URI", track.uri)
+                }
+                ContextCompat.startForegroundService(activity, intent)
+                Toast.makeText(activity, "Playing now", Toast.LENGTH_SHORT).show()
+            } else {
+                synchronized(activePlaylist) {
+                    val index = activePlaylist.indexOfFirst { it.uri == track.uri }
+                    if (index != -1) {
+                        val item = activePlaylist.removeAt(index)
+                        val targetIndex = (MusicService.currentIndex + 1).coerceIn(0, activePlaylist.size)
+                        activePlaylist.add(targetIndex, item)
+                        if (index < MusicService.currentIndex) {
+                            MusicService.currentIndex--
+                        }
+                    } else {
+                        val targetIndex = (MusicService.currentIndex + 1).coerceIn(0, activePlaylist.size)
+                        activePlaylist.add(targetIndex, track)
+                    }
+                }
+                Toast.makeText(activity, "Added to Play Next", Toast.LENGTH_SHORT).show()
+            }
+            dialog.dismiss()
+        }
+
+        // Play Last
+        view.findViewById<View>(R.id.btn_play_last_box).setOnClickListener {
+            MusicUtils.performHapticFeedback(activity)
+            val activePlaylist = MusicService.playlist
+            if (activePlaylist.isEmpty()) {
+                val newList = listOf(track)
+                MusicService.updatePlaylist(newList, 0)
+                val intent = Intent(activity, MusicService::class.java).apply {
+                    putExtra("URI", track.uri)
+                }
+                ContextCompat.startForegroundService(activity, intent)
+                Toast.makeText(activity, "Playing now", Toast.LENGTH_SHORT).show()
+            } else {
+                synchronized(activePlaylist) {
+                    val index = activePlaylist.indexOfFirst { it.uri == track.uri }
+                    if (index != -1) {
+                        val item = activePlaylist.removeAt(index)
+                        activePlaylist.add(item)
+                        if (index < MusicService.currentIndex) {
+                            MusicService.currentIndex--
+                        }
+                    } else {
+                        activePlaylist.add(track)
+                    }
+                }
+                Toast.makeText(activity, "Added to Play Last", Toast.LENGTH_SHORT).show()
+            }
+            dialog.dismiss()
+        }
+
         // Favorite
         val btnFavorite = view.findViewById<ImageButton>(R.id.btn_favorite)
         if (FavoritesManager.isFavorite(activity, track.uri)) {

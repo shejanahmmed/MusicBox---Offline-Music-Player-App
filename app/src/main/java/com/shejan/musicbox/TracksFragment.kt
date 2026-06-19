@@ -146,7 +146,7 @@ class TracksFragment : Fragment() {
                 // Show animated letter bubble
                 letterBubble.text = letter
                 hideBubbleRunnable?.let { letterBubble.removeCallbacks(it) }
-                letterBubble.animate().cancel()
+                letterBubble.animate().setListener(null).cancel()
 
                 if (letterBubble.visibility != View.VISIBLE) {
                     letterBubble.alpha = 0f
@@ -157,6 +157,7 @@ class TracksFragment : Fragment() {
                         .alpha(1f).scaleX(1f).scaleY(1f)
                         .setDuration(150)
                         .setInterpolator(OvershootInterpolator())
+                        .setListener(null)
                         .start()
                 } else {
                     letterBubble.alpha = 1f
@@ -404,9 +405,14 @@ class TracksFragment : Fragment() {
                     adapter?.updateData(trackList)
                 }
 
-                // Update alphabet scrollbar with available letters
+                // Update alphabet scrollbar visibility and available letters
                 val alphabetScrollbar = view.findViewById<AlphabetIndexScrollbar>(R.id.alphabet_scrollbar)
-                alphabetScrollbar?.setAvailableLetters(adapter?.getAvailableLetters() ?: emptyList())
+                if (sortColumn == MediaStore.Audio.Media.TITLE) {
+                    alphabetScrollbar?.visibility = View.VISIBLE
+                    alphabetScrollbar?.setAvailableLetters(adapter?.getAvailableLetters() ?: emptyList())
+                } else {
+                    alphabetScrollbar?.visibility = View.GONE
+                }
 
                 if (!initialScrollDone && trackList.isNotEmpty()) {
                     attemptScrollToActiveTrack()
