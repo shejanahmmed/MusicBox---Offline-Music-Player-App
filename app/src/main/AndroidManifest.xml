@@ -67,6 +67,7 @@
         <!-- MusicBox Home Screen Widgets -->
         <receiver
             android:name=".MusicWidgetProviderLight"
+            android:enabled="false"
             android:exported="true"
             android:label="MusicBox Light Widget">
             <intent-filter>
@@ -81,6 +82,7 @@
 
         <receiver
             android:name=".MusicWidgetProviderDark"
+            android:enabled="false"
             android:exported="true"
             android:label="MusicBox Dark Widget">
             <intent-filter>
