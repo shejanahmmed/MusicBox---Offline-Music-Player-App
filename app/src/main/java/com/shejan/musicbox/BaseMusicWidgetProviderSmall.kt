@@ -13,7 +13,6 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.Color
 import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +21,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidgetProvider() {
+abstract class BaseMusicWidgetProviderSmall(private val isLight: Boolean) : AppWidgetProvider() {
 
     companion object {
         private val widgetScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -30,30 +29,27 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
         fun updateAllWidgets(context: Context) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
 
-            // Update Light widgets
-            val lightProvider = ComponentName(context, MusicWidgetProviderLight::class.java)
+            // Update Small Light widgets
+            val lightProvider = ComponentName(context, MusicWidgetProviderSmallLight::class.java)
             val lightIds = appWidgetManager.getAppWidgetIds(lightProvider)
             if (lightIds.isNotEmpty()) {
-                val intent = Intent(context, MusicWidgetProviderLight::class.java).apply {
+                val intent = Intent(context, MusicWidgetProviderSmallLight::class.java).apply {
                     action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, lightIds)
                 }
                 context.sendBroadcast(intent)
             }
 
-            // Update Dark widgets
-            val darkProvider = ComponentName(context, MusicWidgetProviderDark::class.java)
+            // Update Small Dark widgets
+            val darkProvider = ComponentName(context, MusicWidgetProviderSmallDark::class.java)
             val darkIds = appWidgetManager.getAppWidgetIds(darkProvider)
             if (darkIds.isNotEmpty()) {
-                val intent = Intent(context, MusicWidgetProviderDark::class.java).apply {
+                val intent = Intent(context, MusicWidgetProviderSmallDark::class.java).apply {
                     action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, darkIds)
                 }
                 context.sendBroadcast(intent)
             }
-
-            // Update Small widgets
-            BaseMusicWidgetProviderSmall.updateAllWidgets(context)
         }
     }
 
@@ -87,14 +83,14 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
                     context.startService(serviceIntent)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("MusicWidget", "Failed to start MusicService from widget action broadcast", e)
+                android.util.Log.e("MusicWidgetSmall", "Failed to start MusicService from widget action broadcast", e)
             }
             return
         }
 
         if (action == "MUSIC_BOX_UPDATE" || action == "com.shejan.musicbox.TRACK_DELETED" || action == Intent.ACTION_BOOT_COMPLETED) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
-            val providerClass = if (isLight) MusicWidgetProviderLight::class.java else MusicWidgetProviderDark::class.java
+            val providerClass = if (isLight) MusicWidgetProviderSmallLight::class.java else MusicWidgetProviderSmallDark::class.java
             val provider = ComponentName(context, providerClass)
             val ids = appWidgetManager.getAppWidgetIds(provider)
             if (ids.isNotEmpty()) {
@@ -116,12 +112,12 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
         try {
             doUpdateWidget(context, appWidgetManager, appWidgetId)
         } catch (e: Exception) {
-            android.util.Log.e("MusicWidget", "Fatal error updating widget $appWidgetId", e)
+            android.util.Log.e("MusicWidgetSmall", "Fatal error updating widget $appWidgetId", e)
         }
     }
 
     private suspend fun doUpdateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
-        val layoutId = if (isLight) R.layout.widget_music_light else R.layout.widget_music_dark
+        val layoutId = if (isLight) R.layout.widget_music_small_light else R.layout.widget_music_small_dark
         val views = RemoteViews(context.packageName, layoutId)
 
         // 1. Fetch current playback state and track metadata
@@ -133,55 +129,21 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
         if (track != null) {
             views.setTextViewText(R.id.widget_track_title, track.title)
             views.setTextViewText(R.id.widget_track_artist, track.artist)
-
-            // Progress Bar
-            val duration = if (service != null) service.getDuration() else {
-                val prefs = context.getSharedPreferences("MusicBoxPlaybackPrefs", Context.MODE_PRIVATE)
-                prefs.getInt("current_duration", 0)
-            }
-            val position = if (service != null) service.getCurrentPosition() else {
-                val prefs = context.getSharedPreferences("MusicBoxPlaybackPrefs", Context.MODE_PRIVATE)
-                prefs.getInt("current_position", 0)
-            }
-
-            if (duration > 0) {
-                views.setProgressBar(R.id.widget_progress, duration, position, false)
-            } else {
-                views.setProgressBar(R.id.widget_progress, 100, 0, false)
-            }
         } else {
             views.setTextViewText(R.id.widget_track_title, "No track loaded")
             views.setTextViewText(R.id.widget_track_artist, "Select a song to play")
-            views.setProgressBar(R.id.widget_progress, 100, 0, false)
         }
 
         // 3. Update play/pause button icon and state
         val playIconRes = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
         views.setImageViewResource(R.id.widget_btn_play, playIconRes)
 
-        // Equalizer level meter bars (dynamic heights)
-        if (isPlaying) {
-            val h1 = (4..12).random().toFloat()
-            val h2 = (10..18).random().toFloat()
-            val h3 = (6..14).random().toFloat()
-            val h4 = (8..16).random().toFloat()
-            views.setViewLayoutHeight(R.id.widget_bar_1, h1, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_2, h2, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_3, h3, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_4, h4, android.util.TypedValue.COMPLEX_UNIT_DIP)
-        } else {
-            views.setViewLayoutHeight(R.id.widget_bar_1, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_2, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_3, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_4, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
-        }
-
         val playIntent = Intent(context, this::class.java).apply {
             action = if (isPlaying) MusicService.ACTION_PAUSE else MusicService.ACTION_PLAY
         }
         val playPendingIntent = PendingIntent.getBroadcast(
             context,
-            if (isLight) 100 else 200,
+            if (isLight) 300 else 400,
             playIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -192,7 +154,7 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
         }
         val prevPendingIntent = PendingIntent.getBroadcast(
             context,
-            if (isLight) 101 else 201,
+            if (isLight) 301 else 401,
             prevIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -203,7 +165,7 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
         }
         val nextPendingIntent = PendingIntent.getBroadcast(
             context,
-            if (isLight) 102 else 202,
+            if (isLight) 302 else 402,
             nextIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -223,7 +185,7 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
         }
         val clickPendingIntent = PendingIntent.getActivity(
             context,
-            if (isLight) 103 else 203,
+            if (isLight) 303 else 403,
             clickIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -241,11 +203,11 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
                 bitmapToRound?.let {
                     val scaled = scaleBitmapToMax(it, 200)
                     val density = context.resources.displayMetrics.density
-                    val radiusPx = 4f * density
+                    val radiusPx = 8f * density
                     getRoundedCornerBitmap(scaled, radiusPx)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("MusicWidget", "Error loading artwork", e)
+                android.util.Log.e("MusicWidgetSmall", "Error loading artwork", e)
                 null
             }
         }
@@ -256,7 +218,7 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
             views.setImageViewResource(R.id.widget_album_art, R.drawable.ic_widget_placeholder)
         }
 
-        // 7. Update widget instance (AppWidgetManager.updateAppWidget is thread-safe)
+        // 7. Update widget instance
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
@@ -293,7 +255,7 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
                     )
                 }
             } catch (e: Exception) {
-                android.util.Log.e("MusicWidget", "Error reading saved track", e)
+                android.util.Log.e("MusicWidgetSmall", "Error reading saved track", e)
             }
         }
         return null

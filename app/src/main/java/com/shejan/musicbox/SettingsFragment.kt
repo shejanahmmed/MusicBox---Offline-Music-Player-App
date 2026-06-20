@@ -289,7 +289,7 @@ class SettingsFragment : Fragment() {
         val switchWidgets = view.findViewById<SwitchMaterial>(R.id.switch_experimental_widgets)
         val cardWidgets = view.findViewById<View>(R.id.card_experimental_widgets)
 
-        switchWidgets.isChecked = prefs.getBoolean("experimental_widgets_enabled", false)
+        switchWidgets.isChecked = prefs.getBoolean("experimental_widgets_enabled", true)
 
         cardWidgets.setOnClickListener {
             switchWidgets.isChecked = !switchWidgets.isChecked
@@ -304,6 +304,8 @@ class SettingsFragment : Fragment() {
                 val pm = requireContext().packageManager
                 val lightComponent = ComponentName(requireContext(), MusicWidgetProviderLight::class.java)
                 val darkComponent = ComponentName(requireContext(), MusicWidgetProviderDark::class.java)
+                val smallLightComponent = ComponentName(requireContext(), MusicWidgetProviderSmallLight::class.java)
+                val smallDarkComponent = ComponentName(requireContext(), MusicWidgetProviderSmallDark::class.java)
 
                 val state = if (isChecked) {
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -313,6 +315,8 @@ class SettingsFragment : Fragment() {
 
                 pm.setComponentEnabledSetting(lightComponent, state, PackageManager.DONT_KILL_APP)
                 pm.setComponentEnabledSetting(darkComponent, state, PackageManager.DONT_KILL_APP)
+                pm.setComponentEnabledSetting(smallLightComponent, state, PackageManager.DONT_KILL_APP)
+                pm.setComponentEnabledSetting(smallDarkComponent, state, PackageManager.DONT_KILL_APP)
 
                 if (isChecked) {
                     BaseMusicWidgetProvider.updateAllWidgets(requireContext())
