@@ -324,7 +324,7 @@ class SettingsActivity : AppCompatActivity() {
         val switchWidgets = findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switch_experimental_widgets)
         val cardWidgets = findViewById<android.view.View>(R.id.card_experimental_widgets)
 
-        switchWidgets.isChecked = prefs.getBoolean("experimental_widgets_enabled", false)
+        switchWidgets.isChecked = prefs.getBoolean("experimental_widgets_enabled", true)
 
         cardWidgets.setOnClickListener {
             switchWidgets.isChecked = !switchWidgets.isChecked
@@ -339,6 +339,8 @@ class SettingsActivity : AppCompatActivity() {
                 val pm = packageManager
                 val lightComponent = ComponentName(this, MusicWidgetProviderLight::class.java)
                 val darkComponent = ComponentName(this, MusicWidgetProviderDark::class.java)
+                val smallLightComponent = ComponentName(this, MusicWidgetProviderSmallLight::class.java)
+                val smallDarkComponent = ComponentName(this, MusicWidgetProviderSmallDark::class.java)
 
                 val state = if (isChecked) {
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -348,6 +350,8 @@ class SettingsActivity : AppCompatActivity() {
 
                 pm.setComponentEnabledSetting(lightComponent, state, PackageManager.DONT_KILL_APP)
                 pm.setComponentEnabledSetting(darkComponent, state, PackageManager.DONT_KILL_APP)
+                pm.setComponentEnabledSetting(smallLightComponent, state, PackageManager.DONT_KILL_APP)
+                pm.setComponentEnabledSetting(smallDarkComponent, state, PackageManager.DONT_KILL_APP)
 
                 if (isChecked) {
                     BaseMusicWidgetProvider.updateAllWidgets(this)

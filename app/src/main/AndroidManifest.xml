@@ -67,7 +67,7 @@
         <!-- MusicBox Home Screen Widgets -->
         <receiver
             android:name=".MusicWidgetProviderLight"
-            android:enabled="false"
+            android:enabled="true"
             android:exported="true"
             android:label="MusicBox Light Widget">
             <intent-filter>
@@ -82,7 +82,7 @@
 
         <receiver
             android:name=".MusicWidgetProviderDark"
-            android:enabled="false"
+            android:enabled="true"
             android:exported="true"
             android:label="MusicBox Dark Widget">
             <intent-filter>
@@ -93,6 +93,37 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_music_dark_info" />
+        </receiver>
+
+        <!-- MusicBox Small Home Screen Widgets -->
+        <receiver
+            android:name=".MusicWidgetProviderSmallLight"
+            android:enabled="true"
+            android:exported="true"
+            android:label="MusicBox Small Light Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="MUSIC_BOX_UPDATE" />
+                <action android:name="com.shejan.musicbox.TRACK_DELETED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_music_small_light_info" />
+        </receiver>
+
+        <receiver
+            android:name=".MusicWidgetProviderSmallDark"
+            android:enabled="true"
+            android:exported="true"
+            android:label="MusicBox Small Dark Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="MUSIC_BOX_UPDATE" />
+                <action android:name="com.shejan.musicbox.TRACK_DELETED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_music_small_dark_info" />
         </receiver>
         <activity
             android:name=".SearchActivity"
