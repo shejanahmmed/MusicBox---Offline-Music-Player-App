@@ -127,6 +127,13 @@
     <string name="theme_updated">Theme updated</string>
     <string name="error_playing_track">Error playing track: %1$s</string>
 
+    <!-- Artwork Style Strings -->
+    <string name="artwork_style_title">Artwork style</string>
+    <string name="artwork_style_subtitle">Choose artwork style for Now Playing</string>
+    <string name="artwork_style_default">Default</string>
+    <string name="artwork_style_default_desc">Standard artwork view</string>
+    <string name="artwork_style_updated">Artwork style updated</string>
+
     <!-- Equalizer Strings -->
     <string name="eq_title">Equalizer</string>
     <string name="eq_chooser_title">Choose how to open EQ</string>
