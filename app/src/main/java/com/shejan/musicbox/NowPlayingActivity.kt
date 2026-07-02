@@ -373,6 +373,14 @@ class NowPlayingActivity : AppCompatActivity() {
              }
         }
 
+        findViewById<ImageView>(R.id.iv_album_art_square).setOnClickListener {
+             if (musicService?.isPlaying() == true) {
+                 musicService?.pause()
+             } else {
+                 musicService?.play()
+             }
+        }
+
         btnPlayPause.setOnClickListener {
              MusicUtils.viewBubbleAnimation(it)
              MusicUtils.performHapticFeedback(this)
@@ -494,10 +502,18 @@ class NowPlayingActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tv_now_playing_title).text = customMetadata?.title ?: track.title
         findViewById<TextView>(R.id.tv_now_playing_artist).text = customMetadata?.artist ?: track.artist
         
+        // Apply artwork style visibility
+        applyArtworkStyle()
+
         // Load Album Art ONLY if track changed or content updated
         if (track.id != loadedTrackId || MusicUtils.contentVersion != loadedContentVersion) {
             val ivAlbumArt = findViewById<ImageView>(R.id.iv_album_art_large)
             MusicUtils.loadTrackArt(this, track.id, track.albumId, track.uri, ivAlbumArt)
+
+            // Also load into square view
+            val ivAlbumArtSquare = findViewById<ImageView>(R.id.iv_album_art_square)
+            MusicUtils.loadTrackArt(this, track.id, track.albumId, track.uri, ivAlbumArtSquare)
+
             loadedTrackId = track.id
             loadedContentVersion = MusicUtils.contentVersion
         }
@@ -559,6 +575,20 @@ class NowPlayingActivity : AppCompatActivity() {
         } else {
             btnSleepTimer.setColorFilter(getColor(R.color.colorIcon))
             btnSleepTimer.alpha = 1.0f
+        }
+    }
+
+    private fun applyArtworkStyle() {
+        val style = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
+            .getString("artwork_style", "default") ?: "default"
+        val clVinyl = findViewById<View>(R.id.cl_vinyl)
+        val clSquare = findViewById<View>(R.id.cl_artwork_square)
+        if (style == "square") {
+            clVinyl?.visibility = View.GONE
+            clSquare?.visibility = View.VISIBLE
+        } else {
+            clVinyl?.visibility = View.VISIBLE
+            clSquare?.visibility = View.GONE
         }
     }
 

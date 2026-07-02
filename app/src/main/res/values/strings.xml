@@ -130,8 +130,10 @@
     <!-- Artwork Style Strings -->
     <string name="artwork_style_title">Artwork style</string>
     <string name="artwork_style_subtitle">Choose artwork style for Now Playing</string>
-    <string name="artwork_style_default">Default</string>
-    <string name="artwork_style_default_desc">Standard artwork view</string>
+    <string name="artwork_style_default">Circle (Vinyl)</string>
+    <string name="artwork_style_default_desc">Rotating vinyl disc artwork</string>
+    <string name="artwork_style_square">Square</string>
+    <string name="artwork_style_square_desc">Rounded square artwork</string>
     <string name="artwork_style_updated">Artwork style updated</string>
 
     <!-- Equalizer Strings -->
