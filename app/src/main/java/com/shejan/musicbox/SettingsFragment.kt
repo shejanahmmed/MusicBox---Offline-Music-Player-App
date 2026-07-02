@@ -504,7 +504,9 @@ class SettingsFragment : Fragment() {
         }
 
         val cardDefault = dialogView.findViewById<View>(R.id.card_style_default)
+        val cardSquare  = dialogView.findViewById<View>(R.id.card_style_square)
         val checkDefault = dialogView.findViewById<ImageView>(R.id.iv_check_default)
+        val checkSquare  = dialogView.findViewById<ImageView>(R.id.iv_check_square)
 
         val prefs = requireContext().getSharedPreferences("MusicBoxPrefs", Context.MODE_PRIVATE)
         val currentStyle = prefs.getString("artwork_style", "default")
@@ -512,6 +514,7 @@ class SettingsFragment : Fragment() {
         // Update UI helper
         fun updateUI(selectedStyle: String?) {
             checkDefault.visibility = if (selectedStyle == "default") View.VISIBLE else View.GONE
+            checkSquare.visibility  = if (selectedStyle == "square")  View.VISIBLE else View.GONE
         }
 
         // Initialize UI
@@ -525,9 +528,8 @@ class SettingsFragment : Fragment() {
             Toast.makeText(requireContext(), R.string.artwork_style_updated, Toast.LENGTH_SHORT).show()
         }
 
-        cardDefault.setOnClickListener {
-            selectStyle("default")
-        }
+        cardDefault.setOnClickListener { selectStyle("default") }
+        cardSquare.setOnClickListener  { selectStyle("square") }
 
         dialog.show()
     }
@@ -536,8 +538,8 @@ class SettingsFragment : Fragment() {
         val tvSubtitle = rootView.findViewById<TextView>(R.id.tv_artwork_style_subtitle)
         if (tvSubtitle != null) {
             tvSubtitle.text = when (style) {
-                "default" -> getString(R.string.artwork_style_default)
-                else -> getString(R.string.artwork_style_default)
+                "square"  -> getString(R.string.artwork_style_square)
+                else      -> getString(R.string.artwork_style_default)
             }
         }
     }

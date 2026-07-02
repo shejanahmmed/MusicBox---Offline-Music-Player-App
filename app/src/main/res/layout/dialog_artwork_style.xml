@@ -102,6 +102,72 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorStroke"
+            android:layout_marginHorizontal="16dp"/>
+
+        <!-- Square Style -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/card_style_square"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="16dp"
+            android:paddingHorizontal="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+
+            <ImageView
+                android:id="@+id/iv_icon_square"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_image"
+                app:tint="@color/colorIconSecondary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_square_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/artwork_style_square"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@id/iv_icon_square"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_square_desc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/artwork_style_square_desc"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"
+                app:layout_constraintStart_toStartOf="@id/tv_square_title"
+                app:layout_constraintEnd_toStartOf="@id/iv_check_square"
+                app:layout_constraintTop_toBottomOf="@id/tv_square_title"
+                android:layout_marginEnd="16dp"/>
+
+            <ImageView
+                android:id="@+id/iv_check_square"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_check_circle"
+                app:tint="@color/colorNavSelected"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </LinearLayout>
 
 </LinearLayout>

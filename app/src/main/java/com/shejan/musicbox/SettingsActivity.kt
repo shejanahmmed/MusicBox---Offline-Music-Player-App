@@ -554,7 +554,9 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val cardDefault = view.findViewById<android.view.View>(R.id.card_style_default)
+        val cardSquare  = view.findViewById<android.view.View>(R.id.card_style_square)
         val checkDefault = view.findViewById<android.widget.ImageView>(R.id.iv_check_default)
+        val checkSquare  = view.findViewById<android.widget.ImageView>(R.id.iv_check_square)
 
         val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
         val currentStyle = prefs.getString("artwork_style", "default")
@@ -562,6 +564,7 @@ class SettingsActivity : AppCompatActivity() {
         // Update UI helper
         fun updateUI(selectedStyle: String?) {
             checkDefault.visibility = if (selectedStyle == "default") android.view.View.VISIBLE else android.view.View.GONE
+            checkSquare.visibility  = if (selectedStyle == "square")  android.view.View.VISIBLE else android.view.View.GONE
         }
 
         // Initialize UI
@@ -575,9 +578,8 @@ class SettingsActivity : AppCompatActivity() {
             Toast.makeText(this, R.string.artwork_style_updated, Toast.LENGTH_SHORT).show()
         }
 
-        cardDefault.setOnClickListener {
-            selectStyle("default")
-        }
+        cardDefault.setOnClickListener { selectStyle("default") }
+        cardSquare.setOnClickListener  { selectStyle("square") }
 
         dialog.show()
     }
@@ -586,8 +588,8 @@ class SettingsActivity : AppCompatActivity() {
         val tvSubtitle = findViewById<android.widget.TextView>(R.id.tv_artwork_style_subtitle)
         if (tvSubtitle != null) {
             tvSubtitle.text = when (style) {
-                "default" -> getString(R.string.artwork_style_default)
-                else -> getString(R.string.artwork_style_default)
+                "square"  -> getString(R.string.artwork_style_square)
+                else      -> getString(R.string.artwork_style_default)
             }
         }
     }
