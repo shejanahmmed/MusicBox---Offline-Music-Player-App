@@ -52,6 +52,15 @@ class SettingsFragment : Fragment() {
     private fun setupClickListeners(view: View) {
         val prefs = requireContext().getSharedPreferences("MusicBoxPrefs", Context.MODE_PRIVATE)
 
+        // Initialize Artwork Style Subtitle
+        val currentArtworkStyle = prefs.getString("artwork_style", "default") ?: "default"
+        updateArtworkStyleSubtitle(view, currentArtworkStyle)
+
+        // Artwork Style
+        view.findViewById<View>(R.id.card_artwork_style).setOnClickListener {
+            showArtworkStyleDialog(view)
+        }
+
         // Edit Name
         view.findViewById<View>(R.id.card_edit_name).setOnClickListener {
             val dialog = BottomSheetDialog(requireContext())
@@ -481,5 +490,55 @@ class SettingsFragment : Fragment() {
         cardDark.setOnClickListener { selectTheme(AppCompatDelegate.MODE_NIGHT_YES) }
 
         dialog.show()
+    }
+
+    private fun showArtworkStyleDialog(rootView: View) {
+        val dialog = BottomSheetDialog(requireContext())
+        @SuppressLint("InflateParams")
+        val dialogView = layoutInflater.inflate(R.layout.dialog_artwork_style, null)
+        dialog.setContentView(dialogView)
+
+        // Fix corners
+        dialogView.post {
+            (dialogView.parent as? View)?.setBackgroundColor(Color.TRANSPARENT)
+        }
+
+        val cardDefault = dialogView.findViewById<View>(R.id.card_style_default)
+        val checkDefault = dialogView.findViewById<ImageView>(R.id.iv_check_default)
+
+        val prefs = requireContext().getSharedPreferences("MusicBoxPrefs", Context.MODE_PRIVATE)
+        val currentStyle = prefs.getString("artwork_style", "default")
+
+        // Update UI helper
+        fun updateUI(selectedStyle: String?) {
+            checkDefault.visibility = if (selectedStyle == "default") View.VISIBLE else View.GONE
+        }
+
+        // Initialize UI
+        updateUI(currentStyle)
+
+        fun selectStyle(style: String) {
+            prefs.edit { putString("artwork_style", style) }
+            updateUI(style)
+            updateArtworkStyleSubtitle(rootView, style)
+            dialog.dismiss()
+            Toast.makeText(requireContext(), R.string.artwork_style_updated, Toast.LENGTH_SHORT).show()
+        }
+
+        cardDefault.setOnClickListener {
+            selectStyle("default")
+        }
+
+        dialog.show()
+    }
+
+    private fun updateArtworkStyleSubtitle(rootView: View, style: String) {
+        val tvSubtitle = rootView.findViewById<TextView>(R.id.tv_artwork_style_subtitle)
+        if (tvSubtitle != null) {
+            tvSubtitle.text = when (style) {
+                "default" -> getString(R.string.artwork_style_default)
+                else -> getString(R.string.artwork_style_default)
+            }
+        }
     }
 }
