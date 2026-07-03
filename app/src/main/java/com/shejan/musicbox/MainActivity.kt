@@ -33,10 +33,13 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.provider.MediaStore
+import android.annotation.SuppressLint
+import android.media.audiofx.AudioEffect
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -182,7 +185,7 @@ class MainActivity : AppCompatActivity() {
                     HomeBoxPreferences.BOX_EQUALIZER -> {
                         Triple(-1, "Tune Sound") {
                              MusicUtils.performHapticFeedback(this@MainActivity)
-                            openEqualizer()
+                            showEqChooserDialog()
                         }
                     }
                     else -> Triple(0, "") {}
@@ -477,15 +480,51 @@ class MainActivity : AppCompatActivity() {
         typingRunnable?.run()
     }
     
-    private fun openEqualizer() {
-        try {
-            val intent = Intent(android.media.audiofx.AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL)
-            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, packageName)
-            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE, android.media.audiofx.AudioEffect.CONTENT_TYPE_MUSIC)
-            startActivity(intent)
-        } catch (_: Exception) {
-            Toast.makeText(this, "Equalizer not available", Toast.LENGTH_SHORT).show()
+    @SuppressLint("InflateParams")
+    private fun showEqChooserDialog() {
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
+        val view = layoutInflater.inflate(R.layout.dialog_eq_chooser, null)
+        dialog.setContentView(view)
+
+        val tvStatus = view.findViewById<TextView>(R.id.tv_builtin_status)
+        if (EqManager.isEnabled) {
+            val presetName = EqManager.getMatchingPresetName()
+            tvStatus.text = if (presetName != null) "On ($presetName)" else "On (Custom)"
+        } else {
+            tvStatus.text = "Off"
         }
+
+        view.findViewById<View>(R.id.option_builtin_eq).setOnClickListener {
+            dialog.dismiss()
+            startActivity(Intent(this, EqActivity::class.java))
+        }
+
+        view.findViewById<View>(R.id.option_system_eq).setOnClickListener {
+            dialog.dismiss()
+            try {
+                val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                    putExtra(AudioEffect.EXTRA_AUDIO_SESSION, musicService?.getAudioSessionId() ?: 0)
+                    putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                    putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+                }
+                startActivity(intent)
+            } catch (_: Exception) {
+                Toast.makeText(this, getString(R.string.eq_error_system), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        view.findViewById<View>(R.id.option_other_eq).setOnClickListener {
+            dialog.dismiss()
+            try {
+                val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL)
+                val chooser = Intent.createChooser(intent, "Choose Equalizer")
+                startActivity(chooser)
+            } catch (_: Exception) {
+                Toast.makeText(this, getString(R.string.eq_error_other), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        dialog.show()
     }
 }
 
