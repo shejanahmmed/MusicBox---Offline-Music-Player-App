@@ -1,14 +1,17 @@
 package com.shejan.musicbox
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.audiofx.AudioEffect
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -16,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -127,7 +131,7 @@ class HomeFragment : Fragment() {
                     HomeBoxPreferences.BOX_EQUALIZER -> {
                         Triple(-1, "Tune Sound") {
                              MusicUtils.performHapticFeedback(context)
-                            openEqualizer(context)
+                            showEqChooserDialog(context)
                         }
                     }
                     else -> Triple(0, "") {}
@@ -256,14 +260,51 @@ class HomeFragment : Fragment() {
         return count
     }
 
-    private fun openEqualizer(context: Context) {
-        try {
-            val intent = Intent(android.media.audiofx.AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL)
-            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
-            intent.putExtra(android.media.audiofx.AudioEffect.EXTRA_CONTENT_TYPE, android.media.audiofx.AudioEffect.CONTENT_TYPE_MUSIC)
-            startActivity(intent)
-        } catch (_: Exception) {
-            Toast.makeText(context, "Equalizer not available", Toast.LENGTH_SHORT).show()
+    @SuppressLint("InflateParams")
+    private fun showEqChooserDialog(context: Context) {
+        val activity = requireActivity()
+        val dialog = BottomSheetDialog(activity, R.style.BottomSheetDialogTheme)
+        val view = activity.layoutInflater.inflate(R.layout.dialog_eq_chooser, null)
+        dialog.setContentView(view)
+
+        val tvStatus = view.findViewById<TextView>(R.id.tv_builtin_status)
+        if (EqManager.isEnabled) {
+            val presetName = EqManager.getMatchingPresetName()
+            tvStatus.text = if (presetName != null) "On ($presetName)" else "On (Custom)"
+        } else {
+            tvStatus.text = "Off"
         }
+
+        view.findViewById<View>(R.id.option_builtin_eq).setOnClickListener {
+            dialog.dismiss()
+            startActivity(Intent(activity, EqActivity::class.java))
+        }
+
+        view.findViewById<View>(R.id.option_system_eq).setOnClickListener {
+            dialog.dismiss()
+            try {
+                val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                    putExtra(AudioEffect.EXTRA_AUDIO_SESSION, 0)
+                    putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+                    putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+                }
+                startActivity(intent)
+            } catch (_: Exception) {
+                Toast.makeText(context, getString(R.string.eq_error_system), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        view.findViewById<View>(R.id.option_other_eq).setOnClickListener {
+            dialog.dismiss()
+            try {
+                val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL)
+                val chooser = Intent.createChooser(intent, "Choose Equalizer")
+                startActivity(chooser)
+            } catch (_: Exception) {
+                Toast.makeText(context, getString(R.string.eq_error_other), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        dialog.show()
     }
 }
