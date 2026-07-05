@@ -511,10 +511,20 @@ class SettingsFragment : Fragment() {
         val prefs = requireContext().getSharedPreferences("MusicBoxPrefs", Context.MODE_PRIVATE)
         val currentStyle = prefs.getString("artwork_style", "default")
 
-        // Update UI helper
+        // Update UI helper — checkmarks + card border highlight
         fun updateUI(selectedStyle: String?) {
-            checkDefault.visibility = if (selectedStyle == "default") View.VISIBLE else View.GONE
-            checkSquare.visibility  = if (selectedStyle == "square")  View.VISIBLE else View.GONE
+            val isDefault = selectedStyle == "default"
+            val isSquare  = selectedStyle == "square"
+
+            checkDefault.visibility = if (isDefault) View.VISIBLE else View.GONE
+            checkSquare.visibility  = if (isSquare)  View.VISIBLE else View.GONE
+
+            cardDefault.setBackgroundResource(
+                if (isDefault) R.drawable.bg_artwork_card_selected else R.drawable.bg_artwork_card_unselected
+            )
+            cardSquare.setBackgroundResource(
+                if (isSquare) R.drawable.bg_artwork_card_selected else R.drawable.bg_artwork_card_unselected
+            )
         }
 
         // Initialize UI

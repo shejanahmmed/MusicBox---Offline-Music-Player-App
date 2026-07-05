@@ -20,7 +20,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="6dp"
         android:text="@string/artwork_style_title"
         android:textColor="@color/colorTextPrimary"
         android:textSize="22sp"
@@ -35,138 +35,211 @@
         android:textColor="@color/colorTextSecondary"
         android:textSize="14sp" />
 
-    <!-- Choice Container -->
+    <!-- Side-by-side card picker -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/bg_settings_card_light"
-        android:padding="8dp">
+        android:orientation="horizontal"
+        android:weightSum="2">
 
-        <!-- Default Style -->
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- ===== Circle (Vinyl) Card ===== -->
+        <LinearLayout
             android:id="@+id/card_style_default"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingVertical="16dp"
-            android:paddingHorizontal="16dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_artwork_card_unselected"
+            android:padding="12dp"
             android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackground">
+            android:focusable="true">
 
-            <ImageView
-                android:id="@+id/iv_icon_default"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_image"
-                app:tint="@color/colorIconSecondary"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"/>
+            <!-- Circle Checkmark -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/tv_default_title"
-                android:layout_width="wrap_content"
+                <ImageView
+                    android:id="@+id/iv_check_default"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="end"
+                    android:src="@drawable/ic_check_circle"
+                    app:tint="@color/colorNavSelected"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <!-- Circle Preview Area — enforced 1:1 square -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp">
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_constraintDimensionRatio="1:1"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <!-- Outer vinyl ring -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/shape_circle_red"
+                        android:backgroundTint="@color/colorVinylRing" />
+
+                    <!-- Inner vinyl ring -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="6dp"
+                        android:background="@drawable/bg_vinyl_inner" />
+
+                    <!-- Artwork circle -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="14dp"
+                        app:cardCornerRadius="200dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/colorVinylBase">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@color/colorVinylBase" />
+
+                    </androidx.cardview.widget.CardView>
+
+                </FrameLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Circle Label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:text="@string/artwork_style_default"
                 android:textColor="@color/colorTextPrimary"
-                android:textSize="16sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                android:layout_marginStart="16dp"
-                app:layout_constraintStart_toEndOf="@id/iv_icon_default"
-                app:layout_constraintTop_toTopOf="parent"/>
+                android:gravity="center" />
 
             <TextView
-                android:id="@+id/tv_default_desc"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:text="@string/artwork_style_default_desc"
                 android:textColor="@color/colorTextSecondary"
-                android:textSize="12sp"
-                android:layout_marginTop="2dp"
-                app:layout_constraintStart_toStartOf="@id/tv_default_title"
-                app:layout_constraintEnd_toStartOf="@id/iv_check_default"
-                app:layout_constraintTop_toBottomOf="@id/tv_default_title"
-                android:layout_marginEnd="16dp"/>
+                android:textSize="10sp"
+                android:gravity="center" />
 
-            <ImageView
-                android:id="@+id/iv_check_default"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_check_circle"
-                app:tint="@color/colorNavSelected"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"/>
+        </LinearLayout>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/colorStroke"
-            android:layout_marginHorizontal="16dp"/>
-
-        <!-- Square Style -->
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- ===== Square Card ===== -->
+        <LinearLayout
             android:id="@+id/card_style_square"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingVertical="16dp"
-            android:paddingHorizontal="16dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_artwork_card_unselected"
+            android:padding="12dp"
             android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackground">
+            android:focusable="true">
 
-            <ImageView
-                android:id="@+id/iv_icon_square"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_image"
-                app:tint="@color/colorIconSecondary"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"/>
+            <!-- Square Checkmark -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/tv_square_title"
-                android:layout_width="wrap_content"
+                <ImageView
+                    android:id="@+id/iv_check_square"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="end"
+                    android:src="@drawable/ic_check_circle"
+                    app:tint="@color/colorNavSelected"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <!-- Square Preview Area — enforced 1:1 square -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp">
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_constraintDimensionRatio="1:1"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <!-- Outer square ring -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_square_frame_outer" />
+
+                    <!-- Inner square ring -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="6dp"
+                        android:background="@drawable/bg_square_frame_inner" />
+
+                    <!-- Artwork square -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="14dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/colorVinylBase">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@color/colorVinylBase" />
+
+                    </androidx.cardview.widget.CardView>
+
+                </FrameLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Square Label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:text="@string/artwork_style_square"
                 android:textColor="@color/colorTextPrimary"
-                android:textSize="16sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                android:layout_marginStart="16dp"
-                app:layout_constraintStart_toEndOf="@id/iv_icon_square"
-                app:layout_constraintTop_toTopOf="parent"/>
+                android:gravity="center" />
 
             <TextView
-                android:id="@+id/tv_square_desc"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:text="@string/artwork_style_square_desc"
                 android:textColor="@color/colorTextSecondary"
-                android:textSize="12sp"
-                android:layout_marginTop="2dp"
-                app:layout_constraintStart_toStartOf="@id/tv_square_title"
-                app:layout_constraintEnd_toStartOf="@id/iv_check_square"
-                app:layout_constraintTop_toBottomOf="@id/tv_square_title"
-                android:layout_marginEnd="16dp"/>
+                android:textSize="10sp"
+                android:gravity="center" />
 
-            <ImageView
-                android:id="@+id/iv_check_square"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_check_circle"
-                app:tint="@color/colorNavSelected"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"/>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
 
     </LinearLayout>
 
