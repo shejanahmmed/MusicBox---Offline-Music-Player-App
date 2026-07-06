@@ -42,10 +42,10 @@
     <color name="switch_track_off">#E5E5EA</color>
     
     <!-- Vinyl/CD Artwork Semantic Colors -->
-    <color name="colorVinylBase">#181818</color> <!-- Reverted to Black -->
-    <color name="colorVinylStroke">#282828</color> <!-- Reverted to Dark Stroke -->
+    <color name="colorVinylBase">#26000000</color> <!-- 15% Black overlay for semi-transparent cream effect -->
+    <color name="colorVinylStroke">#4D000000</color> <!-- 30% Black stroke for subtle dark border -->
     <color name="colorVinylLabel">#FFC62828</color> <!-- Red Label -->
-    <color name="colorVinylCenter">#181818</color> <!-- Matches Base for seamless look -->
+    <color name="colorVinylCenter">#26000000</color> <!-- Matches Base -->
     <color name="colorVinylRing">#1A000000</color> <!-- 10% Black Ring (Shadow) -->
     
     <!-- SeekBar Border -->
