@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -128,6 +129,69 @@ class TracksFragment : Fragment() {
             showTrackOptionsDialog(track)
         }
         rvTracks.adapter = adapter
+
+        // Setup ItemTouchHelper for custom preference drag-and-drop
+        val touchCallback = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+        ) {
+            override fun isLongPressDragEnabled(): Boolean {
+                return sortColumn == "custom_preference"
+            }
+
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val fromPos = viewHolder.adapterPosition
+                val toPos = target.adapterPosition
+                if (fromPos == RecyclerView.NO_POSITION || toPos == RecyclerView.NO_POSITION) return false
+                
+                adapter?.moveItem(fromPos, toPos)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                // No-op
+            }
+
+            override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+                super.onSelectedChanged(viewHolder, actionState)
+                if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
+                    viewHolder?.itemView?.alpha = 0.8f
+                    viewHolder?.itemView?.scaleX = 1.03f
+                    viewHolder?.itemView?.scaleY = 1.03f
+                    viewHolder?.itemView?.context?.let { ctx ->
+                        MusicUtils.performHapticFeedback(ctx)
+                    }
+                }
+            }
+
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+                viewHolder.itemView.alpha = 1.0f
+                viewHolder.itemView.scaleX = 1.0f
+                viewHolder.itemView.scaleY = 1.0f
+                
+                adapter?.let { adapterInstance ->
+                    val context = recyclerView.context
+                    val currentTracks = adapterInstance.getTracks()
+                    val paths = currentTracks.map { it.uri }
+                    CustomSortHelper.saveCustomOrder(context, paths)
+                    
+                    if (isBound && musicService != null) {
+                        val currentTrackId = musicService?.getCurrentTrack()?.id ?: -1L
+                        if (currentTrackId != -1L) {
+                            val newIndex = currentTracks.indexOfFirst { it.id == currentTrackId }
+                            if (newIndex != -1) {
+                                MusicService.updatePlaylist(currentTracks, newIndex)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ItemTouchHelper(touchCallback).attachToRecyclerView(rvTracks)
 
         // ── Alphabet Index Scrollbar ──────────────────────────────────────
         val alphabetScrollbar = view.findViewById<AlphabetIndexScrollbar>(R.id.alphabet_scrollbar)
@@ -475,7 +539,11 @@ class TracksFragment : Fragment() {
             val finalSelection = if (selection != null) "($baseSelection) AND ($selection)" else baseSelection
 
             val order = if (isAscending) "ASC" else "DESC"
-            val sortOrder = "$sortColumn $order"
+            val sortOrder = if (sortColumn == "custom_preference") {
+                "${MediaStore.Audio.Media.TITLE} ASC"
+            } else {
+                "$sortColumn $order"
+            }
 
             val cursor = context.contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -510,6 +578,14 @@ class TracksFragment : Fragment() {
                 }
             }
         } catch (e: Exception) { e.printStackTrace() }
+        if (sortColumn == "custom_preference") {
+            val customOrder = CustomSortHelper.getCustomOrder(context)
+            var sortedList = CustomSortHelper.sortTracksCustom(list, customOrder)
+            if (!isAscending) {
+                sortedList = sortedList.reversed()
+            }
+            return sortedList
+        }
         return list
     }
 
@@ -534,16 +610,27 @@ class TracksFragment : Fragment() {
         val containerTitle = dialogView.findViewById<View>(R.id.container_title)
         val containerDateAdded = dialogView.findViewById<View>(R.id.container_date_added)
         val containerDateModified = dialogView.findViewById<View>(R.id.container_date_modified)
+        val containerCustom = dialogView.findViewById<View>(R.id.container_custom)
 
         val rbTitle = dialogView.findViewById<RadioButton>(R.id.rb_title)
         val rbDateAdded = dialogView.findViewById<RadioButton>(R.id.rb_date_added)
         val rbDateModified = dialogView.findViewById<RadioButton>(R.id.rb_date_modified)
+        val rbCustom = dialogView.findViewById<RadioButton>(R.id.rb_custom)
 
         fun updateSelection(selectedRb: RadioButton) {
             rbTitle.isChecked = false
             rbDateAdded.isChecked = false
             rbDateModified.isChecked = false
+            rbCustom.isChecked = false
             selectedRb.isChecked = true
+
+            if (selectedRb == rbCustom) {
+                switchAsc.isEnabled = false
+                switchAsc.alpha = 0.5f
+            } else {
+                switchAsc.isEnabled = true
+                switchAsc.alpha = 1.0f
+            }
         }
 
         switchAsc.isChecked = isAscending
@@ -551,6 +638,7 @@ class TracksFragment : Fragment() {
             MediaStore.Audio.Media.TITLE -> updateSelection(rbTitle)
             MediaStore.Audio.Media.DATE_ADDED -> updateSelection(rbDateAdded)
             MediaStore.Audio.Media.DATE_MODIFIED -> updateSelection(rbDateModified)
+            "custom_preference" -> updateSelection(rbCustom)
         }
 
         fun saveSortPrefs() {
@@ -588,6 +676,15 @@ class TracksFragment : Fragment() {
             sortColumn = MediaStore.Audio.Media.DATE_MODIFIED
             saveSortPrefs()
             loadTracks()
+            dialog.dismiss()
+        }
+
+        containerCustom.setOnClickListener {
+            updateSelection(rbCustom)
+            sortColumn = "custom_preference"
+            saveSortPrefs()
+            loadTracks()
+            Toast.makeText(requireContext(), "Long press and drag tracks to reorder", Toast.LENGTH_LONG).show()
             dialog.dismiss()
         }
 
