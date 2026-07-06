@@ -93,17 +93,10 @@
                         android:background="@drawable/shape_circle_red"
                         android:backgroundTint="@color/colorVinylRing" />
 
-                    <!-- Inner vinyl ring -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_margin="6dp"
-                        android:background="@drawable/bg_vinyl_inner" />
-
                     <androidx.cardview.widget.CardView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_margin="14dp"
+                        android:layout_margin="6dp"
                         app:cardCornerRadius="200dp"
                         app:cardElevation="0dp"
                         app:cardBackgroundColor="@color/colorVinylBase">
@@ -193,17 +186,10 @@
                         android:layout_height="match_parent"
                         android:background="@drawable/bg_square_frame_outer" />
 
-                    <!-- Inner square ring -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_margin="6dp"
-                        android:background="@drawable/bg_square_frame_inner" />
-
                     <androidx.cardview.widget.CardView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_margin="14dp"
+                        android:layout_margin="6dp"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp"
                         app:cardBackgroundColor="@color/colorVinylBase">
