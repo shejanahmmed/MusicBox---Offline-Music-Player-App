@@ -100,7 +100,6 @@
                         android:layout_margin="6dp"
                         android:background="@drawable/bg_vinyl_inner" />
 
-                    <!-- Artwork circle -->
                     <androidx.cardview.widget.CardView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -109,10 +108,12 @@
                         app:cardElevation="0dp"
                         app:cardBackgroundColor="@color/colorVinylBase">
 
-                        <View
+                        <ImageView
+                            android:id="@+id/iv_preview_circle_art"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:background="@color/colorVinylBase" />
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/ic_cd_placeholder" />
 
                     </androidx.cardview.widget.CardView>
 
@@ -199,7 +200,6 @@
                         android:layout_margin="6dp"
                         android:background="@drawable/bg_square_frame_inner" />
 
-                    <!-- Artwork square -->
                     <androidx.cardview.widget.CardView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -208,10 +208,12 @@
                         app:cardElevation="0dp"
                         app:cardBackgroundColor="@color/colorVinylBase">
 
-                        <View
+                        <ImageView
+                            android:id="@+id/iv_preview_square_art"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:background="@color/colorVinylBase" />
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/ic_cd_placeholder" />
 
                     </androidx.cardview.widget.CardView>
 

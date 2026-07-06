@@ -507,6 +507,21 @@ class SettingsFragment : Fragment() {
         val cardSquare  = dialogView.findViewById<View>(R.id.card_style_square)
         val checkDefault = dialogView.findViewById<ImageView>(R.id.iv_check_default)
         val checkSquare  = dialogView.findViewById<ImageView>(R.id.iv_check_square)
+        val ivPreviewCircleArt = dialogView.findViewById<ImageView>(R.id.iv_preview_circle_art)
+        val ivPreviewSquareArt = dialogView.findViewById<ImageView>(R.id.iv_preview_square_art)
+
+        // Load current track art if available
+        val currentTrack = MusicService.instance?.getCurrentTrack() ?: if (MusicService.currentIndex in MusicService.playlist.indices) {
+            MusicService.playlist.getOrNull(MusicService.currentIndex)
+        } else {
+            null
+        }
+
+        if (currentTrack != null) {
+            val ctx = requireContext()
+            MusicUtils.loadTrackArt(ctx, currentTrack.id, currentTrack.albumId, currentTrack.uri, ivPreviewCircleArt)
+            MusicUtils.loadTrackArt(ctx, currentTrack.id, currentTrack.albumId, currentTrack.uri, ivPreviewSquareArt)
+        }
 
         val prefs = requireContext().getSharedPreferences("MusicBoxPrefs", Context.MODE_PRIVATE)
         val currentStyle = prefs.getString("artwork_style", "default")

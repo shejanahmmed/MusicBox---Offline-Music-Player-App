@@ -557,6 +557,20 @@ class SettingsActivity : AppCompatActivity() {
         val cardSquare  = view.findViewById<android.view.View>(R.id.card_style_square)
         val checkDefault = view.findViewById<android.widget.ImageView>(R.id.iv_check_default)
         val checkSquare  = view.findViewById<android.widget.ImageView>(R.id.iv_check_square)
+        val ivPreviewCircleArt = view.findViewById<android.widget.ImageView>(R.id.iv_preview_circle_art)
+        val ivPreviewSquareArt = view.findViewById<android.widget.ImageView>(R.id.iv_preview_square_art)
+
+        // Load current track art if available
+        val currentTrack = MusicService.instance?.getCurrentTrack() ?: if (MusicService.currentIndex in MusicService.playlist.indices) {
+            MusicService.playlist.getOrNull(MusicService.currentIndex)
+        } else {
+            null
+        }
+
+        if (currentTrack != null) {
+            MusicUtils.loadTrackArt(this, currentTrack.id, currentTrack.albumId, currentTrack.uri, ivPreviewCircleArt)
+            MusicUtils.loadTrackArt(this, currentTrack.id, currentTrack.albumId, currentTrack.uri, ivPreviewSquareArt)
+        }
 
         val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
         val currentStyle = prefs.getString("artwork_style", "default")
