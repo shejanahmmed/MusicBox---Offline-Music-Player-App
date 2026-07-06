@@ -31,7 +31,19 @@ import android.annotation.SuppressLint
 
 data class Track(val id: Long, val title: String, val artist: String, val uri: String, val album: String? = null, val albumId: Long = -1L, val isActive: Boolean = false)
 
-class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (Track) -> Unit) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
+class TrackAdapter(initialTracks: List<Track>, private val onMoreClicked: (Track) -> Unit) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
+
+    private var tracks = initialTracks.toMutableList()
+
+    fun getTracks(): List<Track> = tracks
+
+    fun moveItem(fromPosition: Int, toPosition: Int) {
+        if (fromPosition in tracks.indices && toPosition in tracks.indices) {
+            val item = tracks.removeAt(fromPosition)
+            tracks.add(toPosition, item)
+            notifyItemMoved(fromPosition, toPosition)
+        }
+    }
 
     // Store active ID internally to avoid inefficient list copying
     private var currentActiveTrackId: Long = -1L
@@ -103,7 +115,7 @@ class TrackAdapter(private var tracks: List<Track>, private val onMoreClicked: (
 
     @SuppressLint("NotifyDataSetChanged")
     fun updateData(newTracks: List<Track>) {
-        this.tracks = newTracks
+        this.tracks = newTracks.toMutableList()
         notifyDataSetChanged()
     }
 

@@ -201,6 +201,52 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorStroke"
+            android:layout_marginHorizontal="20dp"
+            android:alpha="0.5"/>
+
+        <!-- Custom Preference Option -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_custom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="16dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Custom Preference"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="15sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/rb_custom"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <RadioButton
+                android:id="@+id/rb_custom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/primary_red"
+                android:checked="false"
+                android:clickable="false"
+                android:background="@null"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
