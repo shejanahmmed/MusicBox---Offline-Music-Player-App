@@ -51,8 +51,8 @@ class VerticalSeekBar @JvmOverloads constructor(
             val thumbHeight = thumbDrawable.intrinsicHeight
             
             val centerY = paddingTop + (width - paddingTop - paddingBottom) / 2
-            val left = thumbX - thumbWidth / 2
-            val right = thumbX + thumbWidth / 2
+            val left = thumbX - (paddingLeft - thumbOffset) - thumbWidth / 2
+            val right = thumbX - (paddingLeft - thumbOffset) + thumbWidth / 2
             val top = centerY - thumbHeight / 2
             val bottom = centerY + thumbHeight / 2
             

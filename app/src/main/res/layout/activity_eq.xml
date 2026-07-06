@@ -83,8 +83,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
+        android:paddingStart="36dp"
+        android:paddingEnd="36dp"
         android:paddingTop="8dp">
 
         <TextView android:id="@+id/tv_db0"
@@ -189,7 +189,7 @@
             android:background="@color/colorTextSecondary"
             android:alpha="0.3"
             app:layout_constraintStart_toEndOf="@+id/ll_scale"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/ll_scale_right"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
@@ -203,7 +203,7 @@
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
             app:layout_constraintStart_toEndOf="@+id/ll_scale"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/ll_scale_right"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
@@ -309,6 +309,45 @@
 
         </LinearLayout>
 
+        <!-- Scale column (Right) -->
+        <LinearLayout
+            android:id="@+id/ll_scale_right"
+            android:layout_width="32dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="+15"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="9sp"
+                android:gravity="top|center_horizontal" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="0"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="9sp"
+                android:gravity="center" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="-15"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="9sp"
+                android:gravity="bottom|center_horizontal" />
+        </LinearLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Band Name Labels -->
@@ -317,7 +356,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingStart="36dp"
-        android:paddingEnd="4dp"
+        android:paddingEnd="36dp"
         android:paddingBottom="4dp">
 
         <TextView
