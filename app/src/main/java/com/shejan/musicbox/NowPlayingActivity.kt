@@ -75,7 +75,7 @@ class NowPlayingActivity : AppCompatActivity() {
     // BroadcastReceiver for updates
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == "MUSIC_BOX_UPDATE") {
+            if (intent?.action == "MUSIC_BOX_UPDATE" || intent?.action == FavoritesManager.ACTION_FAVORITES_UPDATED) {
                 updateUI()
             }
         }
@@ -113,18 +113,9 @@ class NowPlayingActivity : AppCompatActivity() {
         if (uri != null && musicService != null) {
             val track = musicService?.getCurrentTrack() ?: return@registerForActivityResult
             
-            // Persist permission (needed for future access)
-            try {
-                contentResolver.takePersistableUriPermission(
-                    uri, 
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                )
-            } catch (e: Exception) { e.printStackTrace() }
-            
-             // Save custom artwork
-             TrackArtworkManager.saveArtwork(this, track.uri, uri.toString())
-             ImageLoader.clearCacheForTrack(track.uri)
-             MusicUtils.contentVersion++
+            TrackArtworkManager.saveArtworkFromUri(this, track.uri, uri)
+            ImageLoader.clearCacheForTrack(track.uri)
+            MusicUtils.contentVersion++
 
             // Force Reload
             loadedTrackId = -1L
@@ -649,7 +640,9 @@ class NowPlayingActivity : AppCompatActivity() {
         bindService(intent, connection, BIND_AUTO_CREATE)
         
         // Register Music Update Receiver
-        val filter = IntentFilter("MUSIC_BOX_UPDATE")
+        val filter = IntentFilter("MUSIC_BOX_UPDATE").apply {
+            addAction(FavoritesManager.ACTION_FAVORITES_UPDATED)
+        }
         ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
         
         // Register Volume Receiver

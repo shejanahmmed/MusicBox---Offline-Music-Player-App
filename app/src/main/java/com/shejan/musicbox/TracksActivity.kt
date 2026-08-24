@@ -79,11 +79,7 @@ class TracksActivity : AppCompatActivity() {
         if (uri != null) {
             val trackUri = currentEditingTrackUri
             if (trackUri != null) {
-                try {
-                    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                } catch (e: Exception) { e.printStackTrace() }
-                
-                TrackArtworkManager.saveArtwork(this, trackUri, uri.toString())
+                TrackArtworkManager.saveArtworkFromUri(this, trackUri, uri)
                 ImageLoader.clearCacheForTrack(trackUri)
                 MusicUtils.contentVersion++
                 updateMiniPlayer() 
@@ -102,8 +98,11 @@ class TracksActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "MUSIC_BOX_UPDATE") {
                 updateMiniPlayer()
-            } else if (intent?.action == "com.shejan.musicbox.TRACK_DELETED" || intent?.action == "com.shejan.musicbox.REFRESH_DATA") {
+            } else if (intent?.action == "com.shejan.musicbox.TRACK_DELETED" || 
+                       intent?.action == "com.shejan.musicbox.REFRESH_DATA" || 
+                       intent?.action == FavoritesManager.ACTION_FAVORITES_UPDATED) {
                 loadTracks()
+                updateMiniPlayer()
             }
         }
     }
@@ -311,9 +310,11 @@ class TracksActivity : AppCompatActivity() {
         }
         // ──────────────────────────────────────────────────────────────────
         
-        val filter = IntentFilter("MUSIC_BOX_UPDATE")
-        filter.addAction("com.shejan.musicbox.TRACK_DELETED")
-        filter.addAction("com.shejan.musicbox.REFRESH_DATA")
+        val filter = IntentFilter("MUSIC_BOX_UPDATE").apply {
+            addAction("com.shejan.musicbox.TRACK_DELETED")
+            addAction("com.shejan.musicbox.REFRESH_DATA")
+            addAction(FavoritesManager.ACTION_FAVORITES_UPDATED)
+        }
         ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 

@@ -38,12 +38,53 @@ object TrackArtworkManager {
     fun saveArtwork(context: Context, uri: String, artworkUri: String) {
         getPrefs(context).edit { putString(uri, artworkUri) }
     }
+
+    fun saveArtworkFromUri(context: Context, trackUri: String, selectedUri: android.net.Uri): Boolean {
+        return try {
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    selectedUri,
+                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: Exception) {}
+
+            val dir = java.io.File(context.filesDir, "custom_artwork")
+            if (!dir.exists()) dir.mkdirs()
+
+            val hash = Math.abs(trackUri.hashCode())
+            val destFile = java.io.File(dir, "art_$hash.jpg")
+
+            context.contentResolver.openInputStream(selectedUri)?.use { input ->
+                java.io.FileOutputStream(destFile).use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            if (destFile.exists() && destFile.length() > 0) {
+                saveArtwork(context, trackUri, android.net.Uri.fromFile(destFile).toString())
+                true
+            } else {
+                saveArtwork(context, trackUri, selectedUri.toString())
+                true
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Fallback to storing raw URI string
+            saveArtwork(context, trackUri, selectedUri.toString())
+            true
+        }
+    }
     
     fun removeArtwork(context: Context, uri: String) {
         saveArtwork(context, uri, "REMOVED")
     }
     
     fun resetArtwork(context: Context, uri: String) {
+        try {
+            val hash = Math.abs(uri.hashCode())
+            val destFile = java.io.File(java.io.File(context.filesDir, "custom_artwork"), "art_$hash.jpg")
+            if (destFile.exists()) destFile.delete()
+        } catch (_: Exception) {}
         getPrefs(context).edit { remove(uri) }
     }
     

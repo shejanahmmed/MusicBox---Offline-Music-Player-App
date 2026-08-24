@@ -57,11 +57,7 @@ class TracksFragment : Fragment() {
         if (uri != null) {
             val trackUri = currentEditingTrackUri
             if (trackUri != null) {
-                try {
-                    requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                } catch (e: Exception) { e.printStackTrace() }
-
-                TrackArtworkManager.saveArtwork(requireContext(), trackUri, uri.toString())
+                TrackArtworkManager.saveArtworkFromUri(requireContext(), trackUri, uri)
                 ImageLoader.clearCacheForTrack(trackUri)
                 MusicUtils.contentVersion++
                 updateMiniPlayer()
@@ -80,8 +76,11 @@ class TracksFragment : Fragment() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "MUSIC_BOX_UPDATE") {
                 updateMiniPlayer()
-            } else if (intent?.action == "com.shejan.musicbox.TRACK_DELETED" || intent?.action == "com.shejan.musicbox.REFRESH_DATA") {
+            } else if (intent?.action == "com.shejan.musicbox.TRACK_DELETED" || 
+                       intent?.action == "com.shejan.musicbox.REFRESH_DATA" || 
+                       intent?.action == FavoritesManager.ACTION_FAVORITES_UPDATED) {
                 loadTracks()
+                updateMiniPlayer()
             }
         }
     }
@@ -291,9 +290,11 @@ class TracksFragment : Fragment() {
         val intent = Intent(requireContext(), MusicService::class.java)
         requireContext().bindService(intent, connection, Context.BIND_AUTO_CREATE)
 
-        val filter = IntentFilter("MUSIC_BOX_UPDATE")
-        filter.addAction("com.shejan.musicbox.TRACK_DELETED")
-        filter.addAction("com.shejan.musicbox.REFRESH_DATA")
+        val filter = IntentFilter("MUSIC_BOX_UPDATE").apply {
+            addAction("com.shejan.musicbox.TRACK_DELETED")
+            addAction("com.shejan.musicbox.REFRESH_DATA")
+            addAction(FavoritesManager.ACTION_FAVORITES_UPDATED)
+        }
         ContextCompat.registerReceiver(
             requireContext(),
             receiver,

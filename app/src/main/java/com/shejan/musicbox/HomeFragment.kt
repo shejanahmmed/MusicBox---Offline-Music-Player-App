@@ -31,7 +31,7 @@ class HomeFragment : Fragment() {
 
     private val updateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == "com.shejan.musicbox.REFRESH_DATA") {
+            if (intent?.action == "com.shejan.musicbox.REFRESH_DATA" || intent?.action == FavoritesManager.ACTION_FAVORITES_UPDATED) {
                 setupHomeBoxes()
             }
         }
@@ -59,7 +59,9 @@ class HomeFragment : Fragment() {
         super.onStart()
         if (!isReceiverRegistered) {
             try {
-                val filter = IntentFilter("com.shejan.musicbox.REFRESH_DATA")
+                val filter = IntentFilter("com.shejan.musicbox.REFRESH_DATA").apply {
+                    addAction(FavoritesManager.ACTION_FAVORITES_UPDATED)
+                }
                 ContextCompat.registerReceiver(requireContext(), updateReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
                 isReceiverRegistered = true
             } catch (e: Exception) {
