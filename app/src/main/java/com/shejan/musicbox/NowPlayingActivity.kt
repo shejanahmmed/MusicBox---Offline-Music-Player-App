@@ -173,16 +173,31 @@ class NowPlayingActivity : AppCompatActivity() {
     private var swipeStartY = 0f
     private val swipeThreshold = 150f // Pixels
 
+    private fun isTouchOnView(view: View?, rawX: Float, rawY: Float): Boolean {
+        if (view == null || view.visibility != View.VISIBLE) return false
+        val location = IntArray(2)
+        view.getLocationOnScreen(location)
+        val x = location[0]
+        val y = location[1]
+        return rawX >= x && rawX <= (x + view.width) && rawY >= y && rawY <= (y + view.height)
+    }
+
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         if (ev == null) return super.dispatchTouchEvent(ev)
         
         val displayMetrics = resources.displayMetrics
         val screenHeight = displayMetrics.heightPixels
-        val headerLimit = screenHeight * 0.25
+        val headerLimit = screenHeight * 0.15f
         
-        when (ev.action) {
+        when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                swipeStartY = if (ev.y <= headerLimit) {
+                val volumeView = findViewById<View>(R.id.ll_volume)
+                val progressView = findViewById<View>(R.id.sb_progress)
+                
+                val isOnInteractiveView = isTouchOnView(volumeView, ev.rawX, ev.rawY) ||
+                        isTouchOnView(progressView, ev.rawX, ev.rawY)
+                
+                swipeStartY = if (!isOnInteractiveView && ev.y <= headerLimit) {
                     ev.y
                 } else {
                     -1f // Invalid
@@ -192,6 +207,7 @@ class NowPlayingActivity : AppCompatActivity() {
                 if (swipeStartY != -1f) {
                     val deltaY = ev.y - swipeStartY
                     if (deltaY > swipeThreshold) {
+                        swipeStartY = -1f
                         finish()
                         overridePendingTransition(R.anim.no_animation, R.anim.slide_down_exit)
                         return true // Consume event
@@ -499,8 +515,20 @@ class NowPlayingActivity : AppCompatActivity() {
         // Check for custom metadata
         val customMetadata = TrackMetadataManager.getMetadata(this, track.uri)
         
-        findViewById<TextView>(R.id.tv_now_playing_title).text = customMetadata?.title ?: track.title
-        findViewById<TextView>(R.id.tv_now_playing_artist).text = customMetadata?.artist ?: track.artist
+        val newTitle = customMetadata?.title ?: track.title
+        val newArtist = customMetadata?.artist ?: track.artist
+
+        val tvTitle = findViewById<TextView>(R.id.tv_now_playing_title)
+        val tvArtist = findViewById<TextView>(R.id.tv_now_playing_artist)
+
+        if (tvTitle.text.toString() != newTitle) {
+            tvTitle.text = newTitle
+            tvTitle.isSelected = true
+        }
+        if (tvArtist.text.toString() != newArtist) {
+            tvArtist.text = newArtist
+            tvArtist.isSelected = true
+        }
         
         // Apply artwork style visibility
         applyArtworkStyle()
