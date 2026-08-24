@@ -154,8 +154,14 @@ object MiniPlayerManager {
             // If it came from restore, it might not.
             // Let's safe-check:
             val safeTrack = TrackMetadataManager.applyMetadata(activity, track)
-            titleView.text = safeTrack.title
-            artistView.text = safeTrack.artist
+            if (titleView.text.toString() != safeTrack.title) {
+                titleView.text = safeTrack.title
+                titleView.isSelected = true
+            }
+            if (artistView.text.toString() != safeTrack.artist) {
+                artistView.text = safeTrack.artist
+                artistView.isSelected = true
+            }
             playButton.setImageResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play_arrow)
             
             MusicUtils.loadTrackArt(activity, safeTrack.id, safeTrack.albumId, safeTrack.uri, miniArt)
