@@ -48,11 +48,7 @@ class SearchActivity : AppCompatActivity() {
     private var currentEditingTrackUri: String? = null
     private val pickArtworkLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri: android.net.Uri? ->
         if (uri != null && currentEditingTrackUri != null) {
-             try {
-                 contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-             } catch (e: Exception) { e.printStackTrace() }
-             
-             TrackArtworkManager.saveArtwork(this, currentEditingTrackUri!!, uri.toString())
+             TrackArtworkManager.saveArtworkFromUri(this, currentEditingTrackUri!!, uri)
              performSearch(currentSearchQuery)
         }
     }

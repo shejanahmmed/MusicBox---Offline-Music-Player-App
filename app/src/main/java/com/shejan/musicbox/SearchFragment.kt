@@ -33,11 +33,7 @@ class SearchFragment : Fragment() {
     private var currentEditingTrackUri: String? = null
     private val pickArtworkLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null && currentEditingTrackUri != null) {
-            try {
-                requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            } catch (e: Exception) { e.printStackTrace() }
-             
-            TrackArtworkManager.saveArtwork(requireContext(), currentEditingTrackUri!!, uri.toString())
+            TrackArtworkManager.saveArtworkFromUri(requireContext(), currentEditingTrackUri!!, uri)
             performSearch(currentSearchQuery)
         }
     }

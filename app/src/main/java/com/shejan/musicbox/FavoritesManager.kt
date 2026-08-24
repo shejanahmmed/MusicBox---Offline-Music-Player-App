@@ -26,6 +26,19 @@ object FavoritesManager {
     private const val PREF_NAME = "MusicBoxFavorites"
     private const val KEY_FAVORITES = "favorite_uris"
 
+    const val ACTION_FAVORITES_UPDATED = "com.shejan.musicbox.FAVORITES_UPDATED"
+
+    private fun notifyUpdate(context: Context, uri: String, isFav: Boolean) {
+        try {
+            val intent = android.content.Intent(ACTION_FAVORITES_UPDATED).apply {
+                putExtra("TRACK_URI", uri)
+                putExtra("IS_FAVORITE", isFav)
+                setPackage(context.packageName)
+            }
+            context.sendBroadcast(intent)
+        } catch (_: Exception) {}
+    }
+
     fun isFavorite(context: Context, uri: String): Boolean {
         val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val favorites = prefs.getStringSet(KEY_FAVORITES, emptySet()) ?: emptySet()
@@ -44,6 +57,7 @@ object FavoritesManager {
             remove(KEY_FAVORITES) // Remove old set first
             putStringSet(KEY_FAVORITES, newFavorites)
         }
+        notifyUpdate(context, uri, true)
     }
 
     fun removeFavorite(context: Context, uri: String) {
@@ -58,6 +72,7 @@ object FavoritesManager {
             remove(KEY_FAVORITES) // Remove old set first
             putStringSet(KEY_FAVORITES, newFavorites)
         }
+        notifyUpdate(context, uri, false)
     }
     
     fun getFavorites(context: Context): Set<String> {
