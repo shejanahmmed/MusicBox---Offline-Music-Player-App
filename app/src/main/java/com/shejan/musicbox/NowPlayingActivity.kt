@@ -241,6 +241,76 @@ class NowPlayingActivity : AppCompatActivity() {
              dialog.dismiss()
         }
         rvQueue.adapter = adapter
+
+        val touchHelper = androidx.recyclerview.widget.ItemTouchHelper(object : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(
+            androidx.recyclerview.widget.ItemTouchHelper.UP or androidx.recyclerview.widget.ItemTouchHelper.DOWN,
+            androidx.recyclerview.widget.ItemTouchHelper.LEFT or androidx.recyclerview.widget.ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val fromPos = viewHolder.adapterPosition
+                val toPos = target.adapterPosition
+                if (fromPos == RecyclerView.NO_POSITION || toPos == RecyclerView.NO_POSITION || fromPos == toPos) return false
+
+                synchronized(MusicService.playlist) {
+                    if (fromPos in MusicService.playlist.indices && toPos in MusicService.playlist.indices) {
+                        val item = MusicService.playlist.removeAt(fromPos)
+                        MusicService.playlist.add(toPos, item)
+
+                        if (MusicService.currentIndex == fromPos) {
+                            MusicService.currentIndex = toPos
+                        } else if (fromPos < MusicService.currentIndex && toPos >= MusicService.currentIndex) {
+                            MusicService.currentIndex--
+                        } else if (fromPos > MusicService.currentIndex && toPos <= MusicService.currentIndex) {
+                            MusicService.currentIndex++
+                        }
+                    }
+                }
+
+                if (fromPos in playlistCopy.indices && toPos in playlistCopy.indices) {
+                    val item = playlistCopy.removeAt(fromPos)
+                    playlistCopy.add(toPos, item)
+                    adapter.notifyItemMoved(fromPos, toPos)
+                }
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val pos = viewHolder.adapterPosition
+                if (pos == RecyclerView.NO_POSITION) return
+
+                val wasCurrent = (pos == MusicService.currentIndex)
+
+                synchronized(MusicService.playlist) {
+                    if (pos in MusicService.playlist.indices) {
+                        MusicService.playlist.removeAt(pos)
+                        if (pos < MusicService.currentIndex) {
+                            MusicService.currentIndex--
+                        }
+                    }
+                }
+
+                if (pos in playlistCopy.indices) {
+                    playlistCopy.removeAt(pos)
+                    adapter.notifyItemRemoved(pos)
+                }
+
+                if (wasCurrent) {
+                    if (MusicService.playlist.isNotEmpty()) {
+                        val nextIndex = MusicService.currentIndex.coerceIn(0, MusicService.playlist.size - 1)
+                        musicService?.playTrack(nextIndex)
+                    } else {
+                        musicService?.pause()
+                        dialog.dismiss()
+                    }
+                    updateUI()
+                }
+            }
+        })
+        touchHelper.attachToRecyclerView(rvQueue)
         
         // Scroll to current
         if (MusicService.currentIndex in MusicService.playlist.indices) {
@@ -294,6 +364,7 @@ class NowPlayingActivity : AppCompatActivity() {
                 startActivity(intent)
             } catch (_: Exception) {
                 Toast.makeText(this, getString(R.string.eq_error_system), Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, EqActivity::class.java))
             }
         }
 
@@ -305,6 +376,7 @@ class NowPlayingActivity : AppCompatActivity() {
                 startActivity(chooser)
             } catch (_: Exception) {
                 Toast.makeText(this, getString(R.string.eq_error_other), Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, EqActivity::class.java))
             }
         }
 
@@ -768,11 +840,11 @@ class NowPlayingActivity : AppCompatActivity() {
             dialog.dismiss()
         }
         
-        // Presets now just fill the text box
-        view.findViewById<View>(R.id.btn_15_min).setOnClickListener { etCustom.setText(getString(R.string.timer_15)); etCustom.setSelection(2) }
-        view.findViewById<View>(R.id.btn_30_min).setOnClickListener { etCustom.setText(getString(R.string.timer_30)); etCustom.setSelection(2) }
-        view.findViewById<View>(R.id.btn_45_min).setOnClickListener { etCustom.setText(getString(R.string.timer_45)); etCustom.setSelection(2) }
-        view.findViewById<View>(R.id.btn_60_min).setOnClickListener { etCustom.setText(getString(R.string.timer_60)); etCustom.setSelection(2) }
+        // Presets directly set and start the timer
+        view.findViewById<View>(R.id.btn_15_min).setOnClickListener { setTime(15) }
+        view.findViewById<View>(R.id.btn_30_min).setOnClickListener { setTime(30) }
+        view.findViewById<View>(R.id.btn_45_min).setOnClickListener { setTime(45) }
+        view.findViewById<View>(R.id.btn_60_min).setOnClickListener { setTime(60) }
         
         btnStart.setOnClickListener {
             val input = etCustom.text.toString()
