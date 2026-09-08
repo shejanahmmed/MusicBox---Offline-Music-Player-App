@@ -208,7 +208,7 @@ class VideosActivity : AppCompatActivity() {
 
     private fun loadVideos() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val videoList = queryVideos(applicationContext)
+            val videoList = MusicRepository.getVideos(applicationContext, sortColumn, isAscending)
             withContext(Dispatchers.Main) {
                 if (isFinishing || isDestroyed) return@withContext
 
@@ -230,61 +230,6 @@ class VideosActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun queryVideos(context: Context): List<VideoItem> {
-        val list = mutableListOf<VideoItem>()
-        try {
-            val projection = arrayOf(
-                MediaStore.Video.Media._ID,
-                MediaStore.Video.Media.TITLE,
-                MediaStore.Video.Media.DURATION,
-                MediaStore.Video.Media.DATA,
-                MediaStore.Video.Media.SIZE
-            )
-
-            val order = if (isAscending) "ASC" else "DESC"
-            val sortOrder = "$sortColumn $order"
-
-            // Read duration filter from dedicated video prefs (separate from audio track filter)
-            val videoPrefs = context.getSharedPreferences("MusicBoxVideoPrefs", MODE_PRIVATE)
-            val minSec = videoPrefs.getInt("video_min_duration_sec", 0)
-            val maxSec = videoPrefs.getInt("video_max_duration_sec", 0)
-            val minMs = minSec * 1000L
-            val maxMs = if (maxSec > 0) maxSec * 1000L else Long.MAX_VALUE
-
-            val cursor = context.contentResolver.query(
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                null,
-                null,
-                sortOrder
-            )
-
-            cursor?.use {
-                val idCol = it.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
-                val titleCol = it.getColumnIndexOrThrow(MediaStore.Video.Media.TITLE)
-                val durationCol = it.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)
-                val dataCol = it.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
-                val sizeCol = it.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
-
-                while (it.moveToNext()) {
-                    val id = it.getLong(idCol)
-                    val title = it.getString(titleCol) ?: "Unknown Video"
-                    val duration = it.getLong(durationCol)
-                    val path = it.getString(dataCol) ?: continue
-                    val size = it.getLong(sizeCol)
-
-                    // Apply duration filter
-                    if (duration < minMs || duration > maxMs) continue
-
-                    list.add(VideoItem(id, title, duration, path, size))
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return list
     }
 
 

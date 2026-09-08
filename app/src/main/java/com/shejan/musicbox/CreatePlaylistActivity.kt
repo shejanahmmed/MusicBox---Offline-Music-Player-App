@@ -87,44 +87,8 @@ class CreatePlaylistActivity : AppCompatActivity() {
     }
 
     private fun loadTracks() {
-        // Reuse logic from TracksActivity or simplified query
-        val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.TITLE,
-            MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.DATA,
-            MediaStore.Audio.Media.DURATION
-        )
-
-        try {
-            val cursor = contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                "${MediaStore.Audio.Media.IS_MUSIC} != 0",
-                null,
-                "${MediaStore.Audio.Media.TITLE} ASC"
-            )
-
-            cursor?.use {
-                val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                val titleCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-                val artistCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                val pathCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-
-
-                while (it.moveToNext()) {
-                    val id = it.getLong(idCol)
-                    val title = it.getString(titleCol)
-                    val artist = it.getString(artistCol)
-                    val path = it.getString(pathCol)
-                    // Track(id, title, artist, uri, isActive)
-                    allTracks.add(TrackMetadataManager.applyMetadata(this, Track(id, title, artist, path)))
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(this, "Error loading tracks", Toast.LENGTH_SHORT).show()
-        }
+        allTracks.clear()
+        allTracks.addAll(MusicRepository.getTracks(this))
     }
 
     private fun savePlaylist() {

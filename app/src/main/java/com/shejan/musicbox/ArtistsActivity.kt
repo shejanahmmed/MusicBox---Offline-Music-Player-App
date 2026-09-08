@@ -135,40 +135,7 @@ class ArtistsActivity : AppCompatActivity() {
         localContentVersion = MusicUtils.contentVersion
         
         lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            val list = mutableListOf<Artist>()
-            try {
-                val projection = arrayOf(
-                    MediaStore.Audio.Artists._ID,
-                    MediaStore.Audio.Artists.ARTIST,
-                    MediaStore.Audio.Artists.NUMBER_OF_TRACKS
-                )
-                
-                val cursor = contentResolver.query(
-                    MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                    projection,
-                    null,
-                    null,
-                    MediaStore.Audio.Artists.ARTIST + " ASC"
-                )
-    
-                cursor?.use {
-                    val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Artists._ID)
-                    val nameCol = it.getColumnIndexOrThrow(MediaStore.Audio.Artists.ARTIST)
-                    val countCol = it.getColumnIndexOrThrow(MediaStore.Audio.Artists.NUMBER_OF_TRACKS)
-    
-                    while (it.moveToNext()) {
-                        val id = it.getLong(idCol)
-                        val name = it.getString(nameCol)
-                        val count = it.getInt(countCol)
-                        list.add(Artist(id, name, count))
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                     Toast.makeText(this@ArtistsActivity, "Error loading artists", Toast.LENGTH_SHORT).show()
-                }
-            }
+            val list = MusicRepository.getArtists(applicationContext)
             
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                 // Update Count
