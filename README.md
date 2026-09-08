@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="#-key-features"><b>Key Features</b></a> •
-  <a href="#-whats-new-in-v210"><b>What's New (v2.1.0)</b></a> •
+  <a href="#-whats-new-in-v240"><b>What's New (v2.4.0)</b></a> •
   <a href="#-architecture--tech-stack"><b>Tech Stack</b></a> •
   <a href="#-download"><b>Download</b></a> •
   <a href="#-changelog"><b>Changelog</b></a> •
@@ -26,30 +26,34 @@
 
 ## 🚀 Overview
 
-**MusicBox** is an open-source, ad-free, and privacy-first offline music and video player crafted for users who demand **visual elegance** and **premium performance**.
+**MusicBox** is an open-source, ad-free, and privacy-first offline music and video player crafted for users who demand **visual elegance**, **audiophile audio quality**, and **premium performance**.
 
-Built using modern Android development architectures (Kotlin, Coroutines, MVVM, Clean Architecture), it merges a buttery-smooth **Glassmorphic UI** with a powerful local playback engine. MusicBox stands out with its **procedural vinyl cover engine** (generating vintage record artwork for track files missing cover metadata) and interactive micro-animations (like Instagram-style favorite pops and spring-based fast-scroll indicators).
+Built with modern Android engineering standards (Kotlin DSL, Coroutines, Media3 ExoPlayer, MVVM with StateFlow, Clean Architecture), it merges a buttery-smooth **Glassmorphic UI** with a state-of-the-art local playback engine. MusicBox features high-res lossless codec playback (24-bit/192kHz FLAC, ALAC, Opus, WAV, AAC, MP3), micro-volume fades, transient focus ducking, a **procedural vintage vinyl engine**, interactive micro-animations, and customizable home screen widgets.
 
 ---
 
 ## ✨ Key Features
+
+### 🎧 Audiophile Audio & Video Engine
+*   **AndroidX Media3 ExoPlayer:** High-performance local playback engine delivering lossless audio quality up to 24-bit/192kHz.
+*   **Micro-Volume Fades:** Gentle interpolated fading on play (180ms) and pause (150ms) to eliminate sudden clicks and pops.
+*   **Intelligent Audio Focus & Ducking:** Smooth volume ducking during notifications and dynamic auto-pause when headphones or Bluetooth disconnect.
+*   **Precision Equalizer & DSP:** 5-band customized EQ with live `audioSessionId` auto-binding, 6 acoustic presets, and real-time speed & pitch controls.
+*   **Swipe-to-Control Mini Player:** Easily swipe left or right to skip tracks, tap to pause, or expand into the full player.
+*   **Advanced Video Hub:** Full-featured local video player with custom duration filtering, sorting options, and dedicated metadata inspection.
 
 ### 🎨 Premium Visual Experience
 *   **Glassmorphic Design:** Translucent, adaptive interface components that dynamically tone and blur based on active album art.
 *   **Vintage Vinyl Engine:** Generates procedurally rendered retro vinyl records with realistic textures and animations for files without embedded covers.
 *   **Interactive Micro-interactions:** Tactile feedback on controls and a spring-loaded Instagram-style favorite animation.
 *   **Edge-to-Edge Layout:** Immersive layout that extends content directly behind the system status and navigation bars.
-
-### 🎛️ Immersive Audio & Video Engine
-*   **Precision Equalizer:** Completely customized EQ controller with smooth `VerticalSeekBar` tracking and quick preset modes (Rock, Pop, Classical, etc.).
-*   **Seamless Playback & Service:** Gapless audio transitions powered by a background-robust `MusicSession` implementation.
-*   **Swipe-to-Control Mini Player:** Easily swipe left or right to skip tracks, tap to pause, or expand into the full player.
-*   **Advanced Video Player:** Full-featured local video hub with custom duration filtering, sorting options, and dedicated metadata inspect panels.
+*   **Cassette-Style Widgets:** Beautiful Light and Dark mode home screen widgets with playback controls and dynamic equalizer animations.
 
 ### 📂 Advanced Library & Queue Control
 *   **On-the-Fly Queueing:** Prepend or append songs to your active playlist with "Play Next" and "Play Last" action buttons.
+*   **Thread-Safe Playback State:** Concurrency-protected queue operations and sequential background state serialization.
 *   **Dynamic Fast-Scroll:** Enhanced scrolling layout with letter-bubble tracking and custom scroll-indicator pill visibility.
-*   **Local Metadata Editor:** Edit titles, artists, and album fields directly inside the app, persisting changes directly.
+*   **Local Metadata Editor:** Edit titles, artists, and album fields directly inside the app, persisting changes cleanly.
 *   **Safe-Keep Deleted Trash:** Hidden audio/video clips go into a trash folder where they can be restored or permanently purged.
 
 ### 🛡️ Privacy & Reliability
@@ -58,15 +62,16 @@ Built using modern Android development architectures (Kotlin, Coroutines, MVVM, 
 
 ---
 
-## ⚡ What's New in v2.1.0
+## ⚡ What's New in v2.4.0
 
-The **v2.1.0 Release** adds premium home screen widgets and a dedicated experimental features panel:
+The **v2.4.0 Release** brings an audiophile-grade audio engine overhaul and a modern MVVM architecture refactor:
 
 | Feature | Description |
 | :--- | :--- |
-| **📻 Cassette-Style Widgets** | Fully functional, beautifully styled Light and Dark mode cassettes for your home screen with play/pause, skip, progress tracking, and dynamic equalizer visuals. |
-| **🧪 Experimental Panel** | Added a toggle in Settings -> Experimental Features to programmatically enable/disable widgets at the OS layer, keeping the launcher clean by default. |
-| **📐 Spacing Polish** | Standardized settings page layout margins (24dp) across all card groups and category headers. |
+| **🎧 AndroidX Media3 / ExoPlayer** | Complete playback engine migration with native support for 24-bit/192kHz Hi-Res FLAC, ALAC, Opus, WAV, AAC, and MP3. |
+| **✨ Micro-Volume Fading & Ducking** | Smooth 180ms fade-in and 150ms fade-out on play/pause, transient audio focus ducking (0.2f), and unplug protection (`ACTION_AUDIO_BECOMING_NOISY`). |
+| **🎛️ Equalizer Sync & DSP Controls** | Live dynamic audio session binding to `EqManager` across track transitions, plus speed & pitch DSP controls. |
+| **🏛️ MVVM & Reactive StateFlow** | Centralized `MusicRepository` for MediaStore queries, ViewModels with `repeatOnLifecycle`, and thread-safe queue management. |
 
 ---
 
@@ -76,20 +81,24 @@ MusicBox is built with **Clean Architecture** patterns under the **MVVM** archit
 
 ```text
 com.shejan.musicbox
+├── viewmodels      # Reactive StateFlow ViewModels (Tracks, Albums, Artists, Videos)
+├── repository      # Centralized MediaStore repository with Coroutines
 ├── activities      # UI entry points & main activities
 ├── adapters        # High-performance list & media recyclers
-├── managers        # Domain logic, miniplayer handlers, track actions
-├── models          # Immutable domain data models
-├── services        # Background playback & media service lifecycle
+├── managers        # Domain logic, EqManager, miniplayer handlers, track actions
+├── services        # Media3 ExoPlayer background playback & lifecycle
+├── widgets         # Interactive Home Screen widgets & providers
 └── utils           # Extension libraries, view animations, helpers
 ```
 
 ### Technical Specifications
 *   **Core Language:** [Kotlin](https://kotlinlang.org/) (100% codebase)
-*   **Asynchronous Processing:** Kotlin Coroutines & StateFlow/SharedFlow
-*   **User Interface:** XML layouts with custom Material Design components & Lottie animations
-*   **System Integration:** Android Jetpack libraries, MediaSession, and Foreground Services
-*   **Image Loading:** Glide (optimized caching & blur transformations)
+*   **Audio Engine:** [AndroidX Media3 ExoPlayer](https://developer.android.com/media/media3/exoplayer)
+*   **Architecture:** MVVM with Kotlin Coroutines & `StateFlow`
+*   **Build System:** Gradle Version Catalog (`libs.versions.toml`) + Kotlin DSL (`build.gradle.kts`)
+*   **User Interface:** Edge-to-edge XML layouts with custom Material Design components & Lottie animations
+*   **System Integration:** Android Jetpack libraries, MediaSessionCompat, and Foreground Services
+*   **Image Loading:** High-performance Glide cache with blur transformations
 
 ---
 
@@ -118,7 +127,16 @@ MusicBox is available for install via official channels:
 
 ## 📋 Changelog
 
-### v2.1.0 _(Current Release)_
+### v2.4.0 _(Current Release)_
+- **🎧 AndroidX Media3 / ExoPlayer Migration:** Complete audio engine upgrade supporting high-res lossless codecs (24-bit/192kHz FLAC, ALAC, Opus, WAV, AAC, MP3) and eliminating legacy player error states.
+- **✨ Micro-Volume Fades & Acoustic Smoothing:** Added soft volume fading on play (180ms) and pause (150ms) to eliminate popping sounds.
+- **🔊 Smart Audio Focus Ducking:** Intelligent transient ducking during navigation/system notifications and auto-pause upon headphone disconnect (`ACTION_AUDIO_BECOMING_NOISY`).
+- **🎛️ Dynamic EQ Session Binding:** Synchronized `EqManager` audio session ID binding across track transitions with high-resolution speed and pitch controls.
+- **🏛️ Modern MVVM Architecture:** Unified `MusicRepository` coroutine queries with reactive `StateFlow` ViewModels and lifecycle-aware collection.
+- **🛡️ Thread-Safe Queue State:** Concurrency-protected playlist mutation APIs and sequential background state serialization.
+- **⚡ Version Code 24 Alignment:** Bumped to version 2.4.0 across build files, Settings, and About views.
+
+### v2.1.0
 - **📻 Cassette-Style Widgets:** Fully functional cassette-style home screen widgets in Light and Dark mode, featuring metadata display, dynamic equalizer visuals, and full control listeners.
 - **🧪 Experimental Features Settings:** Added a dedicated toggle inside settings under "Experimental Features" to let users enable/disable home screen widgets. Dynamically updates system receiver states.
 - **📐 Uniform Spacing:** Standardized card margins to `24dp` before settings section headers for a premium, clean visual structure.
