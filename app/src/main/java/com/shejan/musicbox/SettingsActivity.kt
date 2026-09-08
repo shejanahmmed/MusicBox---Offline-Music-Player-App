@@ -561,10 +561,10 @@ class SettingsActivity : AppCompatActivity() {
         val ivPreviewSquareArt = view.findViewById<android.widget.ImageView>(R.id.iv_preview_square_art)
 
         // Load current track art if available
-        val currentTrack = MusicService.instance?.getCurrentTrack() ?: if (MusicService.currentIndex in MusicService.playlist.indices) {
-            MusicService.playlist.getOrNull(MusicService.currentIndex)
-        } else {
-            null
+        val currentTrack = MusicService.instance?.getCurrentTrack() ?: run {
+            val queue = MusicService.getQueue()
+            val index = MusicService.currentIndex
+            if (index in queue.indices) queue[index] else null
         }
 
         if (currentTrack != null) {

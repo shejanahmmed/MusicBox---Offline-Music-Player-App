@@ -57,19 +57,26 @@ object MiniPlayerManager {
                     val swipeVelocityThreshold = 100
                     
                     if (abs(diffX) > swipeThreshold && abs(velocityX) > swipeVelocityThreshold) {
+                        val service = getMusicService()
                         if (diffX > 0) {
                             // Swipe left-to-right: Previous track
                             MusicUtils.performHapticFeedback(activity)
-                            val intent = Intent(activity, MusicService::class.java)
-                            intent.action = MusicService.ACTION_PREV
-                            activity.startService(intent)
+                            if (service != null) {
+                                service.playPrev()
+                            } else {
+                                val intent = Intent(activity, MusicService::class.java).setAction(MusicService.ACTION_PREV)
+                                androidx.core.content.ContextCompat.startForegroundService(activity, intent)
+                            }
                             return true
                         } else {
                             // Swipe right-to-left: Next track
                             MusicUtils.performHapticFeedback(activity)
-                            val intent = Intent(activity, MusicService::class.java)
-                            intent.action = MusicService.ACTION_NEXT
-                            activity.startService(intent)
+                            if (service != null) {
+                                service.playNext()
+                            } else {
+                                val intent = Intent(activity, MusicService::class.java).setAction(MusicService.ACTION_NEXT)
+                                androidx.core.content.ContextCompat.startForegroundService(activity, intent)
+                            }
                             return true
                         }
                     }
@@ -83,9 +90,13 @@ object MiniPlayerManager {
                 val track = service?.getCurrentTrack()
                 if (track != null) {
                     NowPlayingActivity.start(activity, track.title, track.artist)
-                } else if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
-                    val t = MusicService.playlist[MusicService.currentIndex]
-                    NowPlayingActivity.start(activity, t.title, t.artist)
+                } else {
+                    val queue = MusicService.getQueue()
+                    val index = MusicService.currentIndex
+                    if (index in queue.indices) {
+                        val t = queue[index]
+                        NowPlayingActivity.start(activity, t.title, t.artist)
+                    }
                 }
                 return true
             }
@@ -105,26 +116,31 @@ object MiniPlayerManager {
             if (service != null) {
                 if (service.isPlaying()) service.pause() else service.play()
             } else {
-                val intent = Intent(activity, MusicService::class.java)
-                intent.action = MusicService.ACTION_PLAY
-                activity.startService(intent)
+                val intent = Intent(activity, MusicService::class.java).setAction(MusicService.ACTION_PLAY)
+                androidx.core.content.ContextCompat.startForegroundService(activity, intent)
             }
         }
         
-        
         activity.findViewById<ImageButton>(R.id.btn_mini_next)?.setOnClickListener {
             MusicUtils.performHapticFeedback(activity)
-            val intent = Intent(activity, MusicService::class.java)
-            intent.action = MusicService.ACTION_NEXT
-            activity.startService(intent)
+            val service = getMusicService()
+            if (service != null) {
+                service.playNext()
+            } else {
+                val intent = Intent(activity, MusicService::class.java).setAction(MusicService.ACTION_NEXT)
+                androidx.core.content.ContextCompat.startForegroundService(activity, intent)
+            }
         }
-        
         
         activity.findViewById<ImageButton>(R.id.btn_mini_prev)?.setOnClickListener {
             MusicUtils.performHapticFeedback(activity)
-            val intent = Intent(activity, MusicService::class.java)
-            intent.action = MusicService.ACTION_PREV
-            activity.startService(intent)
+            val service = getMusicService()
+            if (service != null) {
+                service.playPrev()
+            } else {
+                val intent = Intent(activity, MusicService::class.java).setAction(MusicService.ACTION_PREV)
+                androidx.core.content.ContextCompat.startForegroundService(activity, intent)
+            }
         }
     }
 
@@ -142,8 +158,10 @@ object MiniPlayerManager {
             isPlaying = musicService.isPlaying()
         } else {
             // Fallback
-             if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
-                track = MusicService.playlist[MusicService.currentIndex]
+            val queue = MusicService.getQueue()
+            val index = MusicService.currentIndex
+            if (index in queue.indices) {
+                track = queue[index]
             }
         }
         

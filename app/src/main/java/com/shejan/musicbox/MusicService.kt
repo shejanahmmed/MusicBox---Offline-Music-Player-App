@@ -64,17 +64,6 @@ class MusicService : Service() {
     private var sleepTimerRunnable: Runnable? = null
     var sleepTimerEndTime: Long = 0L
 
-    // Widget periodic update
-    private val widgetUpdateHandler = Handler(Looper.getMainLooper())
-    private val widgetUpdateRunnable = object : Runnable {
-        override fun run() {
-            if (isPlaying()) {
-                BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
-                widgetUpdateHandler.postDelayed(this, 1000) // Update every 1 second
-            }
-        }
-    }
-
     // Audio Focus
     private lateinit var audioManager: AudioManager
     private var audioFocusRequest: android.media.AudioFocusRequest? = null
@@ -228,6 +217,88 @@ class MusicService : Service() {
                 }
             }
         }
+
+        fun getQueue(): List<Track> {
+            return synchronized(playlist) { ArrayList(playlist) }
+        }
+
+        fun moveQueueItem(fromPos: Int, toPos: Int): Boolean {
+            return instance?.moveQueueItem(fromPos, toPos) ?: run {
+                synchronized(playlist) {
+                    if (fromPos !in playlist.indices || toPos !in playlist.indices || fromPos == toPos) return false
+                    val item = playlist.removeAt(fromPos)
+                    playlist.add(toPos, item)
+                    if (currentIndex == fromPos) {
+                        currentIndex = toPos
+                    } else if (fromPos < currentIndex && toPos >= currentIndex) {
+                        currentIndex--
+                    } else if (fromPos > currentIndex && toPos <= currentIndex) {
+                        currentIndex++
+                    }
+                    true
+                }
+            }
+        }
+
+        fun removeQueueItem(pos: Int): Boolean {
+            return instance?.removeQueueItem(pos) ?: run {
+                synchronized(playlist) {
+                    if (pos !in playlist.indices) return false
+                    val removedTrack = playlist.removeAt(pos)
+                    synchronized(originalPlaylist) {
+                        originalPlaylist.removeIf { it.uri == removedTrack.uri }
+                    }
+                    if (pos < currentIndex) {
+                        currentIndex--
+                    }
+                    true
+                }
+            }
+        }
+
+        fun addToPlayNext(track: Track) {
+            instance?.addToPlayNext(track) ?: run {
+                synchronized(playlist) {
+                    if (playlist.isEmpty()) {
+                        updatePlaylist(listOf(track), 0)
+                    } else {
+                        val index = playlist.indexOfFirst { it.uri == track.uri }
+                        if (index != -1) {
+                            val item = playlist.removeAt(index)
+                            val targetIndex = (currentIndex + 1).coerceIn(0, playlist.size)
+                            playlist.add(targetIndex, item)
+                            if (index < currentIndex) {
+                                currentIndex--
+                            }
+                        } else {
+                            val targetIndex = (currentIndex + 1).coerceIn(0, playlist.size)
+                            playlist.add(targetIndex, track)
+                        }
+                    }
+                }
+            }
+        }
+
+        fun addToPlayLast(track: Track) {
+            instance?.addToPlayLast(track) ?: run {
+                synchronized(playlist) {
+                    if (playlist.isEmpty()) {
+                        updatePlaylist(listOf(track), 0)
+                    } else {
+                        val index = playlist.indexOfFirst { it.uri == track.uri }
+                        if (index != -1) {
+                            val item = playlist.removeAt(index)
+                            playlist.add(item)
+                            if (index < currentIndex) {
+                                currentIndex--
+                            }
+                        } else {
+                            playlist.add(track)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private val noisyReceiver = object : BroadcastReceiver() {
@@ -262,10 +333,6 @@ class MusicService : Service() {
                 putExtra("ARTIST", track.artist)
             })
             BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
-            if (playWhenPrepared) {
-                widgetUpdateHandler.removeCallbacks(widgetUpdateRunnable)
-                widgetUpdateHandler.post(widgetUpdateRunnable)
-            }
         }
     }
 
@@ -603,8 +670,6 @@ class MusicService : Service() {
                         updateMediaSessionState()
                         sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
                         BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
-                        widgetUpdateHandler.removeCallbacks(widgetUpdateRunnable)
-                        widgetUpdateHandler.post(widgetUpdateRunnable)
                     }
                 } else if (mediaPlayerState == STATE_PREPARING) {
                     playWhenPrepared = true
@@ -644,7 +709,6 @@ class MusicService : Service() {
                         saveState() // Save specific position on pause
                         sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
                         BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
-                        widgetUpdateHandler.removeCallbacks(widgetUpdateRunnable)
                     }
                 } else if (mediaPlayerState == STATE_PREPARING) {
                     playWhenPrepared = false
@@ -764,6 +828,117 @@ class MusicService : Service() {
         BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
     }
     
+    fun getQueue(): List<Track> {
+        return synchronized(playlist) { ArrayList(playlist) }
+    }
+
+    fun getOriginalQueue(): List<Track> {
+        return synchronized(originalPlaylist) { ArrayList(originalPlaylist) }
+    }
+
+    fun getCurrentIndex(): Int {
+        return currentIndex
+    }
+
+    fun getQueueSize(): Int {
+        return synchronized(playlist) { playlist.size }
+    }
+
+    fun isQueueEmpty(): Boolean {
+        return synchronized(playlist) { playlist.isEmpty() }
+    }
+
+    fun moveQueueItem(fromPos: Int, toPos: Int): Boolean {
+        synchronized(playlist) {
+            if (fromPos !in playlist.indices || toPos !in playlist.indices || fromPos == toPos) return false
+            val item = playlist.removeAt(fromPos)
+            playlist.add(toPos, item)
+            if (currentIndex == fromPos) {
+                currentIndex = toPos
+            } else if (fromPos < currentIndex && toPos >= currentIndex) {
+                currentIndex--
+            } else if (fromPos > currentIndex && toPos <= currentIndex) {
+                currentIndex++
+            }
+            saveState()
+            return true
+        }
+    }
+
+    fun removeQueueItem(pos: Int): Boolean {
+        synchronized(playlist) {
+            if (pos !in playlist.indices) return false
+            val wasCurrent = (pos == currentIndex)
+            val removedTrack = playlist.removeAt(pos)
+
+            synchronized(originalPlaylist) {
+                originalPlaylist.removeIf { it.uri == removedTrack.uri }
+            }
+
+            if (pos < currentIndex) {
+                currentIndex--
+            }
+
+            saveState()
+
+            if (wasCurrent) {
+                if (playlist.isNotEmpty()) {
+                    val nextIndex = currentIndex.coerceIn(0, playlist.size - 1)
+                    playTrack(nextIndex)
+                } else {
+                    pause()
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                    stopSelf()
+                }
+            }
+            return true
+        }
+    }
+
+    fun addToPlayNext(track: Track) {
+        synchronized(playlist) {
+            if (playlist.isEmpty()) {
+                updatePlaylist(listOf(track), 0)
+                playTrack(0)
+            } else {
+                val index = playlist.indexOfFirst { it.uri == track.uri }
+                if (index != -1) {
+                    val item = playlist.removeAt(index)
+                    val targetIndex = (currentIndex + 1).coerceIn(0, playlist.size)
+                    playlist.add(targetIndex, item)
+                    if (index < currentIndex) {
+                        currentIndex--
+                    }
+                } else {
+                    val targetIndex = (currentIndex + 1).coerceIn(0, playlist.size)
+                    playlist.add(targetIndex, track)
+                }
+                saveState()
+            }
+        }
+    }
+
+    fun addToPlayLast(track: Track) {
+        synchronized(playlist) {
+            if (playlist.isEmpty()) {
+                updatePlaylist(listOf(track), 0)
+                playTrack(0)
+            } else {
+                val index = playlist.indexOfFirst { it.uri == track.uri }
+                if (index != -1) {
+                    val item = playlist.removeAt(index)
+                    playlist.add(item)
+                    if (index < currentIndex) {
+                        currentIndex--
+                    }
+                } else {
+                    playlist.add(track)
+                }
+                saveState()
+            }
+        }
+    }
+
     fun isPlaying(): Boolean {
         return mediaPlayerState == STATE_STARTED
     }
@@ -906,7 +1081,6 @@ class MusicService : Service() {
         uiScope.cancel() // Cancel all pending UI updates
         cancelSleepTimer() // Clean up runnables
         sleepTimerHandler.removeCallbacksAndMessages(null) // Detailed cleanup
-        widgetUpdateHandler.removeCallbacksAndMessages(null)
         abandonAudioFocus()
         
         saveState()

@@ -152,62 +152,16 @@ object TrackMenuManager {
         // Play Next
         view.findViewById<View>(R.id.btn_play_next_box).setOnClickListener {
             MusicUtils.performHapticFeedback(activity)
-            val activePlaylist = MusicService.playlist
-            if (activePlaylist.isEmpty()) {
-                val newList = listOf(track)
-                MusicService.updatePlaylist(newList, 0)
-                val intent = Intent(activity, MusicService::class.java).apply {
-                    putExtra("URI", track.uri)
-                }
-                ContextCompat.startForegroundService(activity, intent)
-                Toast.makeText(activity, "Playing now", Toast.LENGTH_SHORT).show()
-            } else {
-                synchronized(activePlaylist) {
-                    val index = activePlaylist.indexOfFirst { it.uri == track.uri }
-                    if (index != -1) {
-                        val item = activePlaylist.removeAt(index)
-                        val targetIndex = (MusicService.currentIndex + 1).coerceIn(0, activePlaylist.size)
-                        activePlaylist.add(targetIndex, item)
-                        if (index < MusicService.currentIndex) {
-                            MusicService.currentIndex--
-                        }
-                    } else {
-                        val targetIndex = (MusicService.currentIndex + 1).coerceIn(0, activePlaylist.size)
-                        activePlaylist.add(targetIndex, track)
-                    }
-                }
-                Toast.makeText(activity, "Added to Play Next", Toast.LENGTH_SHORT).show()
-            }
+            MusicService.addToPlayNext(track)
+            Toast.makeText(activity, "Added to Play Next", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
         }
 
         // Play Last
         view.findViewById<View>(R.id.btn_play_last_box).setOnClickListener {
             MusicUtils.performHapticFeedback(activity)
-            val activePlaylist = MusicService.playlist
-            if (activePlaylist.isEmpty()) {
-                val newList = listOf(track)
-                MusicService.updatePlaylist(newList, 0)
-                val intent = Intent(activity, MusicService::class.java).apply {
-                    putExtra("URI", track.uri)
-                }
-                ContextCompat.startForegroundService(activity, intent)
-                Toast.makeText(activity, "Playing now", Toast.LENGTH_SHORT).show()
-            } else {
-                synchronized(activePlaylist) {
-                    val index = activePlaylist.indexOfFirst { it.uri == track.uri }
-                    if (index != -1) {
-                        val item = activePlaylist.removeAt(index)
-                        activePlaylist.add(item)
-                        if (index < MusicService.currentIndex) {
-                            MusicService.currentIndex--
-                        }
-                    } else {
-                        activePlaylist.add(track)
-                    }
-                }
-                Toast.makeText(activity, "Added to Play Last", Toast.LENGTH_SHORT).show()
-            }
+            MusicService.addToPlayLast(track)
+            Toast.makeText(activity, "Added to Play Last", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
         }
 
