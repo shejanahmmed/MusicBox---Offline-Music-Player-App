@@ -12,8 +12,8 @@ android {
         applicationId = "com.shejan.musicbox"
         minSdk = 24
         targetSdk = 36
-        versionCode = 22
-        versionName = "2.2.0"
+        versionCode = 23
+        versionName = "2.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -49,8 +49,6 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.exifinterface)
-    implementation(libs.navigation.fragment)
-    implementation(libs.navigation.ui)
 }
 
 tasks.register("copyMappingFile") {
