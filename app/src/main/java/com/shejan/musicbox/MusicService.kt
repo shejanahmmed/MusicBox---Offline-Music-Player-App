@@ -37,14 +37,20 @@ import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.core.content.edit
-import androidx.core.content.ContextCompat
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.media.AudioManager
-import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import java.util.Collections
+
+import androidx.media3.common.AudioAttributes as Media3AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,9 +60,8 @@ class MusicService : Service() {
 
     private lateinit var mediaSession: MediaSessionCompat
 
-    private var mediaPlayer: MediaPlayer? = null
+    private var exoPlayer: ExoPlayer? = null
     private var placeholderBitmap: Bitmap? = null
-    private var mediaPlayerState = STATE_IDLE
     private var playWhenPrepared = true
     
     // Sleep Timer
@@ -64,40 +69,100 @@ class MusicService : Service() {
     private var sleepTimerRunnable: Runnable? = null
     var sleepTimerEndTime: Long = 0L
 
-    // Audio Focus
+    // Audio Focus & Volume Fading
     private lateinit var audioManager: AudioManager
     private var audioFocusRequest: android.media.AudioFocusRequest? = null
     private var resumeOnFocusGain = false
+    private var volumeAnimator: android.animation.ValueAnimator? = null
+    private var currentVolume: Float = 1.0f
+
+    private var isNoisyReceiverRegistered = false
+    private val noisyReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
+                if (isPlaying()) {
+                    pauseWithFade(durationMs = 150L)
+                }
+            }
+        }
+    }
+
+    private fun registerNoisyReceiver() {
+        if (!isNoisyReceiverRegistered) {
+            try {
+                registerReceiver(noisyReceiver, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY))
+                isNoisyReceiverRegistered = true
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun unregisterNoisyReceiver() {
+        if (isNoisyReceiverRegistered) {
+            try {
+                unregisterReceiver(noisyReceiver)
+                isNoisyReceiverRegistered = false
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun setVolume(vol: Float) {
+        currentVolume = vol.coerceIn(0.0f, 1.0f)
+        try {
+            exoPlayer?.volume = currentVolume
+        } catch (_: Exception) {}
+    }
+
+    fun fadeVolume(targetVolume: Float, durationMs: Long, onComplete: (() -> Unit)? = null) {
+        volumeAnimator?.cancel()
+        val clampedTarget = targetVolume.coerceIn(0.0f, 1.0f)
+        val startVol = currentVolume
+        if (Math.abs(startVol - clampedTarget) < 0.01f) {
+            setVolume(clampedTarget)
+            onComplete?.invoke()
+            return
+        }
+
+        volumeAnimator = android.animation.ValueAnimator.ofFloat(startVol, clampedTarget).apply {
+            duration = durationMs
+            interpolator = android.view.animation.DecelerateInterpolator()
+            addUpdateListener { animator ->
+                val v = animator.animatedValue as Float
+                setVolume(v)
+            }
+            addListener(object : android.animation.AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    setVolume(clampedTarget)
+                    onComplete?.invoke()
+                }
+            })
+            start()
+        }
+    }
     
     private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (resumeOnFocusGain) {
                     resumeOnFocusGain = false
-                    if (!isPlaying()) play() // Resume
+                    if (!isPlaying()) play() // Resume with fade
+                } else {
+                    fadeVolume(1.0f, 250L) // Restore volume smoothly
                 }
-                setVolume(1.0f) // Restore volume
             }
             AudioManager.AUDIOFOCUS_LOSS -> {
                 resumeOnFocusGain = false
-                if (isPlaying()) pause(abandonFocus = true)
+                if (isPlaying()) pauseWithFade(150L, abandonFocus = true)
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                 if (isPlaying()) {
                     resumeOnFocusGain = true
-                    pause(abandonFocus = false)
+                    pauseWithFade(150L, abandonFocus = false)
                 }
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                if (isPlaying()) setVolume(0.2f)
+                if (isPlaying()) fadeVolume(0.2f, 200L)
             }
         }
-    }
-    
-    private fun setVolume(vol: Float) {
-        try {
-            mediaPlayer?.setVolume(vol, vol)
-        } catch (_: Exception) {}
     }
 
     private fun requestAudioFocus(): Boolean {
@@ -301,38 +366,57 @@ class MusicService : Service() {
         }
     }
 
-    private val noisyReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
-                if (isPlaying()) {
-                    pause()
+    private val playerListener = object : Player.Listener {
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            when (playbackState) {
+                Player.STATE_READY -> {
+                    updateNotification()
+                    updateMediaSessionMetadata()
+                    updateMediaSessionState()
+                    saveState()
+                    
+                    val track = getCurrentTrack()
+                    if (track != null) {
+                        sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
+                            putExtra("IS_PLAYING", isPlaying())
+                            putExtra("TITLE", track.title)
+                            putExtra("ARTIST", track.artist)
+                        })
+                        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
+                    }
                 }
+                Player.STATE_ENDED -> {
+                    saveState()
+                    if (repeatMode == REPEAT_ONE) {
+                        playTrack(currentIndex)
+                    } else {
+                        playNext(autoPlay = true)
+                    }
+                }
+                Player.STATE_BUFFERING -> {}
+                Player.STATE_IDLE -> {}
             }
         }
-    }
 
-    private val standardPreparedListener = MediaPlayer.OnPreparedListener { mp ->
-        mediaPlayerState = STATE_PREPARED
-        if (playWhenPrepared) {
-            if (requestAudioFocus()) {
-                mp.start()
-                mediaPlayerState = STATE_STARTED
-            }
-        }
-        updateNotification()
-        updateMediaSessionMetadata()
-        updateMediaSessionState()
-        saveState() // Save state when track starts
-        
-        // Broadcast Change
-        val track = getCurrentTrack()
-        if (track != null) {
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            updateNotification()
+            updateMediaSessionState()
             sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
-                putExtra("IS_PLAYING", playWhenPrepared)
-                putExtra("TITLE", track.title)
-                putExtra("ARTIST", track.artist)
+                putExtra("IS_PLAYING", isPlaying)
             })
             BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
+        }
+
+        override fun onPlayerError(error: PlaybackException) {
+            android.util.Log.e("MusicService", "ExoPlayer Error: ${error.errorCodeName} - ${error.message}", error)
+        }
+
+        override fun onAudioSessionIdChanged(audioSessionId: Int) {
+            if (audioSessionId != 0 && audioSessionId != android.media.audiofx.AudioEffect.ERROR_BAD_VALUE) {
+                try {
+                    EqManager.attach(applicationContext, audioSessionId)
+                } catch (_: Exception) {}
+            }
         }
     }
 
@@ -416,69 +500,48 @@ class MusicService : Service() {
 
             override fun onSeekTo(pos: Long) {
                 try {
-                    mediaPlayer?.seekTo(pos.toInt())
+                    seekTo(pos.toInt())
                     updateMediaSessionState()
                 } catch (_: Exception) {}
             }
         })
         mediaSession.isActive = true
-
-        // Register Noisy Receiver
-        val filter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
-        ContextCompat.registerReceiver(this, noisyReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
         
         // Register Deletion Receiver
         val deleteFilter = IntentFilter("com.shejan.musicbox.TRACK_DELETED")
-        ContextCompat.registerReceiver(this, deletionReceiver, deleteFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        androidx.core.content.ContextCompat.registerReceiver(this, deletionReceiver, deleteFilter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED)
 
-        // Initialize MediaPlayer
-        initMediaPlayer()
+        // Initialize ExoPlayer
+        initExoPlayer()
         
         // Restore State (Queue and Position)
         restoreState()
         BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
     }
 
-    private fun initMediaPlayer() {
-        mediaPlayer?.release()
-        mediaPlayer = MediaPlayer().apply {
-            setWakeMode(applicationContext, android.os.PowerManager.PARTIAL_WAKE_LOCK)
-            setOnCompletionListener {
-                mediaPlayerState = STATE_PLAYBACK_COMPLETED
-                saveState() // Save state on completion (track change)
-                if (repeatMode == REPEAT_ONE) {
-                    playTrack(currentIndex)
-                } else {
-                    playNext(autoPlay = true)
-                }
+    private fun initExoPlayer() {
+        exoPlayer?.release()
+        val audioAttributes = Media3AudioAttributes.Builder()
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+            .setUsage(C.USAGE_MEDIA)
+            .build()
+
+        exoPlayer = ExoPlayer.Builder(applicationContext)
+            .setAudioAttributes(audioAttributes, false)
+            .setWakeMode(C.WAKE_MODE_LOCAL)
+            .setHandleAudioBecomingNoisy(false)
+            .build().apply {
+                volume = currentVolume
+                addListener(playerListener)
             }
-            setOnPreparedListener(standardPreparedListener)
-            setOnErrorListener { mp, what, extra ->
-                mediaPlayerState = STATE_ERROR
-                android.util.Log.e("MusicService", "MediaPlayer Error in initMediaPlayer: what=$what extra=$extra")
-                if (what != -38) {
-                    mp.reset()
-                    mediaPlayerState = STATE_IDLE
-                    android.os.Handler(android.os.Looper.getMainLooper()).post {
-                        android.widget.Toast.makeText(applicationContext, "Error playing track: what=$what extra=$extra", android.widget.Toast.LENGTH_LONG).show()
-                    }
-                    pause(abandonFocus = false)
-                }
-                true // Return true to indicate error was handled, preventing onCompletionListener from triggering
-            }
-        }
-        mediaPlayerState = STATE_IDLE
         attachEqualizer()
     }
 
     private fun attachEqualizer() {
-        val mp = mediaPlayer
-        if (mp != null) {
+        val sessionId = getAudioSessionId()
+        if (sessionId != 0 && sessionId != android.media.audiofx.AudioEffect.ERROR_BAD_VALUE) {
             try {
-                val sessionId = mp.audioSessionId
-                if (sessionId != android.media.audiofx.AudioEffect.ERROR_BAD_VALUE && sessionId != 0) {
-                    EqManager.attach(applicationContext, sessionId)
-                }
+                EqManager.attach(applicationContext, sessionId)
             } catch (_: Exception) {}
         }
     }
@@ -585,10 +648,9 @@ class MusicService : Service() {
             BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
             
             try {
-                // Completely release and recreate the MediaPlayer to avoid Error -38 (Invalid State)
-                mediaPlayer?.release()
-                mediaPlayer = null
-                mediaPlayerState = STATE_END
+                if (exoPlayer == null) {
+                    initExoPlayer()
+                }
                 
                 val sourceUri = if (track.uri.startsWith("content://") || track.uri.startsWith("http://") || track.uri.startsWith("https://")) {
                     track.uri.toUri()
@@ -604,44 +666,24 @@ class MusicService : Service() {
                 
                 android.util.Log.d("MusicService", "Attempting to play URI: $sourceUri")
                 
-                mediaPlayer = android.media.MediaPlayer().apply {
-                    setWakeMode(applicationContext, android.os.PowerManager.PARTIAL_WAKE_LOCK)
-                    setAudioAttributes(
-                        android.media.AudioAttributes.Builder()
-                            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
-                            .build()
-                    )
+                val mediaItem = MediaItem.fromUri(sourceUri)
+                exoPlayer?.let { player ->
+                    player.setMediaItem(mediaItem)
+                    player.prepare()
                     
-                    setOnCompletionListener {
-                        mediaPlayerState = STATE_PLAYBACK_COMPLETED
-                        saveState()
-                        if (repeatMode == REPEAT_ONE) {
-                            playTrack(currentIndex)
-                        } else {
-                            playNext(autoPlay = true)
-                        }
+                    if (requestAudioFocus()) {
+                        registerNoisyReceiver()
+                        setVolume(0.0f)
+                        player.play()
+                        fadeVolume(1.0f, 180L)
+                    } else {
+                        player.pause()
                     }
-                    setOnPreparedListener(standardPreparedListener)
-                    setOnErrorListener { mp, what, extra ->
-                        mediaPlayerState = STATE_ERROR
-                        android.util.Log.e("MusicService", "MediaPlayer Error: what=$what extra=$extra URI=$sourceUri")
-                        // Many files (especially on newer Android versions) throw benign -38 errors but still play fine.
-                        // We log it, but do not show a Toast to avoid bothering the user.
-                        true // Return true to indicate error was handled
-                    }
-                    
-                    setDataSource(applicationContext, sourceUri)
-                    mediaPlayerState = STATE_INITIALIZED
-                    prepareAsync()
-                    mediaPlayerState = STATE_PREPARING
                 }
                 attachEqualizer()
                 
             } catch (e: Exception) {
                 e.printStackTrace()
-                mediaPlayerState = STATE_ERROR
-                // If it still fails, it's likely a missing file or hard crash
                 android.util.Log.e("MusicService", "Exception in playTrack: ${e.message}", e)
                 android.os.Handler(android.os.Looper.getMainLooper()).post {
                     android.widget.Toast.makeText(applicationContext, "Failed to load media file.", android.widget.Toast.LENGTH_LONG).show()
@@ -657,67 +699,65 @@ class MusicService : Service() {
                 androidx.core.content.ContextCompat.startForegroundService(applicationContext, Intent(applicationContext, MusicService::class.java))
             } catch (_: Exception) {}
             
-            mediaPlayer?.let {
-                if (mediaPlayerState == STATE_PREPARED || mediaPlayerState == STATE_PAUSED || mediaPlayerState == STATE_PLAYBACK_COMPLETED || mediaPlayerState == STATE_STARTED) {
-                    val isPlayingNative = try { it.isPlaying } catch (_: Exception) { false }
-                    if (!isPlayingNative) {
-                        if (!requestAudioFocus()) return@let
-                        
-                        it.start()
-                        mediaPlayerState = STATE_STARTED
-                        setVolume(1.0f) // Ensure full volume on start
-                        updateNotification()
-                        updateMediaSessionState()
-                        sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
-                        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
-                    }
-                } else if (mediaPlayerState == STATE_PREPARING) {
-                    playWhenPrepared = true
-                    sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
-                    BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
-                } else {
+            if (exoPlayer == null) {
+                initExoPlayer()
+            }
+            
+            exoPlayer?.let { player ->
+                if (player.playbackState == Player.STATE_IDLE && player.mediaItemCount == 0) {
                     val currentIdx = currentIndex
                     if (currentIdx != -1) {
                         playTrack(currentIdx)
-                    } else {
-                        initMediaPlayer()
                     }
+                    return
+                }
+                
+                if (!isPlaying()) {
+                    if (!requestAudioFocus()) return@let
+                    
+                    registerNoisyReceiver()
+                    setVolume(0.0f) // Start from silence to prevent pop
+                    player.play()
+                    fadeVolume(1.0f, 180L) // Smooth fade-in
+                    updateNotification()
+                    updateMediaSessionState()
+                    sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
+                    BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
                 }
             }
-        } catch (_: IllegalStateException) {
-            val currentIdx = currentIndex
-            if (currentIdx != -1) {
-                playTrack(currentIdx)
-            } else {
-                initMediaPlayer()
-            }
+        } catch (e: Exception) {
+            android.util.Log.e("MusicService", "Exception in play: ${e.message}", e)
         }
     }
 
     fun pause(abandonFocus: Boolean = true) {
         if (abandonFocus) abandonAudioFocus()
+        unregisterNoisyReceiver()
         
         try {
-            mediaPlayer?.let {
-                if (mediaPlayerState == STATE_STARTED) {
-                    val isPlayingNative = try { it.isPlaying } catch (_: Exception) { false }
-                    if (isPlayingNative) {
-                        it.pause()
-                        mediaPlayerState = STATE_PAUSED
-                        updateNotification()
-                        updateMediaSessionState()
-                        saveState() // Save specific position on pause
-                        sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
-                        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
-                    }
-                } else if (mediaPlayerState == STATE_PREPARING) {
-                    playWhenPrepared = false
+            exoPlayer?.let { player ->
+                if (player.isPlaying || player.playWhenReady) {
+                    player.pause()
+                    updateNotification()
+                    updateMediaSessionState()
+                    saveState() // Save specific position on pause
                     sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", false) })
                     BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
                 }
             }
-        } catch (_: IllegalStateException) {
-            initMediaPlayer()
+        } catch (e: Exception) {
+            android.util.Log.e("MusicService", "Exception in pause: ${e.message}", e)
+        }
+    }
+
+    fun pauseWithFade(durationMs: Long = 150L, abandonFocus: Boolean = true) {
+        if (!isPlaying()) {
+            pause(abandonFocus)
+            return
+        }
+        fadeVolume(0.0f, durationMs) {
+            pause(abandonFocus)
+            setVolume(1.0f) // reset baseline volume for next playback session
         }
     }
     
@@ -734,18 +774,13 @@ class MusicService : Service() {
                     // If Repeat One, Next button still goes next (wrapping), unlike auto-completion
                     playTrack(0)
                 } else {
-                    // Stop or go to start paused?
-                    // Typically 'Next' at end wraps to start or stops. 
-                    // If autoPlay (natural end), we stop.
-                    // If forced by user (Next Button), we wrap? Let's wrap to 0.
                     if (!autoPlay) {
                          playTrack(0)
                     } else {
                          // Stop playback
                          pause()
-                         mediaPlayer?.seekTo(0)
+                         exoPlayer?.seekTo(0)
                          currentIndex = 0 // Reset to 0 but don't play
-                         // We might want to just stop
                     }
                 }
             }
@@ -940,7 +975,7 @@ class MusicService : Service() {
     }
 
     fun isPlaying(): Boolean {
-        return mediaPlayerState == STATE_STARTED
+        return exoPlayer?.isPlaying ?: false
     }
     
     fun getCurrentTrack(): Track? {
@@ -953,16 +988,14 @@ class MusicService : Service() {
     }
 
     fun getDuration(): Int {
-        return if (mediaPlayerState >= STATE_PREPARED && mediaPlayerState <= STATE_PLAYBACK_COMPLETED) {
-            try { mediaPlayer?.duration ?: 0 } catch (_: Exception) { 0 }
-        } else {
-            0
-        }
+        val dur = exoPlayer?.duration ?: 0L
+        return if (dur > 0 && dur != C.TIME_UNSET) dur.toInt() else 0
     }
 
     fun getCurrentPosition(): Int {
-        return if (mediaPlayerState >= STATE_PREPARED && mediaPlayerState <= STATE_PLAYBACK_COMPLETED) {
-            try { mediaPlayer?.currentPosition ?: 0 } catch (_: Exception) { 0 }
+        val pos = exoPlayer?.currentPosition ?: 0L
+        return if (pos >= 0) {
+            pos.toInt()
         } else {
             val prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
             prefs.getInt("current_position", 0)
@@ -970,19 +1003,38 @@ class MusicService : Service() {
     }
 
     fun seekTo(position: Int) {
-        if (mediaPlayerState >= STATE_PREPARED && mediaPlayerState <= STATE_PLAYBACK_COMPLETED) {
-            try { 
-                mediaPlayer?.seekTo(position)
-                BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
-            } catch (_: Exception) {}
-        } else {
+        try { 
+            exoPlayer?.seekTo(position.toLong())
+            BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
+        } catch (_: Exception) {
             getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit().putInt("current_position", position).apply()
             BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
         }
     }
 
     fun getAudioSessionId(): Int {
-        return try { mediaPlayer?.audioSessionId ?: 0 } catch (_: Exception) { 0 }
+        return try { exoPlayer?.audioSessionId ?: 0 } catch (_: Exception) { 0 }
+    }
+
+    // High-Resolution DSP Playback Parameters
+    fun setPlaybackSpeed(speed: Float) {
+        val clampedSpeed = speed.coerceIn(0.25f, 3.0f)
+        val currentPitch = exoPlayer?.playbackParameters?.pitch ?: 1.0f
+        exoPlayer?.playbackParameters = PlaybackParameters(clampedSpeed, currentPitch)
+    }
+
+    fun setPlaybackPitch(pitch: Float) {
+        val clampedPitch = pitch.coerceIn(0.25f, 2.0f)
+        val currentSpeed = exoPlayer?.playbackParameters?.speed ?: 1.0f
+        exoPlayer?.playbackParameters = PlaybackParameters(currentSpeed, clampedPitch)
+    }
+
+    fun getPlaybackSpeed(): Float {
+        return exoPlayer?.playbackParameters?.speed ?: 1.0f
+    }
+
+    fun getPlaybackPitch(): Float {
+        return exoPlayer?.playbackParameters?.pitch ?: 1.0f
     }
 
     // Scope for UI/Notification updates
@@ -1079,6 +1131,8 @@ class MusicService : Service() {
         super.onDestroy()
         instance = null
         uiScope.cancel() // Cancel all pending UI updates
+        volumeAnimator?.cancel()
+        unregisterNoisyReceiver()
         cancelSleepTimer() // Clean up runnables
         sleepTimerHandler.removeCallbacksAndMessages(null) // Detailed cleanup
         abandonAudioFocus()
@@ -1087,17 +1141,18 @@ class MusicService : Service() {
         saveStateExecutor.shutdown() // Prevent thread leaks
         
         try {
-            unregisterReceiver(noisyReceiver)
-        } catch (_: Exception) { }
-        
-        try {
             unregisterReceiver(deletionReceiver)
         } catch (_: Exception) { }
         
-        mediaPlayer?.release()
-        mediaPlayer = null
+        exoPlayer?.removeListener(playerListener)
+        exoPlayer?.release()
+        exoPlayer = null
         EqManager.release()
-        mediaSession.release()
+        try {
+            if (::mediaSession.isInitialized) {
+                mediaSession.release()
+            }
+        } catch (_: Exception) { }
         
         // Final widget update to reflect stopped/paused state
         BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
@@ -1288,27 +1343,40 @@ class MusicService : Service() {
             
             // Init player but DO NOT START
             try {
-                mediaPlayer?.reset()
-                currentTrackUri?.let { uri ->
-                    mediaPlayer?.setDataSource(applicationContext, uri.toUri())
-                    mediaPlayer?.setOnPreparedListener { 
-                        it.seekTo(pos)
-                        updateNotification()
-                        updateMediaSessionMetadata()
-                        updateMediaSessionState()
-                        BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
-                        // Re-set listener for normal playback
-                        it.setOnPreparedListener(standardPreparedListener)
-                    }
-                    mediaPlayer?.prepareAsync()
+                if (exoPlayer == null) {
+                    initExoPlayer()
                 }
+                
+                val sourceUri = if (track.uri.startsWith("content://") || track.uri.startsWith("http://") || track.uri.startsWith("https://")) {
+                    track.uri.toUri()
+                } else if (track.id > 0) {
+                    if (track.artist == "Video") {
+                        android.content.ContentUris.withAppendedId(android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI, track.id)
+                    } else {
+                        android.content.ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, track.id)
+                    }
+                } else {
+                    android.net.Uri.fromFile(java.io.File(track.uri))
+                }
+                
+                val mediaItem = MediaItem.fromUri(sourceUri)
+                exoPlayer?.let { player ->
+                    player.setMediaItem(mediaItem)
+                    player.prepare()
+                    player.seekTo(pos.toLong())
+                    player.playWhenReady = false
+                }
+                updateNotification()
+                updateMediaSessionMetadata()
+                updateMediaSessionState()
+                BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
             } catch (e: Exception) { e.printStackTrace() }
         }
     }
 
     private fun updateMediaSessionState() {
         val state = if (isPlaying()) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
-        val position = try { mediaPlayer?.currentPosition?.toLong() ?: 0L } catch (_: Exception) { 0L }
+        val position = try { exoPlayer?.currentPosition ?: 0L } catch (_: Exception) { 0L }
         
         val stateBuilder = PlaybackStateCompat.Builder()
             .setActions(
@@ -1352,7 +1420,10 @@ class MusicService : Service() {
     
     private fun updateMediaSessionMetadata() {
         val track = getCurrentTrack() ?: return
-        val duration = try { mediaPlayer?.duration?.toLong() ?: 0L } catch (_: Exception) { 0L }
+        val duration = try {
+            val dur = exoPlayer?.duration ?: 0L
+            if (dur > 0 && dur != C.TIME_UNSET) dur else 0L
+        } catch (_: Exception) { 0L }
         
         // Use placeholder for metadata too, or load art in background. 
         // For metadata it's okay to try a quick load, but avoiding blocking is key.
