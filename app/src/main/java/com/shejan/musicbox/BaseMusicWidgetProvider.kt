@@ -159,21 +159,23 @@ abstract class BaseMusicWidgetProvider(private val isLight: Boolean) : AppWidget
         val playIconRes = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
         views.setImageViewResource(R.id.widget_btn_play, playIconRes)
 
-        // Equalizer level meter bars (dynamic heights)
-        if (isPlaying) {
-            val h1 = (4..12).random().toFloat()
-            val h2 = (10..18).random().toFloat()
-            val h3 = (6..14).random().toFloat()
-            val h4 = (8..16).random().toFloat()
-            views.setViewLayoutHeight(R.id.widget_bar_1, h1, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_2, h2, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_3, h3, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_4, h4, android.util.TypedValue.COMPLEX_UNIT_DIP)
-        } else {
-            views.setViewLayoutHeight(R.id.widget_bar_1, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_2, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_3, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
-            views.setViewLayoutHeight(R.id.widget_bar_4, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
+        // Equalizer level meter bars (dynamic heights on Android 12+ / API 31+)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            if (isPlaying) {
+                val h1 = (4..12).random().toFloat()
+                val h2 = (10..18).random().toFloat()
+                val h3 = (6..14).random().toFloat()
+                val h4 = (8..16).random().toFloat()
+                views.setViewLayoutHeight(R.id.widget_bar_1, h1, android.util.TypedValue.COMPLEX_UNIT_DIP)
+                views.setViewLayoutHeight(R.id.widget_bar_2, h2, android.util.TypedValue.COMPLEX_UNIT_DIP)
+                views.setViewLayoutHeight(R.id.widget_bar_3, h3, android.util.TypedValue.COMPLEX_UNIT_DIP)
+                views.setViewLayoutHeight(R.id.widget_bar_4, h4, android.util.TypedValue.COMPLEX_UNIT_DIP)
+            } else {
+                views.setViewLayoutHeight(R.id.widget_bar_1, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
+                views.setViewLayoutHeight(R.id.widget_bar_2, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
+                views.setViewLayoutHeight(R.id.widget_bar_3, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
+                views.setViewLayoutHeight(R.id.widget_bar_4, 3f, android.util.TypedValue.COMPLEX_UNIT_DIP)
+            }
         }
 
         val playIntent = Intent(context, this::class.java).apply {
