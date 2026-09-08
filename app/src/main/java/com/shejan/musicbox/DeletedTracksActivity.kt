@@ -65,7 +65,6 @@ class DeletedTracksActivity : AppCompatActivity() {
 
     private fun loadDeletedTracks() {
         lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            val list = mutableListOf<Track>()
             val hiddenUris = HiddenTracksManager.getHiddenTracks(this@DeletedTracksActivity)
             
             if (hiddenUris.isEmpty()) {
@@ -75,80 +74,7 @@ class DeletedTracksActivity : AppCompatActivity() {
                 return@launch
             }
     
-            // ── 1. Query MediaStore.Audio for hidden audio tracks ────────────────
-            try {
-                @Suppress("DEPRECATION")
-                contentResolver.query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    arrayOf(
-                        MediaStore.Audio.Media._ID,
-                        MediaStore.Audio.Media.TITLE,
-                        MediaStore.Audio.Media.ARTIST,
-                        MediaStore.Audio.Media.ALBUM,
-                        MediaStore.Audio.Media.DURATION,
-                        MediaStore.Audio.Media.DATA,
-                        MediaStore.Audio.Media.ALBUM_ID
-                    ),
-                    "${MediaStore.Audio.Media.IS_MUSIC} != 0",
-                    null,
-                    null
-                )?.use { cursor ->
-                    val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                    val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-                    val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                    val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-                    val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                    val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
-    
-                    while (cursor.moveToNext()) {
-                        val path = cursor.getString(dataColumn)
-                        if (hiddenUris.contains(path)) {
-                            list.add(Track(
-                                id = cursor.getLong(idColumn),
-                                title = cursor.getString(titleColumn) ?: "Unknown",
-                                artist = cursor.getString(artistColumn) ?: "Unknown Artist",
-                                album = cursor.getString(albumColumn) ?: "Unknown Album",
-                                uri = path,
-                                albumId = cursor.getLong(albumIdColumn)
-                            ))
-                        }
-                    }
-                }
-            } catch (e: Exception) { e.printStackTrace() }
-
-            // ── 2. Query MediaStore.Video for hidden video files ─────────────────
-            try {
-                @Suppress("DEPRECATION")
-                contentResolver.query(
-                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                    arrayOf(
-                        MediaStore.Video.Media._ID,
-                        MediaStore.Video.Media.TITLE,
-                        MediaStore.Video.Media.DATA
-                    ),
-                    null,
-                    null,
-                    null
-                )?.use { cursor ->
-                    val idCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
-                    val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.TITLE)
-                    val dataCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
-
-                    while (cursor.moveToNext()) {
-                        val path = cursor.getString(dataCol) ?: continue
-                        if (hiddenUris.contains(path)) {
-                            list.add(Track(
-                                id = cursor.getLong(idCol),
-                                title = cursor.getString(titleCol) ?: "Unknown Video",
-                                artist = "Video",
-                                album = null,
-                                uri = path,
-                                albumId = -1L
-                            ))
-                        }
-                    }
-                }
-            } catch (e: Exception) { e.printStackTrace() }
+            val list = MusicRepository.getHiddenTracks(this@DeletedTracksActivity)
             
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                 deletedTracks.clear()

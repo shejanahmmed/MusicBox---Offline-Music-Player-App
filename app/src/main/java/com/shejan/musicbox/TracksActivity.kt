@@ -462,16 +462,15 @@ class TracksActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val appContext = applicationContext
             val trackList: List<Track> = if (showFavoritesOnly) {
-                 val favorites = FavoritesManager.getFavorites(appContext)
-                 getTracks(appContext, null, null).filter { favorites.contains(it.uri) }
+                 MusicRepository.getFavorites(appContext, sortColumn, isAscending)
             } else if (playlistId != -1L) {
-                 getPlaylistTracks(appContext, playlistId)
+                 MusicRepository.getPlaylistTracks(appContext, playlistId)
             } else if (artistName != null) {
-                 getTracks(appContext, "${MediaStore.Audio.Media.ARTIST} = ?", arrayOf(artistName))
+                 MusicRepository.getTracks(appContext, "${MediaStore.Audio.Media.ARTIST} = ?", arrayOf(artistName), sortColumn, isAscending)
             } else if (albumName != null) {
-                 getTracks(appContext, "${MediaStore.Audio.Media.ALBUM} = ?", arrayOf(albumName))
+                 MusicRepository.getTracks(appContext, "${MediaStore.Audio.Media.ALBUM} = ?", arrayOf(albumName), sortColumn, isAscending)
             } else {
-                 getTracks(appContext, null, null)
+                 MusicRepository.getTracks(appContext, null, null, sortColumn, isAscending)
             }
             
             withContext(Dispatchers.Main) {
@@ -571,83 +570,6 @@ class TracksActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun getTracks(context: Context, selection: String?, selectionArgs: Array<String>?): List<Track> {
-        val list = mutableListOf<Track>()
-        try {
-             val projection = arrayOf(
-                MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.DATA,
-                MediaStore.Audio.Media.DURATION,
-                MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.ALBUM_ID
-             )
-             val prefs = context.getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
-             val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
-             val minDurationMillis = minDurationSec * 1000
-             
-             // Base criteria: is_music and minimum duration
-             val baseSelection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
-             val finalSelection = if (selection != null) "($baseSelection) AND ($selection)" else baseSelection
-             
-             val order = if (isAscending) "ASC" else "DESC"
-             val sortOrder = if (sortColumn == "custom_preference") {
-                 "${MediaStore.Audio.Media.TITLE} ASC"
-             } else {
-                 "$sortColumn $order"
-             }
-
-             val cursor = context.contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                finalSelection,
-                selectionArgs,
-                sortOrder
-             )
-
-             cursor?.use {
-                 val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                 val titleColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-                 val artistColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                 val dataColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                 val albumColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-                 val albumIdColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
-
-                 while (it.moveToNext()) {
-                     val id = it.getLong(idColumn)
-                     val title = it.getString(titleColumn) ?: "Unknown"
-                     val artist = it.getString(artistColumn) ?: "Unknown Artist"
-                     val path = it.getString(dataColumn) ?: continue
-                     val album = it.getString(albumColumn)
-                     val albumId = it.getLong(albumIdColumn)
-                     
-                     if (!HiddenTracksManager.isHidden(context, path) && 
-                         !path.lowercase().contains("ringtone") && 
-                         !path.lowercase().contains("notification")) {
-                        list.add(TrackMetadataManager.applyMetadata(context, Track(id, title, artist, path, album, albumId)))
-                     }
-                 }
-             }
-        } catch (e: Exception) { e.printStackTrace() }
-        if (sortColumn == "custom_preference") {
-            val customOrder = CustomSortHelper.getCustomOrder(context)
-            var sortedList = CustomSortHelper.sortTracksCustom(list, customOrder)
-            if (!isAscending) {
-                sortedList = sortedList.reversed()
-            }
-            return sortedList
-        }
-        return list
-    }
-
-    private fun getPlaylistTracks(context: Context, playlistId: Long): List<Track> {
-        val playlist = AppPlaylistManager.getPlaylist(context, playlistId) ?: return emptyList()
-        val allTracks = getTracks(context, null, null)
-        val trackMap = allTracks.associateBy { it.uri }
-        return playlist.trackPaths.mapNotNull { trackMap[it] }
     }
 
     @SuppressLint("InflateParams")

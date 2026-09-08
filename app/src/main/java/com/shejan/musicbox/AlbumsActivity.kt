@@ -134,54 +134,7 @@ class AlbumsActivity : AppCompatActivity() {
         
         lifecycleScope.launch(Dispatchers.IO) {
             val appContext = applicationContext
-            val albumMap = mutableMapOf<Long, Album>()
-            try {
-                val projection = arrayOf(
-                    MediaStore.Audio.Media.ALBUM_ID,
-                    MediaStore.Audio.Media.ALBUM,
-                    MediaStore.Audio.Media.ARTIST,
-                    MediaStore.Audio.Media.DATA
-                )
-                
-                // Querying Media to get individual tracks so we can filter hidden ones
-                val cursor = appContext.contentResolver.query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    projection,
-                    "${MediaStore.Audio.Media.IS_MUSIC} != 0",
-                    null,
-                    "${MediaStore.Audio.Media.ALBUM} ASC"
-                )
-    
-                cursor?.use {
-                    val idCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
-                    val albumCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-                    val artistCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                    val pathCol = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                    
-                    while (it.moveToNext()) {
-                        val path = it.getString(pathCol)
-                        // Check if this specific track is hidden
-                        if (HiddenTracksManager.isHidden(appContext, path)) continue
-                        
-                        val albumId = it.getLong(idCol)
-                        
-                        // If we haven't seen this album yet, add it
-                        if (!albumMap.containsKey(albumId)) {
-                            val title = it.getString(albumCol)
-                            val artist = it.getString(artistCol)
-                            // Use the path of the first track found as the representative URI for artwork
-                            albumMap[albumId] = Album(albumId, title, artist, path)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@AlbumsActivity, "Error loading albums", Toast.LENGTH_SHORT).show()
-                }
-            }
-            
-            val list = albumMap.values.toList().sortedBy { it.title }
+            val list = MusicRepository.getAlbums(appContext)
             
             withContext(Dispatchers.Main) {
                 // Update Count

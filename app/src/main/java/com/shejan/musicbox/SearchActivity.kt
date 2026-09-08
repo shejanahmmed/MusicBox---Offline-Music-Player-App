@@ -119,55 +119,7 @@ class SearchActivity : AppCompatActivity() {
         val appContext = applicationContext
         // Run DB Query in Background
         lifecycleScope.launch(Dispatchers.IO) {
-            val tempList = mutableListOf<Track>()
-            try {
-                val projection = arrayOf(
-                    MediaStore.Audio.Media._ID,
-                    MediaStore.Audio.Media.TITLE,
-                    MediaStore.Audio.Media.ARTIST,
-                    MediaStore.Audio.Media.DATA,
-                    MediaStore.Audio.Media.DURATION,
-                    MediaStore.Audio.Media.ALBUM,
-                    MediaStore.Audio.Media.ALBUM_ID
-                )
-                val prefs = appContext.getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
-                val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
-                val minDurationMillis = minDurationSec * 1000
-             
-                val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
-             
-                val cursor = appContext.contentResolver.query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    projection,
-                    selection,
-                    null,
-                    "${MediaStore.Audio.Media.TITLE} ASC"
-                )
-
-                cursor?.use {
-                    val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                    val titleColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-                    val artistColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                    val dataColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                    val albumColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-                    val albumIdColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
-
-                    while (it.moveToNext()) {
-                        val id = it.getLong(idColumn)
-                        val title = it.getString(titleColumn) ?: "Unknown"
-                        val artist = it.getString(artistColumn) ?: "Unknown Artist"
-                        val path = it.getString(dataColumn) ?: continue
-                        val album = it.getString(albumColumn)
-                        val albumId = it.getLong(albumIdColumn)
-                     
-                        if (!HiddenTracksManager.isHidden(appContext, path) && 
-                            !path.lowercase().contains("ringtone") && 
-                            !path.lowercase().contains("notification")) {
-                            tempList.add(TrackMetadataManager.applyMetadata(appContext, Track(id, title, artist, path, album, albumId)))
-                        }
-                    }
-                }
-            } catch (e: Exception) { e.printStackTrace() }
+            val tempList = MusicRepository.getTracks(appContext)
             
             withContext(Dispatchers.Main) {
                 allTracks.clear()

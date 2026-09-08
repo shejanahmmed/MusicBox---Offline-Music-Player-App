@@ -340,101 +340,15 @@ class MainActivity : AppCompatActivity() {
         typeWriterEffect(greetingText, fullInfo)
     }
 
-    private fun getFavoriteCount(): Int {
-        val favorites = FavoritesManager.getFavorites(this)
-        if (favorites.isEmpty()) return 0
-
-        var count = 0
-        try {
-            val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
-            val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
-            val minDurationMillis = minDurationSec * 1000
-            
-            // Only query tracks that match our duration criteria
-            val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= $minDurationMillis"
-            
-            contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Audio.Media.DATA), // valid column
-                selection,
-                null, 
-                null
-            )?.use { cursor ->
-                val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                while (cursor.moveToNext()) {
-                    val path = cursor.getString(dataColumn)
-                    // Check if: 
-                    // 1. It is in our favorites list
-                    // 2. It is NOT hidden
-                    // 3. It is not a ringtone/notification (extra safety)
-                    if (favorites.contains(path) && 
-                        !HiddenTracksManager.isHidden(this, path) && 
-                        !path.lowercase().contains("ringtone") && 
-                        !path.lowercase().contains("notification")) {
-                        count++
-                    }
-                }
-            }
-        } catch (_: Exception) { }
-        return count
-    }
+    private fun getFavoriteCount(): Int = MusicRepository.getFavoriteCount(this)
     
-    private fun getPlaylistCount(): Int {
-        return AppPlaylistManager.getAllPlaylists(this).size
-    }
+    private fun getPlaylistCount(): Int = AppPlaylistManager.getAllPlaylists(this).size
     
-    private fun getAlbumCount(): Int {
-        var count = 0
-        try {
-            contentResolver.query(
-                MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Audio.Albums._ID),
-                null, null, null
-            )?.use { count = it.count }
-        } catch (_: Exception) { }
-        return count
-    }
+    private fun getAlbumCount(): Int = MusicRepository.getAlbumCount(this)
     
-    private fun getArtistCount(): Int {
-        var count = 0
-        try {
-            contentResolver.query(
-                MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Audio.Artists._ID),
-                null, null, null
-            )?.use { count = it.count }
-        } catch (_: Exception) { }
-        return count
-    }
+    private fun getArtistCount(): Int = MusicRepository.getArtistCount(this)
     
-    private fun getTrackCount(): Int {
-        var count = 0
-        val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
-        val minDurationSec = prefs.getInt("min_track_duration_sec", 10)
-        val minDurationMs = minDurationSec * 1000
-        
-        try {
-            contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.DURATION),
-                "${MediaStore.Audio.Media.IS_MUSIC} != 0",
-                null, null
-            )?.use { cursor ->
-                val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
-                
-                while (cursor.moveToNext()) {
-                    val path = cursor.getString(dataColumn)
-                    val duration = cursor.getInt(durationColumn)
-                    
-                    if (!HiddenTracksManager.isHidden(this, path) && duration >= minDurationMs) {
-                        count++
-                    }
-                }
-            }
-        } catch (_: Exception) { }
-        return count
-    }
+    private fun getTrackCount(): Int = MusicRepository.getTrackCount(this)
 
     private fun typeWriterEffect(textView: TextView, text: String, delay: Long = 50) {
         // Cancel previous
