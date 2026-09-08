@@ -40,12 +40,15 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -56,6 +59,7 @@ import kotlinx.coroutines.withContext
 
 class VideosActivity : AppCompatActivity() {
 
+    private val viewModel: VideosViewModel by viewModels()
     private val requestCodePermission = 2001
 
     // Sort state
@@ -112,6 +116,20 @@ class VideosActivity : AppCompatActivity() {
         rvVideos.layoutManager = LinearLayoutManager(this)
         adapter = VideoAdapter(emptyList()) { video -> showVideoOptions(video) }
         rvVideos.adapter = adapter
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.videos.collect { videoList ->
+                    val countText = when (videoList.size) {
+                        0 -> "0 Videos"
+                        1 -> "1 Video"
+                        else -> "${videoList.size} Videos"
+                    }
+                    findViewById<TextView>(R.id.tv_videos_count)?.text = countText
+                    adapter?.updateData(videoList)
+                }
+            }
+        }
 
         if (!checkPermission()) {
             requestPermission()
@@ -207,29 +225,7 @@ class VideosActivity : AppCompatActivity() {
     // ── Data Loading ────────────────────────────────────────────────────────────
 
     private fun loadVideos() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val videoList = MusicRepository.getVideos(applicationContext, sortColumn, isAscending)
-            withContext(Dispatchers.Main) {
-                if (isFinishing || isDestroyed) return@withContext
-
-                val countText = when (videoList.size) {
-                    0 -> "0 Videos"
-                    1 -> "1 Video"
-                    else -> "${videoList.size} Videos"
-                }
-                findViewById<TextView>(R.id.tv_videos_count)?.text = countText
-
-                adapter?.updateData(videoList)
-
-                if (videoList.isEmpty()) {
-                    Toast.makeText(
-                        this@VideosActivity,
-                        "No videos found on device.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-        }
+        viewModel.loadVideos(this, sortColumn, isAscending)
     }
 
 

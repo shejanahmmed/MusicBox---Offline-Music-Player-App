@@ -19,35 +19,32 @@
 
 package com.shejan.musicbox
 
+import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 import android.content.Intent
 import android.os.Bundle
-import android.provider.MediaStore
-
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
-
 
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.IntentFilter
 import android.content.ServiceConnection
-
 import android.os.IBinder
 
 class ArtistsActivity : AppCompatActivity() {
 
+    private val viewModel: ArtistsViewModel by viewModels()
     private var localContentVersion: Long = 0
     private var musicService: MusicService? = null
     private var isBound = false
@@ -118,6 +115,7 @@ class ArtistsActivity : AppCompatActivity() {
             view.setPadding(view.paddingLeft, systemBars.top, view.paddingRight, systemBars.bottom)
             insets
         }
+        
         // Initialize RecyclerView to prevent "No adapter attached" error
         val rv = findViewById<RecyclerView>(R.id.rv_artists)
         rv.layoutManager = LinearLayoutManager(this)
@@ -127,32 +125,28 @@ class ArtistsActivity : AppCompatActivity() {
              startActivity(intent)
         }
 
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.artists.collect { list ->
+                    val countView = findViewById<android.widget.TextView>(R.id.tv_artists_count)
+                    val countText = if (list.size == 1) "1 Artist" else "${list.size} Artists"
+                    countView.text = countText
+            
+                    rv.adapter = ArtistAdapter(list) { artist ->
+                         val intent = Intent(this@ArtistsActivity, TracksActivity::class.java)
+                         intent.putExtra("ARTIST_NAME", artist.name)
+                         startActivity(intent)
+                    }
+                }
+            }
+        }
+
         loadArtists()
-        
     }
 
     private fun loadArtists() {
         localContentVersion = MusicUtils.contentVersion
-        
-        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            val list = MusicRepository.getArtists(applicationContext)
-            
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                // Update Count
-                val countView = findViewById<android.widget.TextView>(R.id.tv_artists_count)
-                val countText = if (list.size == 1) "1 Artist" else "${list.size} Artists"
-                countView.text = countText
-        
-                val rv = findViewById<RecyclerView>(R.id.rv_artists)
-                rv.layoutManager = LinearLayoutManager(this@ArtistsActivity)
-                rv.adapter = ArtistAdapter(list) { artist ->
-                     // On Click: Open TracksActivity with Artist Filter (implement later if needed, mostly requested UI for now)
-                     val intent = Intent(this@ArtistsActivity, TracksActivity::class.java)
-                     intent.putExtra("ARTIST_NAME", artist.name)
-                     startActivity(intent)
-                }
-            }
-        }
+        viewModel.loadArtists(this)
     }
 
     private fun setupNav() {
