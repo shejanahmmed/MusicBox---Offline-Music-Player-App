@@ -52,8 +52,11 @@ class SettingsActivity : AppCompatActivity() {
 
         setupClickListeners()
 
+        // Display dynamic version from BuildConfig
+        findViewById<android.widget.TextView>(R.id.tv_version_value)?.text = BuildConfig.VERSION_NAME
+
         // Navigation
-    setupNav()
+        setupNav()
     }
 
     private fun setupNav() {
