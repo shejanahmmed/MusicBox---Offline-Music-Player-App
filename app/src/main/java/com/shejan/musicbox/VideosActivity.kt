@@ -309,8 +309,12 @@ class VideosActivity : AppCompatActivity() {
         var currentTrack: Track? = null
         if (isBound && musicService != null) {
             currentTrack = musicService?.getCurrentTrack()
-        } else if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
-            currentTrack = MusicService.playlist[MusicService.currentIndex]
+        } else {
+            val queue = MusicService.getQueue()
+            val index = MusicService.currentIndex
+            if (index in queue.indices) {
+                currentTrack = queue[index]
+            }
         }
         adapter?.updateActiveVideo(currentTrack?.id ?: -1L)
     }

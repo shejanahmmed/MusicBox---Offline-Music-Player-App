@@ -255,55 +255,30 @@ class NowPlayingActivity : AppCompatActivity() {
                 val toPos = target.adapterPosition
                 if (fromPos == RecyclerView.NO_POSITION || toPos == RecyclerView.NO_POSITION || fromPos == toPos) return false
 
-                synchronized(MusicService.playlist) {
-                    if (fromPos in MusicService.playlist.indices && toPos in MusicService.playlist.indices) {
-                        val item = MusicService.playlist.removeAt(fromPos)
-                        MusicService.playlist.add(toPos, item)
-
-                        if (MusicService.currentIndex == fromPos) {
-                            MusicService.currentIndex = toPos
-                        } else if (fromPos < MusicService.currentIndex && toPos >= MusicService.currentIndex) {
-                            MusicService.currentIndex--
-                        } else if (fromPos > MusicService.currentIndex && toPos <= MusicService.currentIndex) {
-                            MusicService.currentIndex++
-                        }
-                    }
-                }
-
-                if (fromPos in playlistCopy.indices && toPos in playlistCopy.indices) {
+                val success = musicService?.moveQueueItem(fromPos, toPos) ?: MusicService.moveQueueItem(fromPos, toPos)
+                if (success && fromPos in playlistCopy.indices && toPos in playlistCopy.indices) {
                     val item = playlistCopy.removeAt(fromPos)
                     playlistCopy.add(toPos, item)
                     adapter.notifyItemMoved(fromPos, toPos)
                 }
-                return true
+                return success
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val pos = viewHolder.adapterPosition
                 if (pos == RecyclerView.NO_POSITION) return
 
-                val wasCurrent = (pos == MusicService.currentIndex)
+                val currentIdx = musicService?.getCurrentIndex() ?: MusicService.currentIndex
+                val wasCurrent = (pos == currentIdx)
+                val success = musicService?.removeQueueItem(pos) ?: MusicService.removeQueueItem(pos)
 
-                synchronized(MusicService.playlist) {
-                    if (pos in MusicService.playlist.indices) {
-                        MusicService.playlist.removeAt(pos)
-                        if (pos < MusicService.currentIndex) {
-                            MusicService.currentIndex--
-                        }
-                    }
-                }
-
-                if (pos in playlistCopy.indices) {
+                if (success && pos in playlistCopy.indices) {
                     playlistCopy.removeAt(pos)
                     adapter.notifyItemRemoved(pos)
                 }
 
                 if (wasCurrent) {
-                    if (MusicService.playlist.isNotEmpty()) {
-                        val nextIndex = MusicService.currentIndex.coerceIn(0, MusicService.playlist.size - 1)
-                        musicService?.playTrack(nextIndex)
-                    } else {
-                        musicService?.pause()
+                    if (playlistCopy.isEmpty()) {
                         dialog.dismiss()
                     }
                     updateUI()

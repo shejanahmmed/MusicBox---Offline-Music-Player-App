@@ -407,8 +407,12 @@ class TracksActivity : AppCompatActivity() {
         var track: Track? = null
         if (isBound && musicService != null) {
             track = musicService?.getCurrentTrack()
-        } else if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
-            track = MusicService.playlist[MusicService.currentIndex]
+        } else {
+            val queue = MusicService.getQueue()
+            val index = MusicService.currentIndex
+            if (index in queue.indices) {
+                track = queue[index]
+            }
         }
         
         val adapter = findViewById<RecyclerView>(R.id.rv_tracks).adapter as? TrackAdapter
@@ -539,8 +543,12 @@ class TracksActivity : AppCompatActivity() {
         var currentTrackId: Long = -1
         if (isBound && musicService != null) {
             currentTrackId = musicService?.getCurrentTrack()?.id ?: -1
-        } else if (MusicService.currentIndex != -1 && MusicService.playlist.isNotEmpty()) {
-            currentTrackId = MusicService.playlist[MusicService.currentIndex].id
+        } else {
+            val queue = MusicService.getQueue()
+            val index = MusicService.currentIndex
+            if (index in queue.indices) {
+                currentTrackId = queue[index].id
+            }
         }
 
         if (currentTrackId != -1L) {
