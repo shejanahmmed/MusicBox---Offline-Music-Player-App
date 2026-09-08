@@ -46,10 +46,16 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowCompat
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+
+    private val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -109,7 +115,6 @@ class MainActivity : AppCompatActivity() {
 
         // Greeting loaded in onResume
 
-
         // Helper to setup Nav clicks
         NavUtils.setupNavigation(this, R.id.nav_home)
 
@@ -121,102 +126,82 @@ class MainActivity : AppCompatActivity() {
             rvHomeBoxes.addItemDecoration(GridSpacingItemDecoration(2, spacing, spacing, false))
             rvHomeBoxes.adapter = MainHomeBoxAdapter(emptyList())
         }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.homeBoxes.collect { boxItems ->
+                    if (boxItems.isNotEmpty()) {
+                        val homeBoxes = boxItems.map { item ->
+                            MainHomeBox(
+                                id = item.id,
+                                name = item.name,
+                                iconRes = item.iconRes,
+                                iconTint = getBoxIconTint(item.id),
+                                count = item.count,
+                                countLabel = item.countLabel,
+                                onClick = getBoxClickListener(item.id)
+                            )
+                        }
+                        rvHomeBoxes?.adapter = MainHomeBoxAdapter(homeBoxes)
+                    }
+                }
+            }
+        }
+
         setupHomeBoxes()
+    }
+
+    private fun getBoxClickListener(boxId: String): () -> Unit {
+        return when (boxId) {
+            HomeBoxPreferences.BOX_FAVORITES -> {
+                {
+                    MusicUtils.performHapticFeedback(this)
+                    val intent = Intent(this, TracksActivity::class.java)
+                    intent.putExtra("SHOW_FAVORITES", true)
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
+                }
+            }
+            HomeBoxPreferences.BOX_PLAYLISTS -> {
+                {
+                    MusicUtils.performHapticFeedback(this)
+                    startActivity(Intent(this, PlaylistActivity::class.java))
+                    overridePendingTransition(0, 0)
+                }
+            }
+            HomeBoxPreferences.BOX_ALBUMS -> {
+                {
+                    MusicUtils.performHapticFeedback(this)
+                    startActivity(Intent(this, AlbumsActivity::class.java))
+                    overridePendingTransition(0, 0)
+                }
+            }
+            HomeBoxPreferences.BOX_ARTISTS -> {
+                {
+                    MusicUtils.performHapticFeedback(this)
+                    startActivity(Intent(this, ArtistsActivity::class.java))
+                    overridePendingTransition(0, 0)
+                }
+            }
+            HomeBoxPreferences.BOX_TRACKS -> {
+                {
+                    MusicUtils.performHapticFeedback(this)
+                    startActivity(Intent(this, TracksActivity::class.java))
+                    overridePendingTransition(0, 0)
+                }
+            }
+            HomeBoxPreferences.BOX_EQUALIZER -> {
+                {
+                    MusicUtils.performHapticFeedback(this)
+                    showEqChooserDialog()
+                }
+            }
+            else -> { {} }
+        }
     }
     
     private fun setupHomeBoxes() {
-        // Move DB/File I/O to Background Thread
-        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            val recyclerView = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_home_boxes)
-            
-            // Get saved box order
-            val savedOrder = HomeBoxPreferences.getBoxOrder(this@MainActivity)
-            val allBoxes = HomeBoxPreferences.getAllBoxes()
-            
-            // Create ordered list of visible boxes
-            val visibleBoxes = savedOrder.mapNotNull { boxId ->
-                if (HomeBoxPreferences.isBoxVisible(this@MainActivity, boxId)) {
-                    allBoxes.find { it.id == boxId }
-                } else {
-                    null
-                }
-            }
-            
-            // Calculate counts (Expensive I/O)
-            val homeBoxes = visibleBoxes.map { box ->
-                val (count, label, onClick) = when (box.id) {
-                    HomeBoxPreferences.BOX_FAVORITES -> {
-                        Triple(getFavoriteCount(), "Favorites") {
-                            MusicUtils.performHapticFeedback(this@MainActivity)
-                            val intent = Intent(this@MainActivity, TracksActivity::class.java)
-                            intent.putExtra("SHOW_FAVORITES", true)
-                            startActivity(intent)
-                            overridePendingTransition(0, 0)
-                        }
-                    }
-                    HomeBoxPreferences.BOX_PLAYLISTS -> {
-                        Triple(getPlaylistCount(), "Playlists") {
-                             MusicUtils.performHapticFeedback(this@MainActivity)
-                            startActivity(Intent(this@MainActivity, PlaylistActivity::class.java))
-                            overridePendingTransition(0, 0)
-                        }
-                    }
-                    HomeBoxPreferences.BOX_ALBUMS -> {
-                        Triple(getAlbumCount(), "Albums") {
-                             MusicUtils.performHapticFeedback(this@MainActivity)
-                            startActivity(Intent(this@MainActivity, AlbumsActivity::class.java))
-                            overridePendingTransition(0, 0)
-                        }
-                    }
-                    HomeBoxPreferences.BOX_ARTISTS -> {
-                        Triple(getArtistCount(), "Artists") {
-                             MusicUtils.performHapticFeedback(this@MainActivity)
-                            startActivity(Intent(this@MainActivity, ArtistsActivity::class.java))
-                            overridePendingTransition(0, 0)
-                        }
-                    }
-                    HomeBoxPreferences.BOX_TRACKS -> {
-                        Triple(getTrackCount(), "Tracks") {
-                             MusicUtils.performHapticFeedback(this@MainActivity)
-                            startActivity(Intent(this@MainActivity, TracksActivity::class.java))
-                            overridePendingTransition(0, 0)
-                        }
-                    }
-                    HomeBoxPreferences.BOX_EQUALIZER -> {
-                        Triple(-1, "Tune Sound") {
-                             MusicUtils.performHapticFeedback(this@MainActivity)
-                            showEqChooserDialog()
-                        }
-                    }
-                    else -> Triple(0, "") {}
-                }
-                
-                MainHomeBox(
-                    id = box.id,
-                    name = box.name.uppercase(),
-                    iconRes = box.iconRes,
-                    iconTint = getBoxIconTint(box.id),
-                    count = count,
-                    countLabel = label,
-                    onClick = onClick
-                )
-            }
-            
-            // Update UI on Main Thread
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                // Setup RecyclerView if not already setup
-                if (recyclerView.layoutManager == null) {
-                    val layoutManager = androidx.recyclerview.widget.GridLayoutManager(this@MainActivity, 2)
-                    recyclerView.layoutManager = layoutManager
-                    
-                    // 8dp spacing both horizontally and vertically (padding reduced to 22dp to keep box size constant)
-                    val spacing = (8 * resources.displayMetrics.density).toInt()
-                    recyclerView.addItemDecoration(GridSpacingItemDecoration(2, spacing, spacing, false))
-                }
-                
-                recyclerView.adapter = MainHomeBoxAdapter(homeBoxes)
-            }
-        }
+        viewModel.loadHomeBoxes(this)
     }
     
     private fun getBoxIconTint(boxId: String): Int {

@@ -61,8 +61,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.switchmaterial.SwitchMaterial
+import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 
 class TracksActivity : AppCompatActivity() {
+
+    private val viewModel: TracksViewModel by viewModels()
 
     private val requestCodeReadStorage = 1001
     private var musicService: MusicService? = null
@@ -213,7 +220,13 @@ class TracksActivity : AppCompatActivity() {
         }
         ItemTouchHelper(touchCallback).attachToRecyclerView(rvTracks)
 
-
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.tracks.collect { trackList ->
+                    renderTracks(trackList)
+                }
+            }
+        }
 
         if (checkPermission()) {
             loadTracks()
@@ -451,84 +464,81 @@ class TracksActivity : AppCompatActivity() {
     private fun loadTracks() {
         val showFavoritesOnly = intent.getBooleanExtra("SHOW_FAVORITES", false)
         val playlistId = intent.getLongExtra("PLAYLIST_ID", -1L)
-        val playlistName = intent.getStringExtra("PLAYLIST_NAME")
         val artistName = intent.getStringExtra("ARTIST_NAME")
         val albumName = intent.getStringExtra("ALBUM_NAME")
 
         localContentVersion = MusicUtils.contentVersion
-        
-        // Show loading state if needed (optional)
-        
-        lifecycleScope.launch(Dispatchers.IO) {
-            val appContext = applicationContext
-            val trackList: List<Track> = if (showFavoritesOnly) {
-                 MusicRepository.getFavorites(appContext, sortColumn, isAscending)
-            } else if (playlistId != -1L) {
-                 MusicRepository.getPlaylistTracks(appContext, playlistId)
-            } else if (artistName != null) {
-                 MusicRepository.getTracks(appContext, "${MediaStore.Audio.Media.ARTIST} = ?", arrayOf(artistName), sortColumn, isAscending)
-            } else if (albumName != null) {
-                 MusicRepository.getTracks(appContext, "${MediaStore.Audio.Media.ALBUM} = ?", arrayOf(albumName), sortColumn, isAscending)
-            } else {
-                 MusicRepository.getTracks(appContext, null, null, sortColumn, isAscending)
+        viewModel.loadTracks(
+            this,
+            showFavorites = showFavoritesOnly,
+            playlistId = playlistId,
+            artistName = artistName,
+            albumName = albumName,
+            sortColumn = sortColumn,
+            isAscending = isAscending
+        )
+    }
+
+    private fun renderTracks(trackList: List<Track>) {
+        if (isFinishing || isDestroyed) return
+
+        val showFavoritesOnly = intent.getBooleanExtra("SHOW_FAVORITES", false)
+        val playlistId = intent.getLongExtra("PLAYLIST_ID", -1L)
+        val playlistName = intent.getStringExtra("PLAYLIST_NAME")
+        val artistName = intent.getStringExtra("ARTIST_NAME")
+        val albumName = intent.getStringExtra("ALBUM_NAME")
+
+        if (showFavoritesOnly) findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.title_favorites)
+        else if (playlistId != -1L) {
+             val playlist = AppPlaylistManager.getPlaylist(this@TracksActivity, playlistId)
+             val displayName = playlist?.name ?: playlistName ?: "PLAYLIST"
+             findViewById<TextView>(R.id.tv_header_title)?.text = displayName.uppercase()
+             
+             val btnEdit = findViewById<View>(R.id.btn_edit)
+             btnEdit.visibility = View.VISIBLE
+             btnEdit.setOnClickListener {
+                 val intent = Intent(this@TracksActivity, CreatePlaylistActivity::class.java)
+                 intent.putExtra("EDIT_PLAYLIST_ID", playlistId)
+                 intent.putExtra("PLAYLIST_NAME", playlistName)
+                 isEditingPlaylist = true
+                 startActivity(intent)
+             }
+        } else if (artistName != null) findViewById<TextView>(R.id.tv_header_title)?.text = artistName.uppercase()
+        else if (albumName != null) findViewById<TextView>(R.id.tv_header_title)?.text = albumName.uppercase()
+        else findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.tab_tracks).uppercase()
+
+        if (trackList.isEmpty()) {
+            val msg = when {
+                showFavoritesOnly -> getString(R.string.msg_no_favorites)
+                playlistId != -1L -> getString(R.string.msg_playlist_empty)
+                artistName != null -> getString(R.string.msg_no_artist_tracks)
+                else -> getString(R.string.msg_no_music)
             }
-            
-            withContext(Dispatchers.Main) {
-                if (isFinishing || isDestroyed) return@withContext
+            Toast.makeText(this@TracksActivity, msg, Toast.LENGTH_LONG).show()
+        }
+        
+        findViewById<TextView>(R.id.tv_tracks_count)?.text = if (trackList.size == 1) "1 Song" else "${trackList.size} Songs"
 
-                if (showFavoritesOnly) findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.title_favorites)
-                else if (playlistId != -1L) {
-                     val playlist = AppPlaylistManager.getPlaylist(this@TracksActivity, playlistId)
-                     val displayName = playlist?.name ?: playlistName ?: "PLAYLIST"
-                     findViewById<TextView>(R.id.tv_header_title)?.text = displayName.uppercase()
-                     
-                     val btnEdit = findViewById<View>(R.id.btn_edit)
-                     btnEdit.visibility = View.VISIBLE
-                     btnEdit.setOnClickListener {
-                         val intent = Intent(this@TracksActivity, CreatePlaylistActivity::class.java)
-                         intent.putExtra("EDIT_PLAYLIST_ID", playlistId)
-                         intent.putExtra("PLAYLIST_NAME", playlistName)
-                         isEditingPlaylist = true
-                         startActivity(intent)
-                     }
-                } else if (artistName != null) findViewById<TextView>(R.id.tv_header_title)?.text = artistName.uppercase()
-                else if (albumName != null) findViewById<TextView>(R.id.tv_header_title)?.text = albumName.uppercase()
-                else findViewById<TextView>(R.id.tv_header_title)?.text = getString(R.string.tab_tracks).uppercase()
-
-                if (trackList.isEmpty()) {
-                    val msg = when {
-                        showFavoritesOnly -> getString(R.string.msg_no_favorites)
-                        playlistId != -1L -> getString(R.string.msg_playlist_empty)
-                        artistName != null -> getString(R.string.msg_no_artist_tracks)
-                        else -> getString(R.string.msg_no_music)
-                    }
-                    Toast.makeText(this@TracksActivity, msg, Toast.LENGTH_LONG).show()
-                }
-                
-                findViewById<TextView>(R.id.tv_tracks_count)?.text = if (trackList.size == 1) "1 Song" else "${trackList.size} Songs"
-
-                val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks) ?: return@withContext
-                if (adapter == null) {
-                    adapter = TrackAdapter(trackList) { track ->
-                        showTrackOptionsDialog(track)
-                    }
-                    rvTracks.adapter = adapter
-                } else {
-                    adapter?.updateData(trackList)
-                }
-
-                if (!initialScrollDone && trackList.isNotEmpty()) {
-                    attemptScrollToActiveTrack()
-                }
-
-                // Update alphabet scrollbar visibility
-                val alphabetScrollbar = findViewById<AlphabetIndexScrollbar>(R.id.alphabet_scrollbar)
-                if (sortColumn == MediaStore.Audio.Media.TITLE) {
-                    alphabetScrollbar?.visibility = View.VISIBLE
-                } else {
-                    alphabetScrollbar?.visibility = View.GONE
-                }
+        val rvTracks = findViewById<RecyclerView>(R.id.rv_tracks) ?: return
+        if (adapter == null) {
+            adapter = TrackAdapter(trackList) { track ->
+                showTrackOptionsDialog(track)
             }
+            rvTracks.adapter = adapter
+        } else {
+            adapter?.updateData(trackList)
+        }
+
+        if (!initialScrollDone && trackList.isNotEmpty()) {
+            attemptScrollToActiveTrack()
+        }
+
+        // Update alphabet scrollbar visibility
+        val alphabetScrollbar = findViewById<AlphabetIndexScrollbar>(R.id.alphabet_scrollbar)
+        if (sortColumn == MediaStore.Audio.Media.TITLE) {
+            alphabetScrollbar?.visibility = View.VISIBLE
+        } else {
+            alphabetScrollbar?.visibility = View.GONE
         }
     }
 

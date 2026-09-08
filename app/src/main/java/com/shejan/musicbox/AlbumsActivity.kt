@@ -19,7 +19,10 @@
 
 package com.shejan.musicbox
 
+import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -46,6 +49,7 @@ import androidx.activity.enableEdgeToEdge
 
 class AlbumsActivity : AppCompatActivity() {
 
+    private val viewModel: AlbumsViewModel by viewModels()
     private var localContentVersion: Long = 0
     private var musicService: MusicService? = null
     private var isBound = false
@@ -73,14 +77,18 @@ class AlbumsActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onStart() {
         super.onStart()
         val intent = Intent(this, MusicService::class.java)
-        bindService(intent, connection, BIND_AUTO_CREATE)
-        
+        bindService(intent, connection, Context.BIND_AUTO_CREATE)
+
         val filter = IntentFilter("MUSIC_BOX_UPDATE")
-        androidx.core.content.ContextCompat.registerReceiver(this, receiver, filter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED)
+        androidx.core.content.ContextCompat.registerReceiver(
+            this,
+            receiver,
+            filter,
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     override fun onStop() {
@@ -125,40 +133,32 @@ class AlbumsActivity : AppCompatActivity() {
              startActivity(intent)
         }
 
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.albums.collect { list ->
+                    val countView = findViewById<android.widget.TextView>(R.id.tv_albums_count)
+                    val countText = if (list.size == 1) "1 Album" else "${list.size} Albums"
+                    countView.text = countText
+            
+                    rv.adapter = AlbumAdapter(list) { album ->
+                         val intent = Intent(this@AlbumsActivity, TracksActivity::class.java)
+                         intent.putExtra("ALBUM_NAME", album.title) 
+                         startActivity(intent)
+                    }
+                }
+            }
+        }
+
         loadAlbums()
         
     }
 
     private fun loadAlbums() {
         localContentVersion = MusicUtils.contentVersion
-        
-        lifecycleScope.launch(Dispatchers.IO) {
-            val appContext = applicationContext
-            val list = MusicRepository.getAlbums(appContext)
-            
-            withContext(Dispatchers.Main) {
-                // Update Count
-                val countView = findViewById<android.widget.TextView>(R.id.tv_albums_count)
-                val countText = if (list.size == 1) "1 Album" else "${list.size} Albums"
-                countView.text = countText
-        
-                val rv = findViewById<RecyclerView>(R.id.rv_albums)
-                rv.layoutManager = GridLayoutManager(this@AlbumsActivity, 2)
-                rv.adapter = AlbumAdapter(list) { album ->
-                     // Open TracksActivity with Album Filter
-                     val intent = Intent(this@AlbumsActivity, TracksActivity::class.java)
-                     intent.putExtra("ALBUM_NAME", album.title) 
-                     startActivity(intent)
-                }
-            }
-        }
+        viewModel.loadAlbums(this)
     }
 
     private fun setupNav() {
         NavUtils.setupNavigation(this, R.id.nav_albums)
     }
 }
-
-
-
-
