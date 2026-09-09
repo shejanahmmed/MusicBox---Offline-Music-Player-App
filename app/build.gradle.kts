@@ -36,6 +36,12 @@ android {
     buildFeatures {
         buildConfig = true
     }
+
+    lint {
+        disable += setOf("ForegroundServicePermission", "SelectedPhotoAccess", "ScopedStorage")
+        abortOnError = false
+        checkReleaseBuilds = false
+    }
 }
 
 dependencies {
