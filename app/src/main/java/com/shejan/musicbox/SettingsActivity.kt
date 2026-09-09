@@ -431,6 +431,25 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent(this, AboutActivity::class.java))
         }
 
+        // Version Card Click -> Open Google Play Store
+        findViewById<android.view.View>(R.id.card_version).setOnClickListener {
+            val appPackage = packageName
+            try {
+                // Try opening directly in Google Play Store app
+                val intent = Intent(Intent.ACTION_VIEW, "market://details?id=$appPackage".toUri()).apply {
+                    setPackage("com.android.vending")
+                }
+                startActivity(intent)
+            } catch (_: Exception) {
+                // Fallback to web browser
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, "https://play.google.com/store/apps/details?id=$appPackage".toUri()))
+                } catch (_: Exception) {
+                    Toast.makeText(this, R.string.open_browser_error, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
         // Version
         val tvVersionValue = findViewById<android.widget.TextView>(R.id.tv_version_value)
         tvVersionValue.text = getString(R.string.version_fmt, BuildConfig.VERSION_NAME)
