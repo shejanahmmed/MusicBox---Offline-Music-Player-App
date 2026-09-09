@@ -36,6 +36,7 @@ Built with modern Android engineering standards (Kotlin DSL, Coroutines, Media3 
 
 ### 🎧 Audiophile Audio & Video Engine
 *   **AndroidX Media3 ExoPlayer:** High-performance local playback engine delivering lossless audio quality up to 24-bit/192kHz.
+*   **Dynamic Audio Quality & Resolution Inspection:** Real-time hardware analysis of audio bit depth (16/24-bit), sample rate (up to 192kHz), and bitrate (up to 320 kbps), displaying clean audiophile badges in Track Info (e.g., `24-BIT / 192k`, `16-BIT / 44.1k`, `320 kbps`).
 *   **Micro-Volume Fades:** Gentle interpolated fading on play (180ms) and pause (150ms) to eliminate sudden clicks and pops.
 *   **Intelligent Audio Focus & Ducking:** Smooth volume ducking during notifications and dynamic auto-pause when headphones or Bluetooth disconnect.
 *   **Precision Equalizer & DSP:** 5-band customized EQ with live `audioSessionId` auto-binding, 6 acoustic presets, and real-time speed & pitch controls.
@@ -69,6 +70,7 @@ The **v2.4.0 Release** brings an audiophile-grade audio engine overhaul and a mo
 | Feature | Description |
 | :--- | :--- |
 | **🎧 AndroidX Media3 / ExoPlayer** | Complete playback engine migration with native support for 24-bit/192kHz Hi-Res FLAC, ALAC, Opus, WAV, AAC, and MP3. |
+| **📊 Dynamic Quality & Resolution** | Background hardware audio inspector detecting real bit depth (16/24-bit), sample rates up to 192kHz, and bitrates up to 320kbps in the Track Info sheet. |
 | **✨ Micro-Volume Fading & Ducking** | Smooth 180ms fade-in and 150ms fade-out on play/pause, transient audio focus ducking (0.2f), and unplug protection (`ACTION_AUDIO_BECOMING_NOISY`). |
 | **🎛️ Equalizer Sync & DSP Controls** | Live dynamic audio session binding to `EqManager` across track transitions, plus speed & pitch DSP controls. |
 | **🏛️ MVVM & Reactive StateFlow** | Centralized `MusicRepository` for MediaStore queries, ViewModels with `repeatOnLifecycle`, and thread-safe queue management. |
@@ -129,6 +131,7 @@ MusicBox is available for install via official channels:
 
 ### v2.4.0 _(Current Release)_
 - **🎧 AndroidX Media3 / ExoPlayer Migration:** Complete audio engine upgrade supporting high-res lossless codecs (24-bit/192kHz FLAC, ALAC, Opus, WAV, AAC, MP3) and eliminating legacy player error states.
+- **📊 Dynamic Audio Quality Classifier:** Background hardware audio analyzer inspecting sample rates (up to 192kHz), bit depth (16/24-bit), and bitrate, showing clear resolution badges in the track metadata options dialog.
 - **✨ Micro-Volume Fades & Acoustic Smoothing:** Added soft volume fading on play (180ms) and pause (150ms) to eliminate popping sounds.
 - **🔊 Smart Audio Focus Ducking:** Intelligent transient ducking during navigation/system notifications and auto-pause upon headphone disconnect (`ACTION_AUDIO_BECOMING_NOISY`).
 - **🎛️ Dynamic EQ Session Binding:** Synchronized `EqManager` audio session ID binding across track transitions with high-resolution speed and pitch controls.
