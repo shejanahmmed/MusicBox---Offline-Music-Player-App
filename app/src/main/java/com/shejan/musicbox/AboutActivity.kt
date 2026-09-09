@@ -73,21 +73,32 @@ class AboutActivity : AppCompatActivity() {
             openUrl("mailto:farjan.swe@gmail.com")
         }
         findViewById<View>(R.id.btn_social_linkedin).setOnClickListener {
-            openUrl("https://www.linkedin.com/in/farjan-ahmmed/")
+            openAppOrUrl("https://www.linkedin.com/in/farjanahmmed/", "com.linkedin.android")
         }
         findViewById<View>(R.id.btn_social_github).setOnClickListener {
             openUrl("https://github.com/shejanahmmed")
         }
         findViewById<View>(R.id.btn_social_facebook).setOnClickListener {
-            openUrl("https://www.facebook.com/beingshejan/")
+            openAppOrUrl("https://www.facebook.com/beingshejan/", "com.facebook.katana")
         }
         findViewById<View>(R.id.btn_social_instagram).setOnClickListener {
-            openUrl("https://www.instagram.com/iamshejan/")
+            openAppOrUrl("https://www.instagram.com/iamshejan/", "com.instagram.android")
         }
 
         // GitHub Repository Link
         findViewById<LinearLayout>(R.id.btn_github).setOnClickListener {
             openUrl("https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App")
+        }
+    }
+
+    private fun openAppOrUrl(url: String, appPackage: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
+                setPackage(appPackage)
+            }
+            startActivity(intent)
+        } catch (_: Exception) {
+            openUrl(url)
         }
     }
 
