@@ -88,8 +88,6 @@ object TrackMenuManager {
         // val fileSize = ...
         
         // Initial placeholders
-        
-        // Initial placeholders
         view.findViewById<TextView>(R.id.tv_stat_format).text = "..."
         view.findViewById<TextView>(R.id.tv_stat_bitrate).text = "..."
         view.findViewById<TextView>(R.id.tv_stat_duration).text = "..."
@@ -97,8 +95,6 @@ object TrackMenuManager {
         // Background Metadata Load
         activity.lifecycleScope.launch(Dispatchers.IO) {
             var durationStr = "--:--"
-            var bitrate = activity.getString(R.string.na_placeholder)
-            var format = "AUDIO" // Default
             
             try {
                 val retriever = android.media.MediaMetadataRetriever()
@@ -108,40 +104,21 @@ object TrackMenuManager {
                     val minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(durMs)
                     val seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(durMs) - java.util.concurrent.TimeUnit.MINUTES.toSeconds(minutes)
                     durationStr = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
-                    
-                    bitrate = if (track.albumId == -1L) {
-                        "Unknown" // video tracks report total A/V bitrate which is misleading
-                    } else {
-                        retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_BITRATE)?.let {
-                             activity.getString(R.string.bitrate_kbits, (it.toLong() / 1000).toString())
-                        } ?: activity.getString(R.string.na_placeholder)
-                    }
-                    
-                    val mimetype = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
-                    if (mimetype != null) {
-                        val subtype = mimetype.substringAfter("/")
-                        format = when(subtype.lowercase()) {
-                            "mpeg" -> "MP3"
-                            "flac" -> "FLAC"
-                            "mp4" -> "M4A"
-                            "wav" -> "WAV"
-                            "ogg" -> "OGG"
-                            "x-matroska" -> "MKA"
-                            else -> subtype.uppercase()
-                        }
-                    }
                 } finally {
                     retriever.release()
                 }
             } catch (_: Exception) { }
+            
+            val isVideo = (track.albumId == -1L)
+            val qualityInfo = AudioQualityClassifier.classify(track.uri, isVideo)
             
             // Move File Size Check here (Background I/O)
             val file = java.io.File(track.uri)
             val fileSize = if (file.exists()) String.format(Locale.getDefault(), activity.getString(R.string.file_size_mb), file.length() / (1024.0 * 1024.0)) else activity.getString(R.string.na_placeholder)
             
             withContext(Dispatchers.Main) {
-                view.findViewById<TextView>(R.id.tv_stat_format).text = format
-                view.findViewById<TextView>(R.id.tv_stat_bitrate).text = bitrate
+                view.findViewById<TextView>(R.id.tv_stat_format).text = qualityInfo.format
+                view.findViewById<TextView>(R.id.tv_stat_bitrate).text = if (isVideo) "Unknown" else qualityInfo.badgeText
                 view.findViewById<TextView>(R.id.tv_stat_duration).text = durationStr
                 view.findViewById<TextView>(R.id.tv_file_size_badge).text = fileSize
             }
