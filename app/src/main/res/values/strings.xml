@@ -148,4 +148,29 @@
     <string name="eq_status_off">EQ is OFF — toggle the switch to enable</string>
     <string name="eq_error_system">No System Equalizer found</string>
     <string name="eq_error_other">Could not open external equalizer chooser</string>
+
+    <!-- About Page Strings -->
+    <string name="about_title">ABOUT</string>
+    <string name="about_tagline">Offline Music &amp; Video Player for Android</string>
+    <string name="about_version_format">v%1$s • Build %2$d</string>
+    <string name="about_version_copied">Version copied to clipboard</string>
+    <string name="about_section_highlights">HIGHLIGHTS</string>
+    <string name="about_highlight_offline_title">100% Offline</string>
+    <string name="about_highlight_offline_desc">No ads, no data tracking</string>
+    <string name="about_highlight_hires_title">Hi-Res &amp; Video</string>
+    <string name="about_highlight_hires_desc">FLAC, MP3, MP4 &amp; more</string>
+    <string name="about_highlight_bento_title">Clean Bento UI</string>
+    <string name="about_highlight_bento_desc">Adaptive theme &amp; widgets</string>
+    <string name="about_highlight_privacy_title">Private &amp; Secure</string>
+    <string name="about_highlight_privacy_desc">All files stay on-device</string>
+    <string name="about_section_developer">DEVELOPER</string>
+    <string name="about_dev_name">Shejan Ahmmed</string>
+    <string name="about_dev_role">App Developer</string>
+    <string name="about_section_community">OPEN SOURCE &amp; COMMUNITY</string>
+    <string name="about_github_title">Source Code on GitHub</string>
+    <string name="about_github_desc">View repository, report issues &amp; star</string>
+    <string name="about_license_title">GNU General Public License v3.0</string>
+    <string name="about_license_desc">MusicBox is free and open-source software. You are free to run, study, share, and modify this application under the GNU GPL v3.0.</string>
+    <string name="about_footer_love">Crafted with ❤️ for music lovers</string>
+    <string name="about_copyright">Copyright © 2026 Shejan. All rights reserved.</string>
 </resources>
