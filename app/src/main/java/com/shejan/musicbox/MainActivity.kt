@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity() {
         val rvHomeBoxes = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_home_boxes)
         if (rvHomeBoxes != null) {
             rvHomeBoxes.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 2)
-            val spacing = (8 * resources.displayMetrics.density).toInt()
+            val spacing = (12 * resources.displayMetrics.density).toInt()
             rvHomeBoxes.addItemDecoration(GridSpacingItemDecoration(2, spacing, spacing, false))
             rvHomeBoxes.adapter = MainHomeBoxAdapter(emptyList())
         }
@@ -245,10 +245,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateDot(isPlaying: Boolean) {
         val dot = findViewById<View>(R.id.v_red_dot)
+        val statusLabel = findViewById<TextView>(R.id.tv_status_label)
         if (isPlaying) {
-             dot.setBackgroundResource(R.drawable.shape_circle_green)
+             dot?.setBackgroundResource(R.drawable.shape_circle_green)
+             statusLabel?.text = "PLAYING"
+             statusLabel?.setTextColor(ContextCompat.getColor(this, R.color.primary_green))
         } else {
-             dot.setBackgroundResource(R.drawable.shape_circle_red)
+             dot?.setBackgroundResource(R.drawable.shape_circle_red)
+             statusLabel?.text = "OFFLINE"
+             statusLabel?.setTextColor(ContextCompat.getColor(this, R.color.colorTextSecondary))
         }
     }
 
@@ -310,7 +315,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateGreeting() {
         val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)
-        val userName = prefs.getString("USER_NAME", "LISTENER")?.uppercase() ?: "LISTENER"
+        val rawName = prefs.getString("USER_NAME", "LISTENER")?.trim() ?: "LISTENER"
+        val userName = if (rawName.isEmpty()) "LISTENER" else rawName.uppercase()
+        val tvSub = findViewById<TextView>(R.id.tv_greeting_sub)
         val greetingText = findViewById<TextView>(R.id.tv_greeting)
 
         val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
@@ -321,8 +328,8 @@ class MainActivity : AppCompatActivity() {
             else -> R.string.home_greeting
         }
 
-        val fullInfo = getString(greetingResId) + "\n" + userName
-        typeWriterEffect(greetingText, fullInfo)
+        tvSub?.setText(greetingResId)
+        typeWriterEffect(greetingText, userName)
     }
 
     private fun getFavoriteCount(): Int = MusicRepository.getFavoriteCount(this)
@@ -335,47 +342,36 @@ class MainActivity : AppCompatActivity() {
     
     private fun getTrackCount(): Int = MusicRepository.getTrackCount(this)
 
-    private fun typeWriterEffect(textView: TextView, text: String, delay: Long = 50) {
-        // Cancel previous
+    private fun typeWriterEffect(textView: TextView?, text: String, delay: Long = 40) {
+        if (textView == null) return
         typingRunnable?.let { typingHandler.removeCallbacks(it) }
 
         typingRunnable = object : Runnable {
             var index = 0
             override fun run() {
-                // Bounds Check: Ensure index is valid for current text
                 if (index > text.length) {
                     index = text.length
                 }
                 
                 if (index <= text.length) {
                     try {
-                        // Show cursor while typing
                         val currentText = text.subSequence(0, index).toString()
-                        var displayText = "$currentText|"
-                        
-                        // Maintain height stability by ensuring 2 lines exist
-                        if (!displayText.contains("\n")) {
-                            displayText += "\n"
-                        }
-                        
-                        textView.text = displayText
+                        textView.text = "$currentText|"
                         
                         if (index < text.length) {
                             index++
                             typingHandler.postDelayed(this, delay)
                         } else {
-                            // Finished typing, remove cursor after a moment
-                             typingHandler.postDelayed({
-                                 textView.text = text
-                             }, 800)
+                            typingHandler.postDelayed({
+                                textView.text = text
+                            }, 700)
                         }
-                    } catch (e: Exception) {
-                        textView.text = text // Fallback
+                    } catch (_: Exception) {
+                        textView.text = text
                     }
                 }
             }
         }
-        // Run immediately to set initial state before first frame draw
         typingRunnable?.run()
     }
     

@@ -48,4 +48,8 @@
     <color name="colorScrollbarText">#AAFFFFFF</color>       <!-- 67% white letter text -->
     <color name="colorScrollbarActive">#f20d0d</color>       <!-- accent red highlight -->
     <color name="colorScrollbarActiveText">#FFFFFF</color>   <!-- white text on red dot -->
+
+    <!-- Home Bento Grid Semantic Colors -->
+    <color name="colorIconBubble">#1AFFFFFF</color>
+    <color name="colorIconBubbleRed">#26f20d0d</color>
 </resources>

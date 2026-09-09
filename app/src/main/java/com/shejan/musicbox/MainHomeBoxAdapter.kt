@@ -22,6 +22,7 @@ package com.shejan.musicbox
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -41,6 +42,7 @@ class MainHomeBoxAdapter(
 ) : RecyclerView.Adapter<MainHomeBoxAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val iconBubble: FrameLayout = view.findViewById(R.id.fl_icon_bubble)
         val icon: ImageView = view.findViewById(R.id.iv_box_icon)
         val label: TextView = view.findViewById(R.id.tv_box_label)
         val count: TextView = view.findViewById(R.id.tv_box_count)
@@ -50,18 +52,19 @@ class MainHomeBoxAdapter(
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_main_home_box, parent, false)
             
-        // Calculate exact width to square the box immediately (preventing layout flash)
+        // Calculate exact width and balanced bento height immediately
         val displayMetrics = parent.context.resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         val density = displayMetrics.density
         
-        // Padding: 22dp Left + 22dp Right + 8dp Middle Gap = 52dp Total Deduction
+        // Padding: 20dp Left + 20dp Right + 12dp Middle Gap = 52dp Total Deduction
         val totalPadding = (52 * density).toInt()
         val itemWidth = (screenWidth - totalPadding) / 2
+        val itemHeight = (itemWidth * 0.88f).toInt().coerceAtLeast((118 * density).toInt())
         
         val params = view.layoutParams
         params.width = itemWidth
-        params.height = itemWidth
+        params.height = itemHeight
         view.layoutParams = params
             
         return ViewHolder(view)
@@ -70,6 +73,13 @@ class MainHomeBoxAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val box = boxes[position]
         
+        // Dynamic icon bubble tint
+        if (box.id == HomeBoxPreferences.BOX_FAVORITES) {
+            holder.iconBubble.setBackgroundResource(R.drawable.bg_home_icon_bubble_red)
+        } else {
+            holder.iconBubble.setBackgroundResource(R.drawable.bg_home_icon_bubble)
+        }
+
         holder.icon.setImageResource(box.iconRes)
         holder.icon.setColorFilter(box.iconTint)
         holder.label.text = box.name
@@ -86,5 +96,3 @@ class MainHomeBoxAdapter(
 
     override fun getItemCount() = boxes.size
 }
-
-
