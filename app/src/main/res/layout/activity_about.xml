@@ -133,7 +133,7 @@
                         android:id="@+id/tv_app_version"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="v2.5.0 • Build 25"
+                        tools:text="v2.6.0 • Build 26"
                         android:textColor="@color/colorTextPrimary"
                         android:textSize="12sp"
                         android:textStyle="bold"
