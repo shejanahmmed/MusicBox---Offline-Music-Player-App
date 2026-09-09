@@ -248,7 +248,7 @@
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
-        <!-- Bitrate -->
+        <!-- Quality -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -270,15 +270,19 @@
                 android:id="@+id/tv_stat_bitrate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="942 KBPS"
+                tools:text="320 kbps"
                 android:textColor="@color/colorTextPrimary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BITRATE"
+                android:text="QUALITY"
                 android:textColor="@color/colorTextSecondary"
                 android:textSize="8sp"
                 android:layout_marginTop="2dp" />
