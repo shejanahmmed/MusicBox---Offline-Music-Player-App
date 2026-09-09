@@ -19,17 +19,22 @@
 
 package com.shejan.musicbox
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
-import androidx.core.net.toUri
+import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowCompat
-import androidx.activity.enableEdgeToEdge
 
 class AboutActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,27 +42,61 @@ class AboutActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_about)
 
-        // Apply WindowInsets
+        // Apply WindowInsets for edge-to-edge support
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(view.paddingLeft, systemBars.top, view.paddingRight, systemBars.bottom)
             insets
         }
 
+        // Back Navigation
+        findViewById<ImageButton>(R.id.btn_back).setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
 
-        val tvVersion = findViewById<android.widget.TextView>(R.id.tv_app_version)
-        tvVersion.text = getString(R.string.version_full_fmt, BuildConfig.VERSION_NAME)
+        // Version Badge
+        val tvVersion = findViewById<TextView>(R.id.tv_app_version)
+        val versionString = getString(R.string.about_version_format, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
+        tvVersion.text = versionString
 
+        // Copy version details on clicking version badge
+        findViewById<LinearLayout>(R.id.btn_version_badge).setOnClickListener {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipInfo = "MusicBox $versionString | Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
+            val clip = ClipData.newPlainText("MusicBox Version", clipInfo)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(this, R.string.about_version_copied, Toast.LENGTH_SHORT).show()
+        }
+
+        // Developer Social Links
+        findViewById<View>(R.id.btn_social_email).setOnClickListener {
+            openUrl("mailto:farjan.swe@gmail.com")
+        }
+        findViewById<View>(R.id.btn_social_linkedin).setOnClickListener {
+            openUrl("https://www.linkedin.com/in/farjan-ahmmed/")
+        }
+        findViewById<View>(R.id.btn_social_github).setOnClickListener {
+            openUrl("https://github.com/shejanahmmed")
+        }
+        findViewById<View>(R.id.btn_social_facebook).setOnClickListener {
+            openUrl("https://www.facebook.com/beingshejan/")
+        }
+        findViewById<View>(R.id.btn_social_instagram).setOnClickListener {
+            openUrl("https://www.instagram.com/iamshejan/")
+        }
+
+        // GitHub Repository Link
         findViewById<LinearLayout>(R.id.btn_github).setOnClickListener {
-            try {
-                val intent = Intent(Intent.ACTION_VIEW, "https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App".toUri())
-                startActivity(intent)
-            } catch (_: Exception) {
-                Toast.makeText(this, "Could not open browser", Toast.LENGTH_SHORT).show()
-            }
+            openUrl("https://github.com/shejanahmmed/MusicBox---Offline-Music-Player-App")
+        }
+    }
+
+    private fun openUrl(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+            startActivity(intent)
+        } catch (_: Exception) {
+            Toast.makeText(this, R.string.open_browser_error, Toast.LENGTH_SHORT).show()
         }
     }
 }
-
-
-

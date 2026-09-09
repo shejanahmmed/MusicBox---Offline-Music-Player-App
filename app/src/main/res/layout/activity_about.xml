@@ -1,44 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/main" xmlns:android="http://schemas.android.com/apk/res/android"
-    
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground">
 
-    <!-- Header -->
+    <!-- Top Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingVertical="24dp"
-        android:paddingHorizontal="24dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_chevron_left"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/colorIcon"
+            android:contentDescription="Back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
         <TextView
             android:id="@+id/tv_header_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="ABOUT"
+            android:text="@string/about_title"
             android:textColor="@color/colorTextPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:letterSpacing="-0.05"
-            android:textAllCaps="true"
-            app:layout_constraintStart_toStartOf="parent"
+            android:letterSpacing="-0.02"
+            android:layout_marginStart="12dp"
+            app:layout_constraintStart_toEndOf="@id/btn_back"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- Scrollable Content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingBottom="40dp"
+        android:paddingBottom="48dp"
         app:layout_constraintTop_toBottomOf="@+id/cl_header"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -46,225 +61,580 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="16dp">
+            android:paddingHorizontal="20dp"
+            android:paddingTop="8dp">
 
-            <!-- Hero Section / App Info -->
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <!-- Hero Section -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:gravity="center"
-                android:layout_marginBottom="32dp">
-                
+                android:layout_marginBottom="28dp">
+
+                <!-- App Icon Container -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cv_app_icon"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="8dp"
-                    app:cardBackgroundColor="@android:color/transparent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
-                    
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@android:color/transparent">
+
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:src="@mipmap/ic_launcher"
-                        android:scaleType="centerCrop"/>
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@string/app_name" />
                 </androidx.cardview.widget.CardView>
 
+                <!-- App Name -->
                 <TextView
                     android:id="@+id/tv_app_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
                     android:textColor="@color/colorTextPrimary"
-                    android:textSize="28sp"
+                    android:textSize="26sp"
                     android:textStyle="bold"
                     android:letterSpacing="-0.03"
-                    android:layout_marginTop="20dp"
-                    app:layout_constraintTop_toBottomOf="@id/cv_app_icon"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    android:layout_marginTop="16dp" />
 
+                <!-- Tagline -->
                 <TextView
-                    android:id="@+id/tv_app_version"
+                    android:id="@+id/tv_app_tagline"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Version 2.1.0"
-                    android:textColor="@color/colorTextSecondary"
-                    android:textSize="14sp"
-                    android:letterSpacing="0.05"
-                    android:textStyle="bold"
-                    android:background="@drawable/bg_settings_card"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
-                    android:layout_marginTop="8dp"
-                    app:layout_constraintTop_toBottomOf="@id/tv_app_name"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"/>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Credits Section -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="DEVELOPER"
-                android:textColor="@color/colorTextSecondary"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.15"
-                android:layout_marginBottom="12dp"
-                android:layout_marginStart="4dp"/>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_settings_card"
-                android:padding="20dp"
-                android:layout_marginBottom="24dp">
-
-                <ImageView
-                    android:id="@+id/iv_dev_icon"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_person"
-                    app:tint="@color/colorIconSecondary"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:backgroundTint="@color/colorStroke"
-                    android:padding="8dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"/>
-
-                <TextView
-                    android:id="@+id/tv_dev_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Shejan"
-                    android:textColor="@color/colorTextPrimary"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="16dp"
-                    app:layout_constraintStart_toEndOf="@id/iv_dev_icon"
-                    app:layout_constraintTop_toTopOf="parent"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="App Developer"
+                    android:text="@string/about_tagline"
                     android:textColor="@color/colorTextSecondary"
                     android:textSize="13sp"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginStart="16dp"
-                    app:layout_constraintStart_toEndOf="@id/iv_dev_icon"
-                    app:layout_constraintTop_toBottomOf="@id/tv_dev_title"/>
+                    android:layout_marginTop="4dp" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- Legal Section -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="LEGAL &amp; LICENSES"
-                android:textColor="@color/colorTextSecondary"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.15"
-                android:layout_marginBottom="12dp"
-                android:layout_marginStart="4dp"/>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_settings_card"
-                android:padding="20dp"
-                android:layout_marginBottom="24dp">
-
-                <TextView
-                    android:id="@+id/tv_license_header"
+                <!-- Interactive Version Badge -->
+                <LinearLayout
+                    android:id="@+id/btn_version_badge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="GNU GPL v3.0"
-                    android:textColor="@color/colorTextPrimary"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/bg_home_card"
+                    android:foreground="@drawable/ripple_home_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="6dp"
+                    android:layout_marginTop="12dp">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="This software is free: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation. Find more details in the repository."
-                    android:textColor="@color/colorTextSecondary"
-                    android:textSize="14sp"
-                    android:lineSpacingMultiplier="1.3"
-                    android:layout_marginTop="12dp"
-                    app:layout_constraintTop_toBottomOf="@id/tv_license_header"
-                    app:layout_constraintStart_toStartOf="parent"/>
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_info"
+                        app:tint="@color/primary_red" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TextView
+                        android:id="@+id/tv_app_version"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="v2.5.0 • Build 25"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.02"
+                        android:layout_marginStart="6dp" />
+                </LinearLayout>
 
-            <!-- Links Section -->
+            </LinearLayout>
+
+            <!-- Highlights Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="COMMUNITY"
+                android:text="@string/about_section_highlights"
                 android:textColor="@color/colorTextSecondary"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.15"
-                android:layout_marginBottom="12dp"
-                android:layout_marginStart="4dp"/>
+                android:letterSpacing="0.12"
+                android:layout_marginBottom="10dp"
+                android:layout_marginStart="4dp" />
 
+            <!-- Row 1: Offline & Hi-Res -->
             <LinearLayout
-                android:id="@+id/btn_github"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_settings_card"
                 android:orientation="horizontal"
-                android:padding="20dp"
-                android:gravity="center_vertical"
-                android:clickable="true"
-                android:focusable="true">
+                android:baselineAligned="false"
+                android:layout_marginBottom="10dp">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_open_in_new"
-                    app:tint="@color/colorIconSecondary"/>
+                <!-- 100% Offline Card -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_home_card"
+                    android:padding="14dp"
+                    android:layout_marginEnd="5dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_home_icon_bubble">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_audiotrack"
+                            app:tint="@color/colorTextPrimary" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_highlight_offline_title"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="10dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_highlight_offline_desc"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="11sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <!-- Hi-Res & Video Card -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_home_card"
+                    android:padding="14dp"
+                    android:layout_marginStart="5dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_home_icon_bubble_red">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_videocam"
+                            app:tint="@color/primary_red" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_highlight_hires_title"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="10dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_highlight_hires_desc"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="11sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Row 2: Bento UI & Privacy -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:layout_marginBottom="24dp">
+
+                <!-- Clean Bento UI Card -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_home_card"
+                    android:padding="14dp"
+                    android:layout_marginEnd="5dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_home_icon_bubble">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings"
+                            app:tint="@color/colorTextPrimary" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_highlight_bento_title"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="10dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_highlight_bento_desc"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="11sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <!-- Private & Secure Card -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_home_card"
+                    android:padding="14dp"
+                    android:layout_marginStart="5dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_home_icon_bubble">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="@color/colorTextPrimary" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_highlight_privacy_title"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="10dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_highlight_privacy_desc"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="11sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Developer Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/about_section_developer"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.12"
+                android:layout_marginBottom="10dp"
+                android:layout_marginStart="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_home_card"
+                android:padding="16dp"
+                android:layout_marginBottom="10dp">
+
+                <FrameLayout
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_home_icon_bubble">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_person"
+                        app:tint="@color/colorTextPrimary" />
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:layout_marginStart="16dp">
-                    
+                    android:layout_marginStart="14dp">
+
                     <TextView
+                        android:id="@+id/tv_dev_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Source Code"
+                        android:text="@string/about_dev_name"
                         android:textColor="@color/colorTextPrimary"
                         android:textSize="16sp"
-                        android:textStyle="bold"/>
-                        
+                        android:textStyle="bold" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="View the official repository on GitHub"
+                        android:text="@string/about_dev_role"
                         android:textColor="@color/colorTextSecondary"
-                        android:textSize="13sp"
-                        android:layout_marginTop="2dp"/>
+                        android:textSize="12sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Social Media Card (Centered) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:background="@drawable/bg_home_card"
+                android:paddingVertical="14dp"
+                android:paddingHorizontal="16dp"
+                android:layout_marginBottom="24dp">
+
+                <!-- Email -->
+                <FrameLayout
+                    android:id="@+id/btn_social_email"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="@drawable/bg_home_icon_bubble"
+                    android:foreground="@drawable/ripple_home_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginHorizontal="6dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_social_email"
+                        app:tint="@color/colorTextPrimary"
+                        android:contentDescription="Email" />
+                </FrameLayout>
+
+                <!-- LinkedIn -->
+                <FrameLayout
+                    android:id="@+id/btn_social_linkedin"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="@drawable/bg_home_icon_bubble"
+                    android:foreground="@drawable/ripple_home_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginHorizontal="6dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_social_linkedin"
+                        app:tint="@color/colorTextPrimary"
+                        android:contentDescription="LinkedIn" />
+                </FrameLayout>
+
+                <!-- GitHub -->
+                <FrameLayout
+                    android:id="@+id/btn_social_github"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="@drawable/bg_home_icon_bubble"
+                    android:foreground="@drawable/ripple_home_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginHorizontal="6dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_social_github"
+                        app:tint="@color/colorTextPrimary"
+                        android:contentDescription="GitHub" />
+                </FrameLayout>
+
+                <!-- Facebook -->
+                <FrameLayout
+                    android:id="@+id/btn_social_facebook"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="@drawable/bg_home_icon_bubble"
+                    android:foreground="@drawable/ripple_home_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginHorizontal="6dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_social_facebook"
+                        app:tint="@color/colorTextPrimary"
+                        android:contentDescription="Facebook" />
+                </FrameLayout>
+
+                <!-- Instagram -->
+                <FrameLayout
+                    android:id="@+id/btn_social_instagram"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="@drawable/bg_home_icon_bubble"
+                    android:foreground="@drawable/ripple_home_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginHorizontal="6dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_social_instagram"
+                        app:tint="@color/colorTextPrimary"
+                        android:contentDescription="Instagram" />
+                </FrameLayout>
+
+            </LinearLayout>
+
+            <!-- Open Source & Community Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/about_section_community"
+                android:textColor="@color/colorTextSecondary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.12"
+                android:layout_marginBottom="10dp"
+                android:layout_marginStart="4dp" />
+
+            <!-- GitHub Card (Clickable) -->
+            <LinearLayout
+                android:id="@+id/btn_github"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_home_card"
+                android:foreground="@drawable/ripple_home_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="16dp"
+                android:layout_marginBottom="10dp">
+
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_home_icon_bubble">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_open_in_new"
+                        app:tint="@color/colorTextPrimary" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_github_title"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_github_desc"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="12sp"
+                        android:layout_marginTop="2dp" />
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/colorStroke"/>
+                    app:tint="@color/colorTextSecondary" />
+
+            </LinearLayout>
+
+            <!-- License Card -->
+            <LinearLayout
+                android:id="@+id/card_license"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="top"
+                android:background="@drawable/bg_home_card"
+                android:padding="16dp"
+                android:layout_marginBottom="32dp">
+
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_home_icon_bubble">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_info"
+                        app:tint="@color/colorTextPrimary" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_license_title"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about_license_desc"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="12sp"
+                        android:lineSpacingMultiplier="1.2"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -274,24 +644,32 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:alpha="0.4"
-                android:layout_marginTop="32dp"
                 android:layout_marginBottom="16dp">
-                
+
                 <View
-                    android:layout_width="48dp"
+                    android:layout_width="40dp"
                     android:layout_height="1dp"
                     android:background="@color/colorStroke"
-                    android:layout_marginBottom="12dp"/>
-                
+                    android:alpha="0.5"
+                    android:layout_marginBottom="12dp" />
+
                 <TextView
-                     android:layout_width="wrap_content"
-                     android:layout_height="wrap_content"
-                     android:text="Copyright (C) 2026 Shejan"
-                     android:textSize="11sp"
-                     android:textStyle="bold"
-                     android:letterSpacing="0.3"
-                     android:textColor="@color/colorTextSecondary"/>
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_footer_love"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorTextPrimary"
+                    android:letterSpacing="0.02" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_copyright"
+                    android:textSize="11sp"
+                    android:textColor="@color/colorTextSecondary"
+                    android:alpha="0.7"
+                    android:layout_marginTop="4dp" />
 
             </LinearLayout>
 
