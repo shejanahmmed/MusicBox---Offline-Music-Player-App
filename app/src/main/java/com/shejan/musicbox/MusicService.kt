@@ -69,6 +69,16 @@ class MusicService : Service() {
     private var sleepTimerRunnable: Runnable? = null
     var sleepTimerEndTime: Long = 0L
 
+    // Notification debounce — prevents shedding by the system (rate-limit: 5/sec)
+    private val notificationHandler = Handler(Looper.getMainLooper())
+    private var pendingNotificationRunnable: Runnable? = null
+    private fun scheduleNotificationUpdate() {
+        pendingNotificationRunnable?.let { notificationHandler.removeCallbacks(it) }
+        val r = Runnable { updateNotification() }
+        pendingNotificationRunnable = r
+        notificationHandler.postDelayed(r, 200L) // coalesce bursts into one post per 200ms
+    }
+
     // Audio Focus & Background-safe Volume Controller
     private lateinit var audioManager: AudioManager
     private var audioFocusRequest: android.media.AudioFocusRequest? = null
@@ -406,7 +416,7 @@ class MusicService : Service() {
 
             when (playbackState) {
                 Player.STATE_READY -> {
-                    updateNotification()
+                    scheduleNotificationUpdate()
                     updateMediaSessionMetadata()
                     updateMediaSessionState()
                     saveState()
@@ -436,7 +446,7 @@ class MusicService : Service() {
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             android.util.Log.d("MusicService", "onIsPlayingChanged: isPlaying=$isPlaying, vol=${exoPlayer?.volume}")
-            updateNotification()
+            scheduleNotificationUpdate()
             updateMediaSessionState()
             sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
                 putExtra("IS_PLAYING", isPlaying)

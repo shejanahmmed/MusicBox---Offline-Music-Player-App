@@ -21,7 +21,17 @@
 #-renamesourcefileattribute SourceFile
 
 # --- AndroidX Media3 / ExoPlayer ---
--keep class androidx.media3.** { *; }
+# Media3 ships its own consumer ProGuard rules inside the AAR.
+# Only preserve the reflection-accessed surface; let R8 optimise everything else.
+-keep class androidx.media3.exoplayer.ExoPlayer { *; }
+-keep class androidx.media3.exoplayer.ExoPlayer$Builder { *; }
+-keepclassmembers class androidx.media3.exoplayer.** {
+    @androidx.media3.common.util.UnstableApi <methods>;
+}
+-keep class androidx.media3.session.MediaSession { *; }
+-keep class androidx.media3.session.MediaController { *; }
+-keep class androidx.media3.session.MediaBrowser { *; }
+-dontwarn androidx.media3.**
 
 # --- Glide ---
 -keep public class * implements com.bumptech.glide.module.GlideModule
