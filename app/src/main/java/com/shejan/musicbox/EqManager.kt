@@ -67,23 +67,31 @@ object EqManager {
 
     /** Maps logical band index [0..4] → native band index */
     private var nativeBandMap = IntArray(BAND_COUNT) { it }
+    private var currentSessionId: Int = 0
 
     // ─── Attach / Detach ──────────────────────────────────────────────────────
 
     /**
      * Attaches (or re-attaches) the Equalizer to the given [audioSessionId].
-     * Safe to call on every track change.
+     * Safe to call on track changes; skips teardown if already attached to this session.
      */
     fun attach(context: Context, audioSessionId: Int) {
-        release() // Always release old instance first
-
         if (audioSessionId == 0) {
             Log.w(TAG, "Invalid audio session id (0), skipping EQ attach")
             return
         }
 
+        // Avoid destroying and recreating Equalizer on active audio stream if session is identical
+        if (audioSessionId == currentSessionId && equalizer != null) {
+            Log.d(TAG, "EQ already attached to session $audioSessionId, skipping duplicate attach")
+            return
+        }
+
+        release() // Release old instance if switching to a new session
+
         try {
             equalizer = Equalizer(0, audioSessionId).also { eq ->
+                currentSessionId = audioSessionId
                 eq.enabled = false // We will enable after restoring bands
 
                 // Build native band mapping
@@ -101,6 +109,7 @@ object EqManager {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to attach Equalizer: ${e.message}")
             equalizer = null
+            currentSessionId = 0
         }
     }
 
@@ -110,6 +119,7 @@ object EqManager {
             equalizer?.release()
         } catch (_: Exception) {}
         equalizer = null
+        currentSessionId = 0
     }
 
     // ─── Band Mapping ─────────────────────────────────────────────────────────
