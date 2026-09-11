@@ -12,8 +12,8 @@ android {
         applicationId = "com.shejan.musicbox"
         minSdk = 24
         targetSdk = 36
-        versionCode = 26
-        versionName = "2.6.0"
+        versionCode = 27
+        versionName = "2.7.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.media3.session)
     implementation(libs.media3.common)
     implementation(libs.glide)
+    annotationProcessor(libs.glide.compiler)
 }
 
 tasks.register("copyMappingFile") {
