@@ -23,8 +23,15 @@ import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 
 class MusicBoxApplication : Application() {
+
+    companion object {
+        var instance: MusicBoxApplication? = null
+            private set
+    }
+
     override fun onCreate() {
         super.onCreate()
+        instance = this
         
         // Initialize Theme
         val prefs = getSharedPreferences("MusicBoxPrefs", MODE_PRIVATE)

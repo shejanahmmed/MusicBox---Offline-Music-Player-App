@@ -20,100 +20,57 @@
 package com.shejan.musicbox
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.widget.ImageView
-import androidx.collection.LruCache
-import java.util.concurrent.Executors
-import android.os.Handler
-import android.os.Looper
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object ImageLoader {
 
-    private val executor = Executors.newFixedThreadPool(4)
-    private val handler = Handler(Looper.getMainLooper())
-    
-    // Max 1/8th of memory for cache
-    private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
-    private val cacheSize = maxMemory / 8
-    
-    private val memoryCache = object : LruCache<String, Bitmap>(cacheSize) {
-        override fun sizeOf(key: String, bitmap: Bitmap): Int {
-            return bitmap.byteCount / 1024
-        }
-    }
+    private val ioScope = CoroutineScope(Dispatchers.IO)
 
     fun load(context: Context, trackId: Long, albumId: Long, trackUri: String, imageView: ImageView) {
         val cacheKey = "$trackId-$albumId-$trackUri"
-        
-        // Check Memory Cache
-        val cachedBitmap = memoryCache.get(cacheKey)
-        if (cachedBitmap != null) {
-            imageView.setImageBitmap(cachedBitmap)
-            imageView.clearColorFilter()
-            return
-        }
-        
-        // Placeholder
-        imageView.setImageResource(R.drawable.ic_album)
-        imageView.setColorFilter(android.graphics.Color.DKGRAY)
-        
-        // Tag for recycling
         imageView.tag = cacheKey
-        
-        // Use weak reference to prevent memory leak if imageView is GC'd
-        val weakView = java.lang.ref.WeakReference(imageView)
-        
-        // Background Load
-        val appContext = context.applicationContext
-        executor.execute {
-            try {
-                val bitmap = MusicUtils.getTrackArtworkBitmap(appContext, trackId, albumId, trackUri)
-                
-                if (bitmap == null) {
-                    weakView.get()?.let { view ->
-                        if (view.tag == cacheKey) {
-                            handler.post {
-                                if (view.tag == cacheKey) {
-                                    view.setImageResource(R.drawable.ic_cd_placeholder)
-                                    view.scaleType = ImageView.ScaleType.FIT_CENTER
-                                    view.clearColorFilter()
-                                }
-                            }
-                        }
-                    }
-                    return@execute
-                }
-                
-                memoryCache.put(cacheKey, bitmap)
-                
-                // Get view from weak reference
-                weakView.get()?.let { view ->
-                    // Double-check: ensure view hasn't been reused
-                    if (view.tag == cacheKey) {
-                        handler.post {
-                            // Final check before setting image
-                            if (view.tag == cacheKey) {
-                                view.setImageBitmap(bitmap)
-                                view.clearColorFilter()
-                            }
-                        }
+        imageView.clearColorFilter()
+
+        val requestOptions = RequestOptions()
+            .placeholder(R.drawable.ic_album)
+            .error(R.drawable.ic_cd_placeholder)
+            .fallback(R.drawable.ic_cd_placeholder)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+
+        ioScope.launch {
+            val model = withContext(Dispatchers.IO) {
+                MusicUtils.getTrackArtworkModel(context.applicationContext, trackId, albumId, trackUri)
+            }
+            withContext(Dispatchers.Main) {
+                if (imageView.tag == cacheKey) {
+                    try {
+                        Glide.with(imageView)
+                            .load(model ?: R.drawable.ic_cd_placeholder)
+                            .apply(requestOptions)
+                            .into(imageView)
+                    } catch (_: Exception) {
+                        imageView.setImageResource(R.drawable.ic_cd_placeholder)
                     }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
         }
     }
+
     fun clearCacheForTrack(trackUri: String) {
-        // Iterate through cache keys to find matches (since key contains trackUri)
-        // Key format: "$trackId-$albumId-$trackUri"
-        val snapshot = memoryCache.snapshot()
-        for ((key, _) in snapshot) {
-            if (key.endsWith("-$trackUri")) {
-                memoryCache.remove(key)
+        try {
+            MusicBoxApplication.instance?.let { app ->
+                Glide.get(app).clearMemory()
+                ioScope.launch {
+                    Glide.get(app).clearDiskCache()
+                }
             }
-        }
+        } catch (_: Exception) {}
     }
 }
-
-
