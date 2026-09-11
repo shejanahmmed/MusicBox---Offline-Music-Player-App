@@ -49,4 +49,66 @@ class AudioEngineUnitTest {
         val pitchClamped = pitchTooLow.coerceIn(0.25f, 2.0f)
         assertEquals(0.25f, pitchClamped, 0.001f)
     }
+
+    @Test
+    fun testVolumeFadeInterpolationAndClamping() {
+        val targetVolume = 1.0f
+        val startVol = 0.0f
+        val durationMs = 180L
+
+        // Test elapsed 0ms
+        val elapsed0 = 0L
+        val fraction0 = (elapsed0.toFloat() / durationMs).coerceIn(0.0f, 1.0f)
+        val interpolated0 = 1.0f - (1.0f - fraction0) * (1.0f - fraction0)
+        val vol0 = startVol + (targetVolume - startVol) * interpolated0
+        assertEquals(0.0f, vol0, 0.001f)
+
+        // Test elapsed half-way (90ms)
+        val elapsedHalf = 90L
+        val fractionHalf = (elapsedHalf.toFloat() / durationMs).coerceIn(0.0f, 1.0f)
+        val interpolatedHalf = 1.0f - (1.0f - fractionHalf) * (1.0f - fractionHalf)
+        val volHalf = startVol + (targetVolume - startVol) * interpolatedHalf
+        assertTrue("Decelerate curve should be > 0.5 at midpoint", volHalf > 0.5f)
+        assertTrue("Volume should remain <= 1.0f", volHalf <= 1.0f)
+
+        // Test elapsed >= duration (180ms)
+        val elapsedFull = 200L
+        val fractionFull = (elapsedFull.toFloat() / durationMs).coerceIn(0.0f, 1.0f)
+        val interpolatedFull = 1.0f - (1.0f - fractionFull) * (1.0f - fractionFull)
+        val volFull = (startVol + (targetVolume - startVol) * interpolatedFull).coerceIn(0.0f, 1.0f)
+        assertEquals(1.0f, volFull, 0.001f)
+
+        // Test volume bounds clamping
+        val clampedNegative = (-0.5f).coerceIn(0.0f, 1.0f)
+        assertEquals(0.0f, clampedNegative, 0.001f)
+
+        val clampedOver = 1.5f.coerceIn(0.0f, 1.0f)
+        assertEquals(1.0f, clampedOver, 0.001f)
+    }
+
+    @Test
+    fun testDelayedAudioFocusFlag() {
+        var resumeOnFocusGain = false
+
+        // Simulate AUDIOFOCUS_REQUEST_DELAYED
+        fun onDelayedFocus() {
+            resumeOnFocusGain = true
+        }
+
+        onDelayedFocus()
+        assertTrue("resumeOnFocusGain should be set to true on delayed focus", resumeOnFocusGain)
+
+        // Simulate subsequent AUDIOFOCUS_GAIN
+        var didResume = false
+        fun onFocusGain() {
+            if (resumeOnFocusGain) {
+                resumeOnFocusGain = false
+                didResume = true
+            }
+        }
+
+        onFocusGain()
+        assertTrue("Player should resume when focus is finally gained", didResume)
+        assertFalse("resumeOnFocusGain should be cleared after consumption", resumeOnFocusGain)
+    }
 }

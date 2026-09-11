@@ -69,11 +69,12 @@ class MusicService : Service() {
     private var sleepTimerRunnable: Runnable? = null
     var sleepTimerEndTime: Long = 0L
 
-    // Audio Focus & Volume Fading
+    // Audio Focus & Background-safe Volume Controller
     private lateinit var audioManager: AudioManager
     private var audioFocusRequest: android.media.AudioFocusRequest? = null
     private var resumeOnFocusGain = false
-    private var volumeAnimator: android.animation.ValueAnimator? = null
+    private val volumeHandler = Handler(Looper.getMainLooper())
+    private var volumeFadeRunnable: Runnable? = null
     private var currentVolume: Float = 1.0f
 
     private var isNoisyReceiverRegistered = false
@@ -112,39 +113,58 @@ class MusicService : Service() {
         } catch (_: Exception) {}
     }
 
+    /**
+     * Smoothly transitions playback volume using a background-safe Handler loop.
+     * Unlike ValueAnimator, this does NOT depend on Choreographer or screen VSYNC,
+     * ensuring 100% reliable volume transitions during screen-off / background playback.
+     */
     fun fadeVolume(targetVolume: Float, durationMs: Long, onComplete: (() -> Unit)? = null) {
-        volumeAnimator?.cancel()
+        cancelVolumeFade()
         val clampedTarget = targetVolume.coerceIn(0.0f, 1.0f)
         val startVol = currentVolume
-        if (Math.abs(startVol - clampedTarget) < 0.01f) {
+        if (durationMs <= 0L || Math.abs(startVol - clampedTarget) < 0.01f) {
             setVolume(clampedTarget)
             onComplete?.invoke()
             return
         }
 
-        volumeAnimator = android.animation.ValueAnimator.ofFloat(startVol, clampedTarget).apply {
-            duration = durationMs
-            interpolator = android.view.animation.DecelerateInterpolator()
-            addUpdateListener { animator ->
-                val v = animator.animatedValue as Float
-                setVolume(v)
-            }
-            addListener(object : android.animation.AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: android.animation.Animator) {
+        val startTime = android.os.SystemClock.uptimeMillis()
+        val stepIntervalMs = 20L
+
+        volumeFadeRunnable = object : Runnable {
+            override fun run() {
+                val elapsed = android.os.SystemClock.uptimeMillis() - startTime
+                val fraction = (elapsed.toFloat() / durationMs).coerceIn(0.0f, 1.0f)
+                // Decelerate interpolation
+                val interpolated = 1.0f - (1.0f - fraction) * (1.0f - fraction)
+                val newVol = startVol + (clampedTarget - startVol) * interpolated
+                setVolume(newVol)
+
+                if (fraction < 1.0f) {
+                    volumeHandler.postDelayed(this, stepIntervalMs)
+                } else {
                     setVolume(clampedTarget)
+                    volumeFadeRunnable = null
                     onComplete?.invoke()
                 }
-            })
-            start()
+            }
         }
+        volumeHandler.post(volumeFadeRunnable!!)
+    }
+
+    fun cancelVolumeFade(snapToTarget: Float? = null) {
+        volumeFadeRunnable?.let { volumeHandler.removeCallbacks(it) }
+        volumeFadeRunnable = null
+        snapToTarget?.let { setVolume(it) }
     }
     
     private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        android.util.Log.d("MusicService", "onAudioFocusChange: focusChange=$focusChange")
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (resumeOnFocusGain) {
                     resumeOnFocusGain = false
-                    if (!isPlaying()) play() // Resume with fade
+                    if (!isPlaying()) play() // Resume playback
                 } else {
                     fadeVolume(1.0f, 250L) // Restore volume smoothly
                 }
@@ -179,7 +199,14 @@ class MusicService : Service() {
                 .build()
                 
             audioFocusRequest = request
-            audioManager.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+            when (audioManager.requestAudioFocus(request)) {
+                AudioManager.AUDIOFOCUS_REQUEST_GRANTED -> true
+                AudioManager.AUDIOFOCUS_REQUEST_DELAYED -> {
+                    resumeOnFocusGain = true
+                    false
+                }
+                else -> false
+            }
         } else {
             @Suppress("DEPRECATION")
             audioManager.requestAudioFocus(
@@ -368,6 +395,15 @@ class MusicService : Service() {
 
     private val playerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
+            val stateName = when (playbackState) {
+                Player.STATE_IDLE -> "STATE_IDLE"
+                Player.STATE_BUFFERING -> "STATE_BUFFERING"
+                Player.STATE_READY -> "STATE_READY"
+                Player.STATE_ENDED -> "STATE_ENDED"
+                else -> "UNKNOWN($playbackState)"
+            }
+            android.util.Log.d("MusicService", "onPlaybackStateChanged: $stateName, isPlaying=${isPlaying()}, playWhenReady=${exoPlayer?.playWhenReady}, vol=${exoPlayer?.volume}")
+
             when (playbackState) {
                 Player.STATE_READY -> {
                     updateNotification()
@@ -399,6 +435,7 @@ class MusicService : Service() {
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
+            android.util.Log.d("MusicService", "onIsPlayingChanged: isPlaying=$isPlaying, vol=${exoPlayer?.volume}")
             updateNotification()
             updateMediaSessionState()
             sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
@@ -407,11 +444,21 @@ class MusicService : Service() {
             BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
         }
 
+        override fun onPlaybackSuppressionReasonChanged(playbackSuppressionReason: Int) {
+            android.util.Log.d("MusicService", "onPlaybackSuppressionReasonChanged: reason=$playbackSuppressionReason")
+        }
+
         override fun onPlayerError(error: PlaybackException) {
-            android.util.Log.e("MusicService", "ExoPlayer Error: ${error.errorCodeName} - ${error.message}", error)
+            android.util.Log.e("MusicService", "ExoPlayer Error: ${error.errorCodeName} (${error.errorCode}) - ${error.message}", error)
+            updateNotification()
+            updateMediaSessionState()
+            sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
+                putExtra("IS_PLAYING", false)
+            })
         }
 
         override fun onAudioSessionIdChanged(audioSessionId: Int) {
+            android.util.Log.d("MusicService", "onAudioSessionIdChanged: $audioSessionId")
             if (audioSessionId != 0 && audioSessionId != android.media.audiofx.AudioEffect.ERROR_BAD_VALUE) {
                 try {
                     EqManager.attach(applicationContext, audioSessionId)
@@ -526,12 +573,13 @@ class MusicService : Service() {
             .setUsage(C.USAGE_MEDIA)
             .build()
 
+        currentVolume = 1.0f
         exoPlayer = ExoPlayer.Builder(applicationContext)
             .setAudioAttributes(audioAttributes, false)
             .setWakeMode(C.WAKE_MODE_LOCAL)
             .setHandleAudioBecomingNoisy(false)
             .build().apply {
-                volume = currentVolume
+                volume = 1.0f
                 addListener(playerListener)
             }
         attachEqualizer()
@@ -673,9 +721,9 @@ class MusicService : Service() {
                     
                     if (requestAudioFocus()) {
                         registerNoisyReceiver()
-                        setVolume(0.0f)
+                        cancelVolumeFade()
+                        setVolume(1.0f) // Keep normal listening volume for seamless track transitions
                         player.play()
-                        fadeVolume(1.0f, 180L)
                     } else {
                         player.pause()
                     }
@@ -716,9 +764,9 @@ class MusicService : Service() {
                     if (!requestAudioFocus()) return@let
                     
                     registerNoisyReceiver()
-                    setVolume(0.0f) // Start from silence to prevent pop
+                    cancelVolumeFade()
+                    setVolume(1.0f) // Ensure full volume on start/resume
                     player.play()
-                    fadeVolume(1.0f, 180L) // Smooth fade-in
                     updateNotification()
                     updateMediaSessionState()
                     sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply { putExtra("IS_PLAYING", true) })
@@ -733,6 +781,8 @@ class MusicService : Service() {
     fun pause(abandonFocus: Boolean = true) {
         if (abandonFocus) abandonAudioFocus()
         unregisterNoisyReceiver()
+        cancelVolumeFade()
+        setVolume(1.0f) // Ensure volume is normalized for next session
         
         try {
             exoPlayer?.let { player ->
@@ -1131,7 +1181,8 @@ class MusicService : Service() {
         super.onDestroy()
         instance = null
         uiScope.cancel() // Cancel all pending UI updates
-        volumeAnimator?.cancel()
+        cancelVolumeFade()
+        volumeHandler.removeCallbacksAndMessages(null)
         unregisterNoisyReceiver()
         cancelSleepTimer() // Clean up runnables
         sleepTimerHandler.removeCallbacksAndMessages(null) // Detailed cleanup
