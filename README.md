@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="#-key-features"><b>Key Features</b></a> •
-  <a href="#-whats-new-in-v250"><b>What's New (v2.5.0)</b></a> •
+  <a href="#-whats-new-in-v270"><b>What's New (v2.7.0)</b></a> •
   <a href="#-architecture--tech-stack"><b>Tech Stack</b></a> •
   <a href="#-download"><b>Download</b></a> •
   <a href="#-changelog"><b>Changelog</b></a> •
@@ -63,17 +63,17 @@ Built with modern Android engineering standards (Kotlin DSL, Coroutines, Media3 
 
 ---
 
-## ⚡ What's New in v2.5.0
+## ⚡ What's New in v2.7.0
 
-The **v2.5.0 Release** brings dynamic audio resolution inspection and audiophile metadata badges:
+The **v2.7.0 Release** brings performance optimizations, rock-solid background audio stability, notification rate-limiting, and modern UI refinements:
 
 | Feature | Description |
 | :--- | :--- |
-| **📊 Dynamic Quality & Resolution** | Background hardware audio inspector detecting real bit depth (16/24-bit), sample rates up to 192kHz, and bitrates up to 320kbps in the Track Info sheet. |
-| **🎧 AndroidX Media3 / ExoPlayer** | High-performance playback engine with native support for 24-bit/192kHz Hi-Res FLAC, ALAC, Opus, WAV, AAC, and MP3. |
-| **✨ Micro-Volume Fading & Ducking** | Smooth 180ms fade-in and 150ms fade-out on play/pause, transient audio focus ducking (0.2f), and unplug protection (`ACTION_AUDIO_BECOMING_NOISY`). |
-| **🎛️ Equalizer Sync & DSP Controls** | Live dynamic audio session binding to `EqManager` across track transitions, plus speed & pitch DSP controls. |
-| **🏛️ MVVM & Reactive StateFlow** | Centralized `MusicRepository` for MediaStore queries, ViewModels with `repeatOnLifecycle`, and thread-safe queue management. |
+| **🖼️ Glide Image Engine & Bitmap Pooling** | Migrated artwork loading to high-performance Glide with hardware bitmap pooling and annotation processing, drastically reducing GC churn. |
+| **🔔 Debounced Media Notifications** | Intelligent 200ms rate-limiting for media session notification updates, preventing system rate-limiting and notification spam on rapid skips. |
+| **🎧 Reliable Background Micro-Fades** | Replaced VSYNC/choreographer-bound animators with Handler-based faders for seamless, popping-free track transitions when the screen is off. |
+| **✨ Bento-Grid About Screen** | Redesigned developer & about view with modern bento cards, interactive social profile intents (LinkedIn, GitHub, Website), and direct Play Store linking. |
+| **📱 Android 15 Edge-to-Edge Ready** | Updated AndroidX Activity and Material dependencies with smooth scroll-away headers in Settings and About screens. |
 
 ---
 
@@ -129,7 +129,20 @@ MusicBox is available for install via official channels:
 
 ## 📋 Changelog
 
-### v2.5.0 _(Current Release)_
+### v2.7.0 _(Current Release)_
+- **🔔 Debounced Media Notifications:** Added 200ms debounce rate-limiting to `MusicService` notification dispatchers, preventing Android notification spam and system rate-limiting when rapidly skipping tracks.
+- **🖼️ Glide Annotation Processor Integration:** Configured official Glide compiler annotation processor in Gradle build catalog for optimized image decoder compilation.
+- **⚡ Version Code 27 Alignment:** Bumped `versionCode` to 27 and `versionName` to 2.7.0.
+
+### v2.6.0
+- **🖼️ High-Performance Glide Image Engine:** Integrated Glide for album art caching and hardware bitmap pooling, drastically reducing garbage collection overhead and memory churn during fast library scrolling.
+- **🎧 Reliable Background Micro-Fades:** Replaced VSYNC-dependent view animators with Handler-based faders, ensuring smooth 180ms/150ms audio fades during background track transitions without screen dependency.
+- **✨ Bento-Grid About Screen:** Complete redesign of About & Developer screen featuring modern bento layout cards, active version Play Store linking, and native social profile intent triggers (LinkedIn, GitHub, Website).
+- **📜 Scroll-Away Headers:** Implemented subtle scroll-away header animations in Settings and About screens for immersive navigation.
+- **📱 Android 15 Edge-to-Edge Compliance:** Upgraded AndroidX Activity and Material library components to ensure seamless edge-to-edge UI compliance.
+- **🎨 Home Dashboard Touch Polish:** Refined dashboard grid layout with modernized ripples and manifest lint optimizations.
+
+### v2.5.0
 - **📊 Dynamic Audio Quality Classifier:** Background hardware audio analyzer inspecting sample rates (up to 192kHz), bit depth (16/24-bit), and bitrate, showing clear resolution badges in the track metadata options dialog.
 - **🎧 AndroidX Media3 / ExoPlayer Engine:** Full playback engine upgrade supporting high-res lossless codecs (24-bit/192kHz FLAC, ALAC, Opus, WAV, AAC, MP3) and eliminating legacy player error states.
 - **✨ Micro-Volume Fades & Acoustic Smoothing:** Added soft volume fading on play (180ms) and pause (150ms) to eliminate popping sounds.
