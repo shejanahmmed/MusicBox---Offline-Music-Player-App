@@ -445,11 +445,11 @@ class MusicService : Service() {
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            android.util.Log.d("MusicService", "onIsPlayingChanged: isPlaying=$isPlaying, vol=${exoPlayer?.volume}")
+            android.util.Log.d("MusicService", "onIsPlayingChanged: isPlaying=$isPlaying, computed=${isPlaying()}, vol=${exoPlayer?.volume}")
             scheduleNotificationUpdate()
             updateMediaSessionState()
             sendBroadcast(Intent("MUSIC_BOX_UPDATE").setPackage(packageName).apply {
-                putExtra("IS_PLAYING", isPlaying)
+                putExtra("IS_PLAYING", isPlaying())
             })
             BaseMusicWidgetProvider.updateAllWidgets(applicationContext)
         }
@@ -1035,7 +1035,8 @@ class MusicService : Service() {
     }
 
     fun isPlaying(): Boolean {
-        return exoPlayer?.isPlaying ?: false
+        val player = exoPlayer ?: return false
+        return player.isPlaying || (player.playWhenReady && player.playbackState == Player.STATE_BUFFERING)
     }
     
     fun getCurrentTrack(): Track? {
