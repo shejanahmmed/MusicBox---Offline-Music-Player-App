@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="#-key-features"><b>Key Features</b></a> •
-  <a href="#-whats-new-in-v270"><b>What's New (v2.7.0)</b></a> •
+  <a href="#-whats-new-in-v280"><b>What's New (v2.8.0)</b></a> •
   <a href="#-architecture--tech-stack"><b>Tech Stack</b></a> •
   <a href="#-download"><b>Download</b></a> •
   <a href="#-changelog"><b>Changelog</b></a> •
@@ -63,17 +63,17 @@ Built with modern Android engineering standards (Kotlin DSL, Coroutines, Media3 
 
 ---
 
-## ⚡ What's New in v2.7.0
+## ⚡ What's New in v2.8.0
 
-The **v2.7.0 Release** brings performance optimizations, rock-solid background audio stability, notification rate-limiting, and modern UI refinements:
+The **v2.8.0 Release** introduces instantaneous in-memory image rendering, track transition UI stabilization, and smarter startup state evaluation:
 
 | Feature | Description |
 | :--- | :--- |
-| **🖼️ Glide Image Engine & Bitmap Pooling** | Migrated artwork loading to high-performance Glide with hardware bitmap pooling and annotation processing, drastically reducing GC churn. |
-| **🔔 Debounced Media Notifications** | Intelligent 200ms rate-limiting for media session notification updates, preventing system rate-limiting and notification spam on rapid skips. |
-| **🎧 Reliable Background Micro-Fades** | Replaced VSYNC/choreographer-bound animators with Handler-based faders for seamless, popping-free track transitions when the screen is off. |
-| **✨ Bento-Grid About Screen** | Redesigned developer & about view with modern bento cards, interactive social profile intents (LinkedIn, GitHub, Website), and direct Play Store linking. |
-| **📱 Android 15 Edge-to-Edge Ready** | Updated AndroidX Activity and Material dependencies with smooth scroll-away headers in Settings and About screens. |
+| **⚡ Instant 0ms Artwork Rendering** | Restored synchronous in-memory `LruCache` bitmap caching to eliminate image loading lag and placeholder flickers across list scrolls and page transitions. |
+| **🔘 Seamless Track Transitions** | Resolved split-second play/pause button flickering during track skips by maintaining active playback intent during buffering (`STATE_BUFFERING`). |
+| **🛡️ Guarded Startup State Flow** | Fixed premature "No music found" toast on launch by ignoring initial unpopulated StateFlow emissions while keeping legitimate zero-track alerts intact. |
+| **🔔 Debounced Media Notifications** | Intelligent 200ms rate-limiting for notification dispatchers, preventing OS rate-limiting and notification spam during rapid track skipping. |
+| **🖼️ Glide Compiler Annotation Processing** | Full integration of the official Glide annotation processor for optimized image decoder compilation. |
 
 ---
 
@@ -129,7 +129,13 @@ MusicBox is available for install via official channels:
 
 ## 📋 Changelog
 
-### v2.7.0 _(Current Release)_
+### v2.8.0 _(Current Release)_
+- **⚡ Instant 0ms Artwork Rendering:** Restored synchronous in-memory `LruCache` layer in `ImageLoader` to deliver instant, flicker-free album art rendering across all lists and screen transitions.
+- **🔘 Play/Pause Transition Stabilization:** Prevented split-second button icon flickering on track skips by maintaining playing state throughout `STATE_BUFFERING`.
+- **🛡️ Initial StateFlow Empty Guard:** Fixed false "No music found" toast on cold launch by ignoring initial unpopulated StateFlow emissions while preserving genuine zero-track alerts.
+- **⚡ Version Code 28 Alignment:** Bumped `versionCode` to 28 and `versionName` to 2.8.0.
+
+### v2.7.0
 - **🔔 Debounced Media Notifications:** Added 200ms debounce rate-limiting to `MusicService` notification dispatchers, preventing Android notification spam and system rate-limiting when rapidly skipping tracks.
 - **🖼️ Glide Annotation Processor Integration:** Configured official Glide compiler annotation processor in Gradle build catalog for optimized image decoder compilation.
 - **⚡ Version Code 27 Alignment:** Bumped `versionCode` to 27 and `versionName` to 2.7.0.
