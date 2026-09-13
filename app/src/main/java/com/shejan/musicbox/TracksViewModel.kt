@@ -31,8 +31,8 @@ import kotlinx.coroutines.launch
 
 class TracksViewModel : ViewModel() {
 
-    private val _tracks = MutableStateFlow<List<Track>>(emptyList())
-    val tracks: StateFlow<List<Track>> = _tracks.asStateFlow()
+    private val _tracks = MutableStateFlow<List<Track>?>(null)
+    val tracks: StateFlow<List<Track>?> = _tracks.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()

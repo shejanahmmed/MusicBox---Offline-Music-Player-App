@@ -223,7 +223,9 @@ class TracksActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.tracks.collect { trackList ->
-                    renderTracks(trackList)
+                    if (trackList != null) {
+                        renderTracks(trackList)
+                    }
                 }
             }
         }
