@@ -13,3 +13,19 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Logs and debug artifacts
+*.log
+build_*.log
+build_*.txt
+.kotlin/
+.idea/
+*.tmp
+*.py
+
+# Release and build binaries
+*.apk
+*.aab
+*.ap_
+*.dex
+
